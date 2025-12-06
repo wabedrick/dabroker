@@ -66,13 +66,10 @@ class PropertyRepository {
     required bool favorite,
   }) async {
     try {
-      final response = await _client.dio.post(
-        ApiEndpoints.propertyFavorite(propertyId),
-        data: {'favorite': favorite},
-      );
-      final data = response.data;
-      if (data is Map<String, dynamic> && data['is_favorited'] is bool) {
-        return data['is_favorited'] as bool;
+      if (favorite) {
+        await _client.dio.post(ApiEndpoints.favoriteProperty(propertyId));
+      } else {
+        await _client.dio.delete(ApiEndpoints.favoriteProperty(propertyId));
       }
       return favorite;
     } catch (error) {

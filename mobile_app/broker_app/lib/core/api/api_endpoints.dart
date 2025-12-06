@@ -13,7 +13,7 @@ class ApiEndpoints {
   static const String properties = '/properties';
   static String propertyDetail(String id) => '/properties/$id';
   static String propertyContact(String id) => '/properties/$id/contact';
-  static String propertyFavorite(String id) => '/properties/$id/favorite';
+  static String favoriteProperty(String id) => '/favorites/properties/$id';
   static const String ownerProperties = '/owner/properties';
   static String ownerPropertyDetail(String id) => '/owner/properties/$id';
   static String ownerPropertyMedia(String id) => '/owner/properties/$id/media';
