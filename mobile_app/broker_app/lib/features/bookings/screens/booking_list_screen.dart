@@ -100,6 +100,17 @@ class _BookingCard extends StatelessWidget {
                 ),
               ],
             ),
+            if (booking.createdAt != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'Booked: ${DateFormat('MMM d, h:mm a').format(booking.createdAt!.toLocal())}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
             const SizedBox(height: 8),
             Row(
               children: [

@@ -150,6 +150,13 @@ class BookingDetailScreen extends ConsumerWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  if (booking.createdAt != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Booked on ${DateFormat('MMM d, y h:mm a').format(booking.createdAt!.toLocal())}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                   if (booking.status == 'pending' && isHost)
                     const Padding(
                       padding: EdgeInsets.only(top: 8.0),

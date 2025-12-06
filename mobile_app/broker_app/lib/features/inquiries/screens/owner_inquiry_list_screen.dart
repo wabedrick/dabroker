@@ -45,8 +45,8 @@ class _OwnerInquiryListScreenState
                   Text(
                     'No inquiries yet',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Theme.of(context).disabledColor,
-                        ),
+                      color: Theme.of(context).disabledColor,
+                    ),
                   ),
                 ],
               ),
@@ -96,7 +96,7 @@ class _OwnerInquiryListScreenState
                       ),
                       if (lastMessage != null)
                         Text(
-                          DateFormat('MMM d').format(lastMessage.createdAt),
+                          DateFormat('MMM d, h:mm a').format(lastMessage.createdAt),
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                     ],
@@ -108,9 +108,9 @@ class _OwnerInquiryListScreenState
                       Text(
                         'From: ${inquiry.sender?.name ?? 'Unknown User'}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.primaryBlue,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          color: AppColors.primaryBlue,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       if (lastMessage != null) ...[
                         const SizedBox(height: 4),
