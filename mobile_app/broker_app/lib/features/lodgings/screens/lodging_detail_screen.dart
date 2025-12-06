@@ -605,8 +605,11 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                       Text(
                         '${lodging.city}, ${lodging.country}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                            ),
                       ),
                     ],
                   ),
@@ -618,8 +621,11 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                       Text(
                         '${lodging.totalRooms ?? 1} Rooms • ${lodging.maxGuests ?? 1} Guests/room',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                            ),
                       ),
                     ],
                   ),
@@ -687,7 +693,10 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                             Icon(
                               _getAmenityIcon(amenity),
                               size: 24,
-                              color: Colors.grey[700],
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.grey[300]
+                                  : Colors.grey[700],
                             ),
                             const SizedBox(width: 16),
                             Text(
@@ -721,7 +730,12 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                             Text(
                               'Joined ${DateFormat.yMMMM().format(lodging.host!.createdAt)}',
                               style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: Colors.grey[600]),
+                                  ?.copyWith(
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                                  ),
                             ),
                           ],
                         ),
@@ -740,7 +754,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
           ? Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.1),

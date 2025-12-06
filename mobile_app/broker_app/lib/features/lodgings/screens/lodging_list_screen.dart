@@ -506,12 +506,23 @@ class _LodgingCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.backgroundGray,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? AppColors.darkAccent
+                                    : AppColors.backgroundGray,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             lodging.type!.toUpperCase(),
-                            style: Theme.of(context).textTheme.labelSmall,
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color:
+                                      Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : AppColors.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
                           ),
                         ),
                     ],
