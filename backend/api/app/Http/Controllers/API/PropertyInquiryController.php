@@ -29,16 +29,25 @@ class PropertyInquiryController extends Controller
 
     public function show(Request $request, PropertyInquiry $inquiry): PropertyInquiryResource
     {
-        abort_if($inquiry->sender_id !== $request->user()->id, 403, 'You do not have access to this inquiry.');
+        $userId = $request->user()->id;
 
-        if (is_null($inquiry->buyer_read_at)) {
+        abort_if(
+            $inquiry->sender_id !== $userId && $inquiry->owner_id !== $userId,
+            403,
+            'You do not have access to this inquiry.'
+        );
+
+        if ($inquiry->sender_id === $userId && is_null($inquiry->buyer_read_at)) {
             $inquiry->forceFill(['buyer_read_at' => now()])->save();
+        } elseif ($inquiry->owner_id === $userId && is_null($inquiry->read_at)) {
+            $inquiry->forceFill(['read_at' => now()])->save();
         }
 
         return PropertyInquiryResource::make(
             $inquiry->loadMissing([
                 'property:id,public_id,title,status',
                 'owner:id,name,preferred_role',
+                'sender:id,name,preferred_role',
                 'messages',
             ])
         );

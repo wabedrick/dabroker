@@ -37,7 +37,7 @@ class PropertyInquiryResource extends JsonResource
                 return [
                     'id' => $this->sender?->id,
                     'name' => $this->sender?->name ?? 'Unknown User',
-                    'preferred_role' => $this->sender?->preferred_role,
+                    'preferred_role' => $this->sender?->preferred_role ?? 'user',
                 ];
             }),
             'messages' => $this->whenLoaded('messages', function () {

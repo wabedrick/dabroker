@@ -23,7 +23,7 @@ class PropertyInquiryMessageResource extends JsonResource
             'sender' => [
                 'id' => $this->sender->id,
                 'name' => $this->sender->name,
-                'preferred_role' => $this->sender->preferred_role,
+                'preferred_role' => $this->sender->preferred_role ?? 'user',
             ],
         ];
     }
