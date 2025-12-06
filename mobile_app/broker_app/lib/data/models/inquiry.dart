@@ -1,13 +1,51 @@
 import 'package:broker_app/data/models/inquiry_message.dart';
-import 'package:broker_app/data/models/property.dart';
-import 'package:broker_app/data/models/user.dart';
+
+class InquiryProperty {
+  final String id;
+  final String title;
+  final String? status;
+
+  InquiryProperty({
+    required this.id,
+    required this.title,
+    this.status,
+  });
+
+  factory InquiryProperty.fromJson(Map<String, dynamic> json) {
+    return InquiryProperty(
+      id: json['id'] as String? ?? '',
+      title: json['title'] as String? ?? 'Unknown Property',
+      status: json['status'] as String?,
+    );
+  }
+}
+
+class InquirySender {
+  final int id;
+  final String name;
+  final String? preferredRole;
+
+  InquirySender({
+    required this.id,
+    required this.name,
+    this.preferredRole,
+  });
+
+  factory InquirySender.fromJson(Map<String, dynamic> json) {
+    return InquirySender(
+      id: json['id'] as int? ?? 0,
+      name: json['name'] as String? ?? 'Unknown User',
+      preferredRole: json['preferred_role'] as String?,
+    );
+  }
+}
 
 class Inquiry {
   final String publicId;
   final String status;
   final List<InquiryMessage> messages;
-  final Property? property;
-  final User? sender;
+  final InquiryProperty? property;
+  final InquirySender? sender;
 
   Inquiry({
     required this.publicId,
@@ -26,10 +64,10 @@ class Inquiry {
               .toList() ??
           [],
       property: json['property'] != null
-          ? Property.fromJson(json['property'] as Map<String, dynamic>)
+          ? InquiryProperty.fromJson(json['property'] as Map<String, dynamic>)
           : null,
       sender: json['sender'] != null
-          ? User.fromJson(json['sender'] as Map<String, dynamic>)
+          ? InquirySender.fromJson(json['sender'] as Map<String, dynamic>)
           : null,
     );
   }
