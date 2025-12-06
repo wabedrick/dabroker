@@ -38,6 +38,7 @@ class ApiEndpoints {
   static String hostBookingReject(String id) => '/host/bookings/$id/reject';
   static String bookingDetail(String id) => '/bookings/$id';
   static String bookingInquiry(String id) => '/bookings/$id/inquiry';
+  static String inquiryDetail(String id) => '/inquiries/$id';
   static String inquiryMessages(String id) => '/inquiries/$id/messages';
 
   // Professional Endpoints

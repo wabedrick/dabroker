@@ -6,14 +6,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
-  final String bookingId;
+  final String? bookingId;
+  final String? inquiryId;
   final String title;
 
   const ChatScreen({
     super.key,
-    required this.bookingId,
+    this.bookingId,
+    this.inquiryId,
     required this.title,
-  });
+  }) : assert(
+         bookingId != null || inquiryId != null,
+         'Either bookingId or inquiryId must be provided',
+       );
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
@@ -39,9 +44,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         _isLoading = true;
         _error = null;
       });
-      final inquiry = await ref
-          .read(inquiryRepositoryProvider)
-          .getBookingInquiry(widget.bookingId);
+      
+      final Inquiry inquiry;
+      if (widget.bookingId != null) {
+        inquiry = await ref
+            .read(inquiryRepositoryProvider)
+            .getBookingInquiry(widget.bookingId!);
+      } else {
+        inquiry = await ref
+            .read(inquiryRepositoryProvider)
+            .getInquiry(widget.inquiryId!);
+      }
+
       if (mounted) {
         setState(() {
           _inquiry = inquiry;

@@ -3,6 +3,7 @@ import 'package:broker_app/core/widgets/skeleton_box.dart';
 import 'package:broker_app/data/models/booking.dart';
 import 'package:broker_app/features/auth/providers/auth_provider.dart';
 import 'package:broker_app/features/bookings/screens/booking_detail_screen.dart';
+import 'package:broker_app/features/inquiries/screens/chat_screen.dart';
 import 'package:broker_app/features/notifications/models/notification_item.dart';
 import 'package:broker_app/features/notifications/providers/notification_counters_provider.dart';
 import 'package:broker_app/features/notifications/providers/notification_list_provider.dart';
@@ -317,6 +318,26 @@ class _NotificationTile extends ConsumerWidget {
           } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Could not open booking details: $e')),
+            );
+          }
+        } else if (item.category == NotificationCategory.inquiries &&
+            item.metadata != null) {
+          try {
+            final inquiryId = item.metadata!['inquiry_id'] as String?;
+            if (inquiryId != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ChatScreen(
+                    inquiryId: inquiryId,
+                    title: item.title,
+                  ),
+                ),
+              );
+            }
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Could not open chat: $e')),
             );
           }
         }

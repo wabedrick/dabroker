@@ -26,6 +26,17 @@ class InquiryRepository {
     }
   }
 
+  Future<Inquiry> getInquiry(String inquiryId) async {
+    try {
+      final response = await _client.dio.get(
+        ApiEndpoints.inquiryDetail(inquiryId),
+      );
+      return Inquiry.fromJson(response.data['data']);
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
   Future<InquiryMessage> sendMessage(String inquiryId, String message) async {
     try {
       final response = await _client.dio.post(

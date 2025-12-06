@@ -5,14 +5,45 @@ namespace App\Http\Controllers\API;
 use App\Enums\PropertyStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Property\ContactOwnerRequest;
+use App\Http\Resources\PropertyInquiryResource;
 use App\Models\Property;
 use App\Models\PropertyInquiry;
 use App\Notifications\NewPropertyInquiryNotification;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Log;
 
 class PropertyInquiryController extends Controller
 {
+    public function index(Request $request): AnonymousResourceCollection
+    {
+        $inquiries = PropertyInquiry::query()
+            ->with(['property:id,public_id,title,status', 'owner:id,name,preferred_role'])
+            ->where('sender_id', $request->user()->id)
+            ->latest()
+            ->paginate((int) $request->integer('per_page', 15));
+
+        return PropertyInquiryResource::collection($inquiries);
+    }
+
+    public function show(Request $request, PropertyInquiry $inquiry): PropertyInquiryResource
+    {
+        abort_if($inquiry->sender_id !== $request->user()->id, 403, 'You do not have access to this inquiry.');
+
+        if (is_null($inquiry->buyer_read_at)) {
+            $inquiry->forceFill(['buyer_read_at' => now()])->save();
+        }
+
+        return PropertyInquiryResource::make(
+            $inquiry->loadMissing([
+                'property:id,public_id,title,status',
+                'owner:id,name,preferred_role',
+                'messages',
+            ])
+        );
+    }
+
     public function store(ContactOwnerRequest $request, Property $property): JsonResponse
     {
         abort_if($property->status !== PropertyStatus::Approved, 422, 'Only approved properties can be contacted.');

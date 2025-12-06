@@ -50,6 +50,8 @@ Route::prefix('v1')->group(function (): void {
 
         Route::post('properties/{property:public_id}/contact', [PropertyInquiryController::class, 'store']);
 
+        Route::get('inquiries', [PropertyInquiryController::class, 'index']);
+        Route::get('inquiries/{inquiry:public_id}', [PropertyInquiryController::class, 'show']);
         Route::post('inquiries/{inquiry:public_id}/messages', [PropertyInquiryMessageController::class, 'store']);
         Route::post('inquiries/{inquiry:public_id}/read', [PropertyInquiryMessageController::class, 'markRead']);
 
