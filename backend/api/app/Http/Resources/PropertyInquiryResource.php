@@ -16,6 +16,7 @@ class PropertyInquiryResource extends JsonResource
     {
         return [
             'id' => $this->public_id,
+            'public_id' => $this->public_id,
             'status' => $this->status,
             'message' => $this->message,
             'contact_method' => $this->contact_method,
