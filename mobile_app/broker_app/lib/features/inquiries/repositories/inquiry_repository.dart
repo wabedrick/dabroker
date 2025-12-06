@@ -37,6 +37,20 @@ class InquiryRepository {
     }
   }
 
+  Future<List<Inquiry>> getOwnerInquiries({int page = 1}) async {
+    try {
+      final response = await _client.dio.get(
+        ApiEndpoints.ownerInquiries,
+        queryParameters: {'page': page},
+      );
+      return (response.data['data'] as List)
+          .map((e) => Inquiry.fromJson(e))
+          .toList();
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
   Future<InquiryMessage> sendMessage(String inquiryId, String message) async {
     try {
       final response = await _client.dio.post(
