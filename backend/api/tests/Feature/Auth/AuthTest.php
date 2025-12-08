@@ -38,12 +38,12 @@ class AuthTest extends TestCase
         $response = $this->postJson('/api/v1/auth/register', $payload);
 
         $response->assertCreated()
-            ->assertJsonPath('data.status', 'pending')
+            ->assertJsonPath('data.status', 'active')
             ->assertJsonPath('data.preferred_role', 'buyer');
 
         $this->assertDatabaseHas('users', [
             'email' => 'alice@example.com',
-            'status' => 'pending',
+            'status' => 'active',
         ]);
     }
 
@@ -135,6 +135,7 @@ class AuthTest extends TestCase
 
     public function test_user_can_resend_registration_otp(): void
     {
+        config()->set('otp.enabled', true);
         Cache::spy();
 
         $user = User::factory()->create([

@@ -28,6 +28,7 @@ class BookingTest extends TestCase
             'check_in' => '2025-12-20',
             'check_out' => '2025-12-25',
             'guests_count' => 2,
+            'rooms_count' => 1,
         ]);
 
         $response->assertStatus(201);
@@ -59,10 +60,11 @@ class BookingTest extends TestCase
             'check_in' => '2025-12-22',
             'check_out' => '2025-12-27',
             'guests_count' => 2,
+            'rooms_count' => 1,
         ]);
 
         $response->assertStatus(400)
-            ->assertJson(['message' => 'Lodging is not available for selected dates']);
+            ->assertJson(['message' => 'Not enough rooms available for selected dates. Available: 0']);
     }
 
     public function test_host_can_confirm_booking()

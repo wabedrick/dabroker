@@ -25,6 +25,8 @@ class LodgingTest extends TestCase
             'description' => 'A beautiful apartment in the city center',
             'city' => 'Kampala',
             'country' => 'Uganda',
+            'currency' => 'UGX',
+            'total_rooms' => 2,
         ]);
 
         $response->assertStatus(201);

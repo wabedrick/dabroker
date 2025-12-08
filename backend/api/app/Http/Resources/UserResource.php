@@ -27,7 +27,7 @@ class UserResource extends JsonResource
             'permissions' => $this->getPermissionNames()->values()->all(),
             'email_verified_at' => $this->email_verified_at,
             'phone_verified_at' => $this->phone_verified_at,
-            'last_login_at' => $this->last_login_at,
+            'last_login_at' => $this->whenHas('last_login_at', fn () => $this->last_login_at),
             'bio' => $this->bio,
             'metadata' => $this->metadata,
             'professional_profile' => $this->whenLoaded('professionalProfile', function () {

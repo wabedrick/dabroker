@@ -1,4 +1,3 @@
-import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/data/models/user.dart';
 import 'package:broker_app/features/professionals/providers/professional_provider.dart';
 import 'package:broker_app/features/professionals/screens/professional_detail_screen.dart';
@@ -93,6 +92,17 @@ class _ProfessionalListScreenState
                         .filterByType('lawyer');
                   },
                 ),
+                const SizedBox(width: 8),
+                _FilterChip(
+                  label: 'Agents',
+                  isSelected: _selectedType == 'real_estate_agent',
+                  onSelected: (_) {
+                    setState(() => _selectedType = 'real_estate_agent');
+                    ref
+                        .read(professionalListProvider.notifier)
+                        .filterByType('real_estate_agent');
+                  },
+                ),
               ],
             ),
           ),
@@ -165,20 +175,22 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return FilterChip(
       label: Text(label),
       selected: isSelected,
       onSelected: onSelected,
-      backgroundColor: Colors.white,
-      selectedColor: AppColors.primaryBlue.withValues(alpha: 0.1),
+      backgroundColor: colorScheme.surface,
+      selectedColor: colorScheme.primaryContainer,
       labelStyle: TextStyle(
-        color: isSelected ? AppColors.primaryBlue : Colors.black87,
+        color: isSelected ? colorScheme.primary : colorScheme.onSurface,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: isSelected ? AppColors.primaryBlue : Colors.grey.shade300,
+          color: isSelected ? colorScheme.primary : colorScheme.outlineVariant,
         ),
       ),
       showCheckmark: false,
@@ -213,13 +225,13 @@ class _ProfessionalCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 30,
-                backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                 child: Text(
                   professional.name[0].toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primaryBlue,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),
@@ -240,9 +252,9 @@ class _ProfessionalCard extends StatelessWidget {
                             ', ',
                           ) ??
                           professional.preferredRole.toUpperCase(),
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -251,7 +263,7 @@ class _ProfessionalCard extends StatelessWidget {
                       Text(
                         '\$${professional.professionalProfile!.hourlyRate}/hr',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.primaryBlue,
+                          color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -259,7 +271,10 @@ class _ProfessionalCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: Colors.grey),
+              Icon(
+                Icons.chevron_right,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ],
           ),
         ),
