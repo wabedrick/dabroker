@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final professionalListProvider =
     StateNotifierProvider<ProfessionalListNotifier, AsyncValue<List<User>>>(
-  (ref) => ProfessionalListNotifier(ref.read(professionalRepositoryProvider)),
-);
+      (ref) =>
+          ProfessionalListNotifier(ref.read(professionalRepositoryProvider)),
+    );
 
 class ProfessionalListNotifier extends StateNotifier<AsyncValue<List<User>>> {
   final ProfessionalRepository _repository;
@@ -14,16 +15,23 @@ class ProfessionalListNotifier extends StateNotifier<AsyncValue<List<User>>> {
   bool _isLoadingMore = false;
   String? _currentType;
 
-  ProfessionalListNotifier(this._repository) : super(const AsyncValue.loading()) {
+  ProfessionalListNotifier(this._repository)
+    : super(const AsyncValue.loading()) {
     loadProfessionals();
   }
 
-  Future<void> loadProfessionals({String? type, bool refresh = false}) async {
+  Future<void> loadProfessionals({
+    String? type,
+    bool refresh = false,
+    bool showLoading = true,
+  }) async {
     if (refresh) {
       _page = 1;
       _hasMore = true;
       _currentType = type;
-      state = const AsyncValue.loading();
+      if (showLoading) {
+        state = const AsyncValue.loading();
+      }
     }
 
     if (!_hasMore && !refresh) return;

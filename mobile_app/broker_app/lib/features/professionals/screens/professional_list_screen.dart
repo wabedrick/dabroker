@@ -100,17 +100,46 @@ class _ProfessionalListScreenState
             child: state.when(
               data: (professionals) {
                 if (professionals.isEmpty) {
-                  return const Center(child: Text('No professionals found'));
+                  return RefreshIndicator(
+                    onRefresh: () => ref
+                        .read(professionalListProvider.notifier)
+                        .loadProfessionals(
+                          refresh: true,
+                          type: _selectedType,
+                          showLoading: false,
+                        ),
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.7,
+                          child: const Center(
+                            child: Text('No professionals found'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
                 }
-                return ListView.separated(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: professionals.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
-                  itemBuilder: (context, index) {
-                    final professional = professionals[index];
-                    return _ProfessionalCard(professional: professional);
-                  },
+                return RefreshIndicator(
+                  onRefresh: () => ref
+                      .read(professionalListProvider.notifier)
+                      .loadProfessionals(
+                        refresh: true,
+                        type: _selectedType,
+                        showLoading: false,
+                      ),
+                  child: ListView.separated(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
+                    itemCount: professionals.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      final professional = professionals[index];
+                      return _ProfessionalCard(professional: professional);
+                    },
+                  ),
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -141,7 +170,7 @@ class _FilterChip extends StatelessWidget {
       selected: isSelected,
       onSelected: onSelected,
       backgroundColor: Colors.white,
-      selectedColor: AppColors.primaryBlue.withOpacity(0.1),
+      selectedColor: AppColors.primaryBlue.withValues(alpha: 0.1),
       labelStyle: TextStyle(
         color: isSelected ? AppColors.primaryBlue : Colors.black87,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -184,7 +213,7 @@ class _ProfessionalCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 30,
-                backgroundColor: AppColors.primaryBlue.withOpacity(0.1),
+                backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
                 child: Text(
                   professional.name[0].toUpperCase(),
                   style: const TextStyle(
@@ -202,8 +231,8 @@ class _ProfessionalCard extends StatelessWidget {
                     Text(
                       professional.name,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -211,9 +240,9 @@ class _ProfessionalCard extends StatelessWidget {
                             ', ',
                           ) ??
                           professional.preferredRole.toUpperCase(),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -222,9 +251,9 @@ class _ProfessionalCard extends StatelessWidget {
                       Text(
                         '\$${professional.professionalProfile!.hourlyRate}/hr',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.primaryBlue,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          color: AppColors.primaryBlue,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ],

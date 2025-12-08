@@ -4,11 +4,19 @@ import 'package:broker_app/core/providers/app_providers.dart';
 import 'package:broker_app/core/utils/api_error_handler.dart';
 import 'package:broker_app/data/models/pagination.dart';
 import 'package:broker_app/data/models/user.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final professionalRepositoryProvider = Provider<ProfessionalRepository>((ref) {
   return ProfessionalRepository(ref.read(dioClientProvider));
 });
+
+Pagination<User> _parseProfessionalsResponse(Map<String, dynamic> data) {
+  return Pagination.fromJson(
+    data,
+    (json) => User.fromJson(json as Map<String, dynamic>),
+  );
+}
 
 class ProfessionalRepository {
   final DioClient _client;
@@ -32,9 +40,9 @@ class ProfessionalRepository {
         queryParameters: queryParams,
       );
 
-      return Pagination.fromJson(
-        response.data,
-        (json) => User.fromJson(json as Map<String, dynamic>),
+      return compute(
+        _parseProfessionalsResponse,
+        response.data as Map<String, dynamic>,
       );
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
