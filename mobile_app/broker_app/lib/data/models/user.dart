@@ -1,3 +1,4 @@
+import 'package:broker_app/data/models/professional_profile.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'user.g.dart';
@@ -19,6 +20,7 @@ class User {
   final DateTime updatedAt;
   final List<String> roles;
   final List<String> permissions;
+  final ProfessionalProfile? professionalProfile;
 
   User({
     required this.id,
@@ -36,6 +38,7 @@ class User {
     required this.updatedAt,
     this.roles = const [],
     this.permissions = const [],
+    this.professionalProfile,
   });
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);

@@ -8,14 +8,13 @@ use App\Models\Lodging;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bookings = Auth::user()
-            ->hasMany(Booking::class, 'user_id')
+        $bookings = $request->user()
+            ->bookings()
             ->with(['lodging', 'lodging.host.roles', 'lodging.host.permissions'])
             ->latest()
             ->paginate(20);

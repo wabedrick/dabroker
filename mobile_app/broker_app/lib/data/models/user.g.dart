@@ -33,6 +33,10 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
               ?.map((e) => e as String)
               .toList() ??
           const [],
+      professionalProfile: json['professional_profile'] == null
+          ? null
+          : ProfessionalProfile.fromJson(
+              json['professional_profile'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
@@ -51,6 +55,7 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'updated_at': instance.updatedAt.toIso8601String(),
       'roles': instance.roles,
       'permissions': instance.permissions,
+      'professional_profile': instance.professionalProfile,
     };
 
 AuthResponse _$AuthResponseFromJson(Map<String, dynamic> json) => AuthResponse(
