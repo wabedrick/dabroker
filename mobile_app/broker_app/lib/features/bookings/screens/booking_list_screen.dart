@@ -1,4 +1,5 @@
-import 'package:broker_app/core/theme/app_theme.dart';
+import 'package:broker_app/core/utils/money_format.dart';
+import 'package:broker_app/core/utils/status_badge.dart';
 import 'package:broker_app/data/models/booking.dart';
 import 'package:broker_app/features/bookings/providers/booking_provider.dart';
 import 'package:flutter/material.dart';
@@ -41,23 +42,11 @@ class _BookingCard extends StatelessWidget {
 
   final Booking booking;
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'confirmed':
-        return Colors.green;
-      case 'pending':
-        return Colors.orange;
-      case 'cancelled':
-        return Colors.red;
-      case 'completed':
-        return Colors.blue;
-      default:
-        return Colors.grey;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final statusColors = bookingStatusBadgeColors(colorScheme, booking.status);
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -85,15 +74,13 @@ class _BookingCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(
-                      booking.status,
-                    ).withAlpha((0.1 * 255).round()),
+                    color: statusColors.background,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     booking.status.toUpperCase(),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: _getStatusColor(booking.status),
+                      color: statusColors.foreground,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -106,7 +93,7 @@ class _BookingCard extends StatelessWidget {
                 child: Text(
                   'Booked: ${DateFormat('MMM d, h:mm a').format(booking.createdAt!.toLocal())}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey,
+                    color: colorScheme.onSurfaceVariant,
                     fontSize: 11,
                   ),
                 ),
@@ -114,7 +101,11 @@ class _BookingCard extends StatelessWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                Icon(
+                  Icons.calendar_today,
+                  size: 16,
+                  color: colorScheme.onSurfaceVariant,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   '${DateFormat('MMM d').format(booking.checkIn)} - ${DateFormat('MMM d').format(booking.checkOut)}',
@@ -125,7 +116,11 @@ class _BookingCard extends StatelessWidget {
             const SizedBox(height: 4),
             Row(
               children: [
-                const Icon(Icons.people, size: 16, color: Colors.grey),
+                Icon(
+                  Icons.people,
+                  size: 16,
+                  color: colorScheme.onSurfaceVariant,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   '${booking.guestsCount} guests',
@@ -133,9 +128,13 @@ class _BookingCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '${booking.lodging?.currency ?? ''} ${booking.totalPrice.toStringAsFixed(0)}',
+                  formatMoney(
+                    booking.totalPrice,
+                    booking.lodging?.currency,
+                    fractionDigits: 0,
+                  ),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.primaryBlue,
+                    color: colorScheme.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

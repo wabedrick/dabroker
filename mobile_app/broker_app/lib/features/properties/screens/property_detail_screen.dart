@@ -1,5 +1,6 @@
 import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/core/utils/image_helper.dart';
+import 'package:broker_app/core/utils/money_format.dart';
 import 'package:broker_app/core/widgets/skeleton_box.dart';
 import 'package:broker_app/data/models/property.dart';
 import 'package:broker_app/data/models/property_price_history.dart';
@@ -248,7 +249,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                             _InfoChip(
                               label: 'Size',
                               value:
-                                  '${property.size?.toStringAsFixed(0)} ${property.sizeUnit}',
+                                  '${formatNumber(property.size, fractionDigits: 0)} ${property.sizeUnit}',
                             ),
                           if (property.houseAge != null)
                             _InfoChip(

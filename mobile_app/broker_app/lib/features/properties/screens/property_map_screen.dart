@@ -1,4 +1,5 @@
 import 'package:broker_app/core/theme/app_theme.dart';
+import 'package:broker_app/core/utils/money_format.dart';
 import 'package:broker_app/data/models/property.dart';
 import 'package:broker_app/features/properties/screens/property_detail_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -270,7 +271,11 @@ class _PropertyMapCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${property.currency} ${property.price?.toStringAsFixed(0)}',
+                    formatMoney(
+                      property.price,
+                      property.currency,
+                      fractionDigits: 0,
+                    ),
                     style: const TextStyle(
                       color: AppColors.primaryBlue,
                       fontWeight: FontWeight.bold,

@@ -45,9 +45,9 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
   Future<void> _handleVerify() async {
     if (_otpCode.length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter complete OTP code'),
-          backgroundColor: AppColors.error,
+        SnackBar(
+          content: const Text('Please enter complete OTP code'),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       return;
@@ -75,9 +75,9 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Verification successful!'),
-          backgroundColor: AppColors.success,
+        SnackBar(
+          content: const Text('Verification successful!'),
+          backgroundColor: Theme.of(context).colorScheme.primary,
         ),
       );
     } else {
@@ -85,7 +85,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error ?? 'Verification failed'),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
@@ -109,9 +109,9 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('A new OTP has been sent.'),
-          backgroundColor: AppColors.success,
+        SnackBar(
+          content: const Text('A new OTP has been sent.'),
+          backgroundColor: Theme.of(context).colorScheme.primary,
         ),
       );
     } else {
@@ -119,13 +119,14 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error ?? 'Unable to resend OTP'),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
   }
 
   Widget _buildOtpField(int index) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SizedBox(
       width: 50,
       child: TextFormField(
@@ -140,7 +141,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
         decoration: InputDecoration(
           counterText: '',
           filled: true,
-          fillColor: AppColors.backgroundGray,
+          fillColor: colorScheme.surfaceContainerHighest,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -151,10 +152,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(
-              color: AppColors.primaryBlue,
-              width: 2,
-            ),
+            borderSide: BorderSide(color: colorScheme.primary, width: 2),
           ),
         ),
         onChanged: (value) {
@@ -177,11 +175,12 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
     final showSkeleton = authState.isLoading;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -212,15 +211,13 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                                 width: 120,
                                 height: 120,
                                 decoration: BoxDecoration(
-                                  color: AppColors.primaryBlue.withAlpha(
-                                    (0.1 * 255).round(),
-                                  ),
+                                  color: colorScheme.primaryContainer,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.lock_outline,
                                   size: 60,
-                                  color: AppColors.primaryBlue,
+                                  color: colorScheme.onPrimaryContainer,
                                 ),
                               ),
                             ),

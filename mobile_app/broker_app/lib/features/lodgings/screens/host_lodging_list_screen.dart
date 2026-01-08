@@ -1,5 +1,5 @@
-import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/core/utils/image_helper.dart';
+import 'package:broker_app/core/utils/money_format.dart';
 import 'package:broker_app/data/models/lodging.dart';
 import 'package:broker_app/features/lodgings/providers/lodging_list_provider.dart';
 import 'package:broker_app/features/lodgings/screens/add_lodging_screen.dart';
@@ -80,9 +80,11 @@ class _HostLodgingCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isApproved = (lodging.status ?? '').toLowerCase() == 'approved';
+
     return Card(
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () async {
           await Navigator.push(
@@ -128,18 +130,18 @@ class _HostLodgingCard extends ConsumerWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: lodging.status == 'approved'
-                              ? Colors.green.withAlpha((0.1 * 255).round())
-                              : Colors.orange.withAlpha((0.1 * 255).round()),
+                          color: isApproved
+                              ? colorScheme.primaryContainer
+                              : colorScheme.secondaryContainer,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           lodging.status?.toUpperCase() ?? 'UNKNOWN',
                           style: Theme.of(context).textTheme.labelSmall
                               ?.copyWith(
-                                color: lodging.status == 'approved'
-                                    ? Colors.green
-                                    : Colors.orange,
+                                color: isApproved
+                                    ? colorScheme.onPrimaryContainer
+                                    : colorScheme.onSecondaryContainer,
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
@@ -149,18 +151,22 @@ class _HostLodgingCard extends ConsumerWidget {
                   const SizedBox(height: 8),
                   Text(
                     '${lodging.city}, ${lodging.country}',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       Text(
-                        '${lodging.currency} ${lodging.pricePerNight}',
-                        style: const TextStyle(
+                        formatMoney(
+                          lodging.pricePerNight,
+                          lodging.currency,
+                          fractionDigits: 0,
+                        ),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.primaryBlue,
+                          color: colorScheme.primary,
                         ),
                       ),
                       const Spacer(),
@@ -169,7 +175,7 @@ class _HostLodgingCard extends ConsumerWidget {
                             ? Icons.visibility
                             : Icons.visibility_off,
                         size: 16,
-                        color: Colors.grey,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                       const SizedBox(width: 8),
                       IconButton(

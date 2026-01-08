@@ -1,4 +1,5 @@
 import 'package:broker_app/core/utils/image_helper.dart';
+import 'package:broker_app/core/utils/money_format.dart';
 import 'package:broker_app/data/models/lodging.dart';
 import 'package:broker_app/features/auth/providers/auth_provider.dart';
 import 'package:broker_app/features/lodgings/providers/lodging_list_provider.dart';
@@ -586,7 +587,7 @@ class _LodgingCard extends StatelessWidget {
         : null;
 
     final priceText = lodging.pricePerNight != null
-        ? '${lodging.currency} ${lodging.pricePerNight!.toStringAsFixed(0)} / night'
+        ? '${formatMoney(lodging.pricePerNight, lodging.currency, fractionDigits: 0)} / night'
         : 'Price on request';
 
     return Card(

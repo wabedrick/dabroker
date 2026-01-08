@@ -2,6 +2,7 @@
 
 import 'package:broker_app/core/widgets/rating_dialog.dart';
 import 'package:broker_app/core/utils/image_helper.dart';
+import 'package:broker_app/core/utils/money_format.dart';
 import 'package:broker_app/features/bookings/providers/booking_provider.dart';
 import 'package:broker_app/features/lodgings/providers/lodging_list_provider.dart';
 import 'package:broker_app/features/lodgings/screens/add_lodging_screen.dart';
@@ -391,7 +392,11 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         Text(
-                          '${lodging.currency} ${totalPrice.toStringAsFixed(2)}',
+                          formatMoney(
+                            totalPrice,
+                            lodging.currency,
+                            fractionDigits: 2,
+                          ),
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(
                                 color: colorScheme.primary,
@@ -615,7 +620,11 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              '${lodging.currency} ${lodging.pricePerNight!.toStringAsFixed(0)}',
+                              formatMoney(
+                                lodging.pricePerNight,
+                                lodging.currency,
+                                fractionDigits: 0,
+                              ),
                               style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(
                                     color: colorScheme.primary,

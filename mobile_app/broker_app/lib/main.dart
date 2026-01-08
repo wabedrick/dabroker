@@ -198,9 +198,7 @@ class WelcomeScreen extends StatelessWidget {
                         // Subtitle
                         Text(
                           'Discover the best properties and lodging options in your area',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
+                          style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(color: colorScheme.onSurfaceVariant),
                           textAlign: TextAlign.center,
                         ),

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
@@ -25,7 +26,6 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   final TextEditingController _searchController = TextEditingController();
   LatLng _currentCenter = const LatLng(0, 0);
   bool _isLoading = false;
-  Timer? _debounce;
 
   @override
   void initState() {
@@ -43,7 +43,6 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   @override
   void dispose() {
     _searchController.dispose();
-    _debounce?.cancel();
     super.dispose();
   }
 
@@ -210,12 +209,17 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           ),
           // Search Bar
           Positioned(
-            top: 16,
-            left: 16,
-            right: 16,
+            top: AppSpacing.lg,
+            left: AppSpacing.lg,
+            right: AppSpacing.lg,
             child: Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                side: BorderSide(color: colorScheme.outlineVariant),
+              ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 child: Row(
                   children: [
                     Icon(Icons.search, color: colorScheme.onSurfaceVariant),
@@ -227,6 +231,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                           hintText: 'Search for a place...',
                           border: InputBorder.none,
                         ),
+                        textInputAction: TextInputAction.search,
                         onSubmitted: _searchLocation,
                       ),
                     ),
@@ -243,8 +248,8 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           ),
           // Current Location Button
           Positioned(
-            bottom: 32,
-            right: 16,
+            bottom: AppSpacing.xxl,
+            right: AppSpacing.lg,
             child: FloatingActionButton(
               onPressed: _getCurrentLocation,
               child: const Icon(Icons.my_location),

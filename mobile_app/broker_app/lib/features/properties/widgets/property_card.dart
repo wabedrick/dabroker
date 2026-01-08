@@ -1,5 +1,5 @@
-import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/core/utils/image_helper.dart';
+import 'package:broker_app/core/utils/money_format.dart';
 import 'package:broker_app/data/models/property.dart';
 import 'package:flutter/material.dart';
 
@@ -11,6 +11,7 @@ class PropertyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final price = _formatPrice(property.price, property.currency);
     final location = _formatLocation(property.city, property.state);
 
@@ -23,8 +24,6 @@ class PropertyCard extends StatelessWidget {
 
     return Card(
       clipBehavior: Clip.hardEdge,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
         child: Column(
@@ -44,14 +43,16 @@ class PropertyCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: property.category == 'rent'
-                            ? AppColors.primaryBlue
-                            : Colors.green,
+                            ? colorScheme.primary
+                            : colorScheme.secondary,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         property.category == 'rent' ? 'FOR RENT' : 'FOR SALE',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: Colors.white,
+                          color: property.category == 'rent'
+                              ? colorScheme.onPrimary
+                              : colorScheme.onSecondary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -74,13 +75,17 @@ class PropertyCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on_outlined, size: 16),
+                        Icon(
+                          Icons.location_on_outlined,
+                          size: 16,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             location,
                             style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: AppColors.textSecondary),
+                                ?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                         ),
                       ],
@@ -92,16 +97,16 @@ class PropertyCard extends StatelessWidget {
                       Text(
                         price,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppColors.primaryBlue,
+                          color: colorScheme.primary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(width: 8),
                       if (property.size != null && property.sizeUnit != null)
                         Text(
-                          '${property.size?.toStringAsFixed(0)} ${property.sizeUnit}',
+                          '${formatNumber(property.size, fractionDigits: 0)} ${property.sizeUnit}',
                           style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: AppColors.textSecondary),
+                              ?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                       const Spacer(),
                       Icon(
@@ -109,8 +114,8 @@ class PropertyCard extends StatelessWidget {
                             ? Icons.favorite
                             : Icons.favorite_border,
                         color: property.isFavorited == true
-                            ? AppColors.primaryBlue
-                            : AppColors.textSecondary,
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
                       ),
                     ],
                   ),
@@ -125,8 +130,7 @@ class PropertyCard extends StatelessWidget {
 
   String _formatPrice(double? price, String? currency) {
     if (price == null) return 'Contact for price';
-    final symbol = (currency ?? 'USD').toUpperCase();
-    return '$symbol ${price.toStringAsFixed(0)}';
+    return formatMoney(price, currency, fractionDigits: 0);
   }
 
   String? _formatLocation(String? city, String? state) {
@@ -150,12 +154,19 @@ class _PropertyImageState extends State<_PropertyImage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     if (widget.images.isEmpty) {
       return AspectRatio(
         aspectRatio: 16 / 9,
         child: Container(
-          color: AppColors.primaryBlue.withAlpha((0.1 * 255).round()),
-          child: const Center(child: Icon(Icons.home_outlined, size: 48)),
+          color: colorScheme.surfaceContainerHighest,
+          child: Center(
+            child: Icon(
+              Icons.home_outlined,
+              size: 48,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
         ),
       );
     }
@@ -173,9 +184,13 @@ class _PropertyImageState extends State<_PropertyImage> {
                 fit: BoxFit.cover,
                 cacheWidth: 800, // Optimize memory usage
                 errorBuilder: (_, __, ___) => Container(
-                  color: AppColors.primaryBlue.withAlpha((0.1 * 255).round()),
-                  child: const Center(
-                    child: Icon(Icons.broken_image_outlined, size: 48),
+                  color: colorScheme.surfaceContainerHighest,
+                  child: Center(
+                    child: Icon(
+                      Icons.broken_image_outlined,
+                      size: 48,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               );

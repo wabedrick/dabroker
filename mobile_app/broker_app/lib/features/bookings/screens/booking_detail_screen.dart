@@ -1,4 +1,6 @@
 import 'package:broker_app/data/models/booking.dart';
+import 'package:broker_app/core/utils/money_format.dart';
+import 'package:broker_app/core/utils/status_badge.dart';
 import 'package:broker_app/features/bookings/providers/booking_provider.dart';
 import 'package:broker_app/features/inquiries/screens/chat_screen.dart';
 import 'package:flutter/material.dart';
@@ -15,21 +17,6 @@ class BookingDetailScreen extends ConsumerWidget {
     required this.booking,
     this.isHost = false,
   });
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'confirmed':
-        return Colors.green;
-      case 'pending':
-        return Colors.orange;
-      case 'cancelled':
-        return Colors.red;
-      case 'completed':
-        return Colors.blue;
-      default:
-        return Colors.grey;
-    }
-  }
 
   Future<void> _updateStatus(
     BuildContext context,
@@ -125,6 +112,9 @@ class BookingDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final statusColors = bookingStatusBadgeColors(colorScheme, booking.status);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Booking Details')),
       body: SingleChildScrollView(
@@ -137,16 +127,16 @@ class BookingDetailScreen extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: _getStatusColor(booking.status).withValues(alpha: 0.1),
+                color: statusColors.background,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _getStatusColor(booking.status)),
+                border: Border.all(color: statusColors.border),
               ),
               child: Column(
                 children: [
                   Text(
                     booking.status.toUpperCase(),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: _getStatusColor(booking.status),
+                      color: statusColors.foreground,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -170,9 +160,9 @@ class BookingDetailScreen extends ConsumerWidget {
             // Property Info
             Text(
               'Property',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(color: Colors.grey),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -191,9 +181,8 @@ class BookingDetailScreen extends ConsumerWidget {
                     children: [
                       Text(
                         'Check-in',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleMedium?.copyWith(color: Colors.grey),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -209,9 +198,8 @@ class BookingDetailScreen extends ConsumerWidget {
                     children: [
                       Text(
                         'Check-out',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleMedium?.copyWith(color: Colors.grey),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -226,9 +214,9 @@ class BookingDetailScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             Text(
               'Guests',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(color: Colors.grey),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -240,9 +228,9 @@ class BookingDetailScreen extends ConsumerWidget {
             // Guest/Host Info
             Text(
               isHost ? 'Guest' : 'Host',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(color: Colors.grey),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 8),
             ListTile(
@@ -277,9 +265,9 @@ class BookingDetailScreen extends ConsumerWidget {
             // Payment Info
             Text(
               'Payment Details',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(color: Colors.grey),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 16),
             Row(
@@ -287,7 +275,11 @@ class BookingDetailScreen extends ConsumerWidget {
               children: [
                 const Text('Total Price'),
                 Text(
-                  '${booking.lodging?.currency ?? ''} ${booking.totalPrice.toStringAsFixed(2)}',
+                  formatMoney(
+                    booking.totalPrice,
+                    booking.lodging?.currency,
+                    fractionDigits: 2,
+                  ),
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -304,8 +296,8 @@ class BookingDetailScreen extends ConsumerWidget {
                     child: OutlinedButton(
                       onPressed: () => _updateStatus(context, ref, 'cancelled'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
-                        side: const BorderSide(color: Colors.red),
+                        foregroundColor: colorScheme.error,
+                        side: BorderSide(color: colorScheme.error),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: const Text('Reject Booking'),
@@ -316,8 +308,8 @@ class BookingDetailScreen extends ConsumerWidget {
                     child: ElevatedButton(
                       onPressed: () => _updateStatus(context, ref, 'confirmed'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: const Text('Confirm Booking'),

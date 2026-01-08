@@ -63,9 +63,9 @@ class AppTheme {
         ? ThemeData.dark().textTheme
         : ThemeData.light().textTheme;
 
-    final inter = GoogleFonts.interTextTheme(base).apply(
-      fontFamily: _fontFamily,
-    );
+    final inter = GoogleFonts.interTextTheme(
+      base,
+    ).apply(fontFamily: _fontFamily);
 
     // Keep a small, consistent scale (matches docs/ui_design_system.md intent)
     return inter.copyWith(
@@ -192,7 +192,9 @@ class AppTheme {
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           textStyle: _buildTextTheme(brightness: Brightness.light).labelLarge,
         ),
       ),
@@ -251,8 +253,12 @@ class AppTheme {
         backgroundColor: colorScheme.surface,
         selectedItemColor: colorScheme.primary,
         unselectedItemColor: colorScheme.onSurfaceVariant,
-        selectedLabelStyle: _buildTextTheme(brightness: Brightness.light).labelLarge,
-        unselectedLabelStyle: _buildTextTheme(brightness: Brightness.light).bodySmall,
+        selectedLabelStyle: _buildTextTheme(
+          brightness: Brightness.light,
+        ).labelLarge,
+        unselectedLabelStyle: _buildTextTheme(
+          brightness: Brightness.light,
+        ).bodySmall,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
