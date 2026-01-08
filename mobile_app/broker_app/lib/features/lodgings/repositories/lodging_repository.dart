@@ -85,6 +85,22 @@ class LodgingRepository {
     }
   }
 
+  Future<void> rateLodging(String lodgingId, int rating, String review) async {
+    try {
+      await _client.dio.post(
+        '/ratings',
+        data: {
+          'rateable_type': 'lodging',
+          'rateable_id': lodgingId,
+          'rating': rating,
+          'review': review,
+        },
+      );
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
   Future<Lodging> fetchLodgingDetail(String id) async {
     try {
       final response = await _client.dio.get(ApiEndpoints.lodgingDetail(id));

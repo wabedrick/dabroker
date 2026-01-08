@@ -31,7 +31,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   void initState() {
     super.initState();
     if (widget.initialLatitude != null && widget.initialLongitude != null) {
-      _currentCenter = LatLng(widget.initialLatitude!, widget.initialLongitude!);
+      _currentCenter = LatLng(
+        widget.initialLatitude!,
+        widget.initialLongitude!,
+      );
     } else {
       _getCurrentLocation();
     }
@@ -48,15 +51,45 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     setState(() => _isLoading = true);
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return;
+      if (!serviceEnabled) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Location services are disabled.'),
+            action: SnackBarAction(
+              label: 'Settings',
+              onPressed: () => Geolocator.openLocationSettings(),
+            ),
+          ),
+        );
+        return;
+      }
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) return;
+        if (permission == LocationPermission.denied) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permission denied.')),
+          );
+          return;
+        }
       }
 
-      if (permission == LocationPermission.deniedForever) return;
+      if (permission == LocationPermission.deniedForever) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Location permission is permanently denied.'),
+            action: SnackBarAction(
+              label: 'Settings',
+              onPressed: () => Geolocator.openAppSettings(),
+            ),
+          ),
+        );
+        return;
+      }
 
       final position = await Geolocator.getCurrentPosition();
       if (mounted) {
@@ -65,17 +98,23 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         });
         _mapController.move(_currentCenter, 15);
       }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error getting location: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _searchLocation(String query) async {
-    if (query.isEmpty) return;
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) return;
     setState(() => _isLoading = true);
 
     try {
-      List<Location> locations = await locationFromAddress(query);
+      List<Location> locations = await locationFromAddress(trimmed);
       if (locations.isNotEmpty && mounted) {
         final loc = locations.first;
         final newCenter = LatLng(loc.latitude, loc.longitude);
@@ -85,16 +124,16 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         _mapController.move(newCenter, 15);
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location not found')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Location not found')));
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error searching location: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error searching location: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -103,6 +142,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pick Location'),
@@ -135,14 +175,37 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.example.broker_app',
               ),
+              RichAttributionWidget(
+                attributions: const [
+                  TextSourceAttribution('© OpenStreetMap contributors'),
+                ],
+              ),
             ],
           ),
           // Center Marker
-          const Center(
-            child: Icon(
-              Icons.location_on,
-              color: Colors.red,
-              size: 40,
+          Center(
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: colorScheme.primary,
+                shape: BoxShape.circle,
+                border: Border.all(color: colorScheme.onPrimary, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(
+                      context,
+                    ).shadowColor.withValues(alpha: 0.16),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(
+                Icons.my_location,
+                color: colorScheme.onPrimary,
+                size: 22,
+              ),
             ),
           ),
           // Search Bar
@@ -155,7 +218,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Row(
                   children: [
-                    const Icon(Icons.search),
+                    Icon(Icons.search, color: colorScheme.onSurfaceVariant),
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextField(

@@ -184,7 +184,9 @@ class _FilterChip extends StatelessWidget {
       backgroundColor: colorScheme.surface,
       selectedColor: colorScheme.primaryContainer,
       labelStyle: TextStyle(
-        color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+        color: isSelected
+            ? colorScheme.onPrimaryContainer
+            : colorScheme.onSurface,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
       shape: RoundedRectangleBorder(
@@ -226,14 +228,24 @@ class _ProfessionalCard extends StatelessWidget {
               CircleAvatar(
                 radius: 30,
                 backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                child: Text(
-                  professional.name[0].toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
+                backgroundImage:
+                    professional.avatar != null &&
+                        professional.avatar!.isNotEmpty
+                    ? NetworkImage(professional.avatar!)
+                    : null,
+                child:
+                    professional.avatar == null || professional.avatar!.isEmpty
+                    ? Text(
+                        professional.name[0].toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
+                        ),
+                      )
+                    : null,
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -251,7 +263,7 @@ class _ProfessionalCard extends StatelessWidget {
                       professional.professionalProfile?.specialties?.join(
                             ', ',
                           ) ??
-                          professional.preferredRole.toUpperCase(),
+                          professional.formattedRole,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -260,12 +272,25 @@ class _ProfessionalCard extends StatelessWidget {
                     ),
                     if (professional.professionalProfile != null) ...[
                       const SizedBox(height: 4),
-                      Text(
-                        '\$${professional.professionalProfile!.hourlyRate}/hr',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            '\$${professional.professionalProfile!.hourlyRate ?? 0}/hr',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(Icons.star, size: 14, color: Colors.amber),
+                          const SizedBox(width: 2),
+                          Text(
+                            professional.averageRating.toStringAsFixed(1),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
                     ],
                   ],

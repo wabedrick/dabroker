@@ -17,5 +17,6 @@ class DatabaseSeeder extends Seeder
         $this->call(BasePermissionsSeeder::class);
         $this->call(DemoAdminSeeder::class);
         $this->call(DemoPropertySeeder::class);
+        $this->call(DemoProfessionalSeeder::class);
     }
 }

@@ -47,6 +47,20 @@ Property _$PropertyFromJson(Map<String, dynamic> json) => Property(
       updatedAt: json['updated_at'] == null
           ? null
           : DateTime.parse(json['updated_at'] as String),
+      videoUrl: json['video_url'] as String?,
+      virtualTourUrl: json['virtual_tour_url'] as String?,
+      nearbyPlaces: (json['nearby_places'] as List<dynamic>?)
+          ?.map((e) => e as Map<String, dynamic>)
+          .toList(),
+      verifiedAt: json['verified_at'] == null
+          ? null
+          : DateTime.parse(json['verified_at'] as String),
+      priceHistory: (json['price_history'] as List<dynamic>?)
+          ?.map((e) => PropertyPriceHistory.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      similarProperties: (json['similar_properties'] as List<dynamic>?)
+          ?.map((e) => Property.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$PropertyToJson(Property instance) => <String, dynamic>{
@@ -78,6 +92,12 @@ Map<String, dynamic> _$PropertyToJson(Property instance) => <String, dynamic>{
       'is_available': instance.isAvailable,
       'created_at': instance.createdAt?.toIso8601String(),
       'updated_at': instance.updatedAt?.toIso8601String(),
+      'video_url': instance.videoUrl,
+      'virtual_tour_url': instance.virtualTourUrl,
+      'nearby_places': instance.nearbyPlaces,
+      'verified_at': instance.verifiedAt?.toIso8601String(),
+      'price_history': instance.priceHistory,
+      'similar_properties': instance.similarProperties,
     };
 
 PropertyMedia _$PropertyMediaFromJson(Map<String, dynamic> json) =>

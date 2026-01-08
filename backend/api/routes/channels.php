@@ -2,14 +2,10 @@
 
 use Illuminate\Support\Facades\Broadcast;
 
-Broadcast::channel('users.{userId}', function ($user, int $userId) {
-    if ((int) $user->id !== $userId) {
-        return false;
-    }
+Broadcast::channel('auctions.{auctionId}', function ($user, $auctionId) {
+    return true; // Public channel, anyone can listen
+});
 
-    return [
-        'id' => $user->id,
-        'name' => $user->name,
-        'preferred_role' => $user->preferred_role,
-    ];
+Broadcast::channel('auctions', function ($user) {
+    return true; // Public channel for list updates
 });

@@ -12,11 +12,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use App\Models\Traits\Rateable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable, InteractsWithMedia, Rateable;
 
     /**
      * The attributes that are mass assignable.
@@ -33,6 +36,7 @@ class User extends Authenticatable
         'preferred_role',
         'bio',
         'metadata',
+        'last_login_at',
     ];
 
     /**
@@ -96,6 +100,17 @@ class User extends Authenticatable
         return $this->hasMany(Lodging::class, 'host_id');
     }
 
+    public function auctions()
+    {
+        return $this->hasMany(Auction::class, 'seller_id');
+    }
+
+    public function bids()
+    {
+        return $this->hasMany(Bid::class);
+    }
+
+
     public function bookings()
     {
         return $this->hasMany(Booking::class, 'user_id');
@@ -133,5 +148,11 @@ class User extends Authenticatable
     public function professionalProfile()
     {
         return $this->hasOne(ProfessionalProfile::class);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatar')
+            ->singleFile();
     }
 }

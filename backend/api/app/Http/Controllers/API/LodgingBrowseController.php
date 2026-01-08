@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Lodging;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 
 class LodgingBrowseController extends Controller
 {
@@ -14,7 +15,10 @@ class LodgingBrowseController extends Controller
         $query = Lodging::query()
             ->approved()
             ->where('is_available', true)
-            ->with(['host.roles', 'host.permissions', 'media']);
+            ->with(['host.roles', 'host.permissions', 'media'])
+            ->withCount(['ratings as average_rating' => function ($query) {
+                $query->select(DB::raw('coalesce(avg(rating),0)'));
+            }]);
 
         // Filter by type
         if ($request->has('type')) {
@@ -97,32 +101,33 @@ class LodgingBrowseController extends Controller
 
         // Sorting
         $sortBy = $request->input('sort_by', 'default');
-        
+
         if ($sortBy === 'price_asc') {
             $query->orderBy('price_per_night', 'asc');
         } elseif ($sortBy === 'price_desc') {
             $query->orderBy('price_per_night', 'desc');
         } elseif ($sortBy === 'nearest' && $request->has('latitude') && $request->has('longitude')) {
-             // Distance calculation must be present in select for this to work
-             // If it wasn't added by the radius filter, we need to add it here if we want to sort by it
-             // But usually 'nearest' implies we have a reference point.
-             // If radius filter was applied, 'distance' column exists.
-             // If not, we might need to add it, but for now let's assume nearest only works with radius or if we add logic.
-             // Actually, if radius is NOT set but we want nearest, we need to add the selectRaw.
-             
-             if (!$request->has('radius')) {
-                 $lat = $request->latitude;
-                 $lng = $request->longitude;
-                 $haversine = "( 6371 * acos( cos( radians(?) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(?) ) + sin( radians(?) ) * sin( radians( latitude ) ) ) )";
-                 $query->selectRaw("lodgings.*, {$haversine} AS distance", [$lat, $lng, $lat]);
-             }
-             $query->orderBy('distance', 'asc');
+            // Distance calculation must be present in select for this to work
+            // If it wasn't added by the radius filter, we need to add it here if we want to sort by it
+            // But usually 'nearest' implies we have a reference point.
+            // If radius filter was applied, 'distance' column exists.
+            // If not, we might need to add it, but for now let's assume nearest only works with radius or if we add logic.
+            // Actually, if radius is NOT set but we want nearest, we need to add the selectRaw.
+
+            if (!$request->has('radius')) {
+                $lat = $request->latitude;
+                $lng = $request->longitude;
+                $haversine = "( 6371 * acos( cos( radians(?) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(?) ) + sin( radians(?) ) * sin( radians( latitude ) ) ) )";
+                $query->selectRaw("lodgings.*, {$haversine} AS distance", [$lat, $lng, $lat]);
+            }
+            $query->orderBy('distance', 'asc');
         } else {
             // Default sorting
             if ($request->has('radius') && $request->has('latitude')) {
-                 $query->orderBy('distance', 'asc');
+                $query->orderBy('distance', 'asc');
             } else {
-                 $query->latest();
+                // Default sort: Highest rated first, then newest
+                $query->orderByDesc('average_rating')->latest();
             }
         }
 

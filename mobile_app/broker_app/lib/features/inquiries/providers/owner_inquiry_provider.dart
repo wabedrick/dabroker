@@ -3,15 +3,18 @@ import 'package:broker_app/data/models/inquiry.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final ownerInquiryListProvider =
-    StateNotifierProvider<OwnerInquiryListNotifier, AsyncValue<List<Inquiry>>>(
-        (ref) {
-  return OwnerInquiryListNotifier(ref.read(inquiryRepositoryProvider));
-});
+    StateNotifierProvider<OwnerInquiryListNotifier, AsyncValue<List<Inquiry>>>((
+      ref,
+    ) {
+      return OwnerInquiryListNotifier(ref.read(inquiryRepositoryProvider));
+    });
 
-class OwnerInquiryListNotifier extends StateNotifier<AsyncValue<List<Inquiry>>> {
+class OwnerInquiryListNotifier
+    extends StateNotifier<AsyncValue<List<Inquiry>>> {
   final InquiryRepository _repository;
 
-  OwnerInquiryListNotifier(this._repository) : super(const AsyncValue.loading());
+  OwnerInquiryListNotifier(this._repository)
+    : super(const AsyncValue.loading());
 
   Future<void> loadInquiries() async {
     try {

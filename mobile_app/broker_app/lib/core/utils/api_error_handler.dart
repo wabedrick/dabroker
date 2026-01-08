@@ -5,7 +5,7 @@ class ApiErrorHandler {
     if (error is DioException) {
       if (error.response != null && error.response?.data != null) {
         final data = error.response!.data;
-        
+
         // Handle Laravel validation errors
         if (data is Map<String, dynamic>) {
           if (data.containsKey('errors')) {
@@ -25,14 +25,14 @@ class ApiErrorHandler {
               }
             }
           }
-          
+
           // Handle generic message
           if (data.containsKey('message')) {
             return data['message'].toString();
           }
         }
       }
-      
+
       // Handle other Dio errors
       switch (error.type) {
         case DioExceptionType.connectionTimeout:

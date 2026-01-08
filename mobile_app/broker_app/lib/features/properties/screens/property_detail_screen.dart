@@ -2,11 +2,17 @@ import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/core/utils/image_helper.dart';
 import 'package:broker_app/core/widgets/skeleton_box.dart';
 import 'package:broker_app/data/models/property.dart';
+import 'package:broker_app/data/models/property_price_history.dart';
 import 'package:broker_app/features/properties/providers/property_list_provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:broker_app/features/auth/providers/auth_provider.dart';
+import 'package:broker_app/features/auth/screens/login_screen.dart';
 import 'package:broker_app/features/properties/screens/add_property_screen.dart';
+import 'package:broker_app/features/properties/screens/compare_properties_screen.dart';
+import 'package:broker_app/features/properties/widgets/property_detail_widgets.dart';
 
 class PropertyDetailScreen extends ConsumerStatefulWidget {
   const PropertyDetailScreen({
@@ -31,6 +37,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
   String? _error;
   bool _isFavoriteUpdating = false;
   bool _isContacting = false;
+  bool _isOverviewExpanded = false;
 
   @override
   void initState() {
@@ -98,6 +105,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
     final price = _formatPrice(property.price, property.currency);
     final user = ref.watch(authStateProvider).user;
     final isOwner = user != null && property.owner?.id == user.id;
+    final keyFacts = _extractKeyFacts(property);
 
     return Scaffold(
       appBar: AppBar(
@@ -126,26 +134,6 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
               onPressed: () => _confirmDelete(context, property.id),
             ),
           ],
-          IconButton(
-            icon: _isFavoriteUpdating
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Icon(
-                    property.isFavorited == true
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                  ),
-            onPressed: _isFavoriteUpdating ? null : _handleToggleFavorite,
-          ),
-          IconButton(
-            icon: const Icon(Icons.ios_share),
-            onPressed: () {
-              // TODO: Implement share sheet.
-            },
-          ),
         ],
       ),
       body: Stack(
@@ -172,6 +160,25 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                       ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          if (property.verifiedAt != null)
+                            const Chip(
+                              label: Text('Verified'),
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          if (property.updatedAt != null)
+                            Chip(
+                              label: Text(
+                                'Updated ${_formatTimeAgo(property.updatedAt!)}',
+                              ),
+                              visualDensity: VisualDensity.compact,
+                            ),
+                        ],
+                      ),
                       if (location != null) ...[
                         const SizedBox(height: 8),
                         Row(
@@ -190,6 +197,36 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                               ),
                             ),
                           ],
+                        ),
+                      ],
+                      if (property.address?.isNotEmpty ?? false) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          property.address!,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: AppColors.textSecondary),
+                        ),
+                      ],
+
+                      const SizedBox(height: 16),
+                      _DecisionSnapshotCard(property: property),
+
+                      if (keyFacts.facts.isNotEmpty) ...[
+                        const SizedBox(height: 20),
+                        Text(
+                          'Key facts',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: keyFacts.facts
+                              .map(
+                                (f) =>
+                                    _InfoChip(label: f.label, value: f.value),
+                              )
+                              .toList(),
                         ),
                       ],
                       const SizedBox(height: 16),
@@ -234,9 +271,27 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                         const SizedBox(height: 12),
                         Text(
                           property.description!,
+                          maxLines: _isOverviewExpanded ? null : 6,
+                          overflow: _isOverviewExpanded
+                              ? null
+                              : TextOverflow.ellipsis,
                           style: Theme.of(
                             context,
                           ).textTheme.bodyLarge?.copyWith(height: 1.5),
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _isOverviewExpanded = !_isOverviewExpanded;
+                              });
+                            },
+                            child: Text(
+                              _isOverviewExpanded ? 'Show less' : 'Read more',
+                            ),
+                          ),
                         ),
                       ],
                       if (property.amenities?.isNotEmpty ?? false) ...[
@@ -249,8 +304,13 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: property.amenities!
-                              .map((amenity) => Chip(label: Text(amenity)))
+                          children: _formatAmenities(property.amenities!)
+                              .map(
+                                (amenity) => Chip(
+                                  label: Text(amenity),
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                              )
                               .toList(),
                         ),
                       ],
@@ -261,15 +321,20 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 12),
-                        ...property.metadata!.entries.map(
+                        ..._sortedMetadata(
+                          property.metadata!,
+                          excludeNormalizedKeys:
+                              keyFacts.consumedNormalizedKeys,
+                        ).map(
                           (entry) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(vertical: 6),
                             child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Expanded(
                                   flex: 2,
                                   child: Text(
-                                    entry.key,
+                                    _formatMetadataKey(entry.key),
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium
@@ -278,10 +343,11 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                                         ),
                                   ),
                                 ),
+                                const SizedBox(width: 12),
                                 Expanded(
                                   flex: 3,
                                   child: Text(
-                                    '${entry.value}',
+                                    _formatMetadataValue(entry.value),
                                     style: Theme.of(
                                       context,
                                     ).textTheme.bodyMedium,
@@ -292,6 +358,44 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                           ),
                         ),
                       ],
+
+                      VirtualTourSection(
+                        videoUrl: property.videoUrl,
+                        virtualTourUrl: property.virtualTourUrl,
+                      ),
+                      if (property.nearbyPlaces?.isNotEmpty ?? false)
+                        NearbyPlacesSection(places: property.nearbyPlaces!),
+                      if (property.priceHistory?.isNotEmpty ?? false)
+                        PriceHistorySection(
+                          history: property.priceHistory!,
+                          currency: property.currency ?? '',
+                        ),
+                      if (property.similarProperties?.isNotEmpty ?? false)
+                        SimilarPropertiesSection(
+                          properties: property.similarProperties!,
+                          onTap: (selected) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => PropertyDetailScreen(
+                                  propertyId: selected.id,
+                                  initialProperty: selected,
+                                ),
+                              ),
+                            );
+                          },
+                          onCompare: (selected) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ComparePropertiesScreen(
+                                  left: property,
+                                  right: selected,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                     ],
                   ),
                 ),
@@ -309,15 +413,52 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
       ),
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        child: ElevatedButton(
-          onPressed: _isContacting ? null : _handleContactOwner,
-          child: _isContacting
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Contact Owner'),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 52,
+              height: 52,
+              child: OutlinedButton(
+                onPressed: _isFavoriteUpdating ? null : _handleToggleFavorite,
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: _isFavoriteUpdating
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(
+                        property.isFavorited == true
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: property.isFavorited == true
+                            ? AppColors.error
+                            : null,
+                      ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: SizedBox(
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: _isContacting ? null : _handleContactOwner,
+                  child: _isContacting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Contact Owner'),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -352,18 +493,45 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
   Future<void> _handleToggleFavorite() async {
     final property = _property;
     if (property == null) return;
+
+    final authState = ref.read(authStateProvider);
+    if (!authState.isAuthenticated) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Sign in to save favorites'),
+          action: SnackBarAction(
+            label: 'Sign in',
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
+            },
+          ),
+        ),
+      );
+      return;
+    }
+
     final target = !(property.isFavorited ?? false);
+    final previous = property.isFavorited ?? false;
+
+    // Optimistic update: make the UI instant.
     setState(() {
+      _property = property.copyWith(isFavorited: target);
       _isFavoriteUpdating = true;
     });
+    ref
+        .read(propertyListProvider.notifier)
+        .updateFavoriteStatus(property.id, target);
+
     try {
       final confirmed = await ref
           .read(propertyRepositoryProvider)
           .toggleFavorite(propertyId: property.id, favorite: target);
       if (!mounted) return;
-      final updated = property.copyWith(isFavorited: confirmed);
+
       setState(() {
-        _property = updated;
+        _property = (_property ?? property).copyWith(isFavorited: confirmed);
       });
       ref
           .read(propertyListProvider.notifier)
@@ -377,6 +545,15 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
       );
     } catch (error) {
       if (!mounted) return;
+
+      // Roll back optimistic update.
+      setState(() {
+        _property = (_property ?? property).copyWith(isFavorited: previous);
+      });
+      ref
+          .read(propertyListProvider.notifier)
+          .updateFavoriteStatus(property.id, previous);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error.toString()),
@@ -521,8 +698,290 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
 
   String _formatPrice(double? price, String? currency) {
     if (price == null) return 'Contact for price';
-    final symbol = (currency ?? 'USD').toUpperCase();
-    return '$symbol ${price.toStringAsFixed(0)}';
+    final code = (currency ?? 'USD').toUpperCase();
+    final number = NumberFormat('#,##0', 'en_US');
+    return '$code ${number.format(price)}';
+  }
+
+  List<String> _formatAmenities(List<String> raw) {
+    final normalized = raw
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .map(_titleCase)
+        .toSet()
+        .toList();
+    normalized.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    return normalized;
+  }
+
+  List<MapEntry<String, dynamic>> _sortedMetadata(
+    Map<String, dynamic>? raw, {
+    Set<String> excludeNormalizedKeys = const {},
+  }) {
+    if (raw == null || raw.isEmpty) return const [];
+
+    final entries = raw.entries
+        .where((e) => e.key.trim().isNotEmpty)
+        .where((e) => !_shouldHideMetadataKey(e.key))
+        .where((e) => _isUsefulMetadataValue(e.value))
+        .where(
+          (e) => !excludeNormalizedKeys.contains(_normalizeMetadataKey(e.key)),
+        )
+        .toList();
+    entries.sort((a, b) {
+      return _formatMetadataKey(
+        a.key,
+      ).toLowerCase().compareTo(_formatMetadataKey(b.key).toLowerCase());
+    });
+    return entries;
+  }
+
+  _KeyFactsResult _extractKeyFacts(Property property) {
+    final metadata = property.metadata ?? const <String, dynamic>{};
+
+    String? findValue(List<String> matchers) {
+      for (final entry in metadata.entries) {
+        final normalizedKey = _normalizeMetadataKey(entry.key);
+        for (final matcher in matchers) {
+          if (normalizedKey == matcher) {
+            final value = _formatMetadataValue(entry.value);
+            if (value != '-' && value.trim().isNotEmpty) return value;
+          }
+        }
+      }
+      return null;
+    }
+
+    String? findValueByContains(List<String> needles) {
+      for (final entry in metadata.entries) {
+        final normalizedKey = _normalizeMetadataKey(entry.key);
+        for (final needle in needles) {
+          if (normalizedKey.contains(needle)) {
+            final value = _formatMetadataValue(entry.value);
+            if (value != '-' && value.trim().isNotEmpty) return value;
+          }
+        }
+      }
+      return null;
+    }
+
+    String? findKeyNormalized(List<String> matchers, {bool contains = false}) {
+      for (final entry in metadata.entries) {
+        final normalizedKey = _normalizeMetadataKey(entry.key);
+        for (final matcher in matchers) {
+          final matches = contains
+              ? normalizedKey.contains(matcher)
+              : normalizedKey == matcher;
+          if (matches) return normalizedKey;
+        }
+      }
+      return null;
+    }
+
+    final facts = <_KeyFact>[];
+    final consumed = <String>{};
+
+    void add(String label, String? value, {String? consumedKey}) {
+      if (value == null) return;
+      final trimmed = value.trim();
+      if (trimmed.isEmpty || trimmed == '-') return;
+      facts.add(_KeyFact(label: label, value: trimmed));
+      if (consumedKey != null) consumed.add(consumedKey);
+    }
+
+    final bedsKey = findKeyNormalized(const [
+      'bedrooms',
+      'beds',
+      'bed_rooms',
+      'bedroom_count',
+    ]);
+    add(
+      'Beds',
+      findValue(const ['bedrooms', 'beds', 'bed_rooms', 'bedroom_count']),
+      consumedKey: bedsKey,
+    );
+
+    final bathsKey = findKeyNormalized(const [
+      'bathrooms',
+      'baths',
+      'bath_rooms',
+      'bathroom_count',
+    ]);
+    add(
+      'Baths',
+      findValue(const ['bathrooms', 'baths', 'bath_rooms', 'bathroom_count']),
+      consumedKey: bathsKey,
+    );
+
+    final parkingKey = findKeyNormalized(const [
+      'parking',
+      'parking_spaces',
+      'garage',
+      'garage_spaces',
+    ]);
+    add(
+      'Parking',
+      findValue(const ['parking', 'parking_spaces', 'garage', 'garage_spaces']),
+      consumedKey: parkingKey,
+    );
+
+    final floorKey = findKeyNormalized(const [
+      'floor',
+      'floor_number',
+      'level',
+    ]);
+    add(
+      'Floor',
+      findValue(const ['floor', 'floor_number', 'level']),
+      consumedKey: floorKey,
+    );
+
+    final furnishedKey = findKeyNormalized(const [
+      'furnished',
+      'furnishing',
+      'furnish_status',
+    ], contains: false);
+    add(
+      'Furnishing',
+      findValue(const ['furnished', 'furnishing', 'furnish_status']) ??
+          findValueByContains(const ['furnish']),
+      consumedKey:
+          furnishedKey ?? findKeyNormalized(const ['furnish'], contains: true),
+    );
+
+    final petKey = findKeyNormalized(const [
+      'pet_friendly',
+      'pets_allowed',
+      'pets',
+    ], contains: false);
+    add(
+      'Pets',
+      findValue(const ['pet_friendly', 'pets_allowed', 'pets']) ??
+          findValueByContains(const ['pet']),
+      consumedKey: petKey ?? findKeyNormalized(const ['pet'], contains: true),
+    );
+
+    final hoaKey = findKeyNormalized(const [
+      'hoa_fee',
+      'association_fee',
+      'maintenance_fee',
+    ], contains: false);
+    add(
+      'Fees',
+      findValue(const ['hoa_fee', 'association_fee', 'maintenance_fee']) ??
+          findValueByContains(const ['hoa', 'fee', 'maintenance']),
+      consumedKey:
+          hoaKey ??
+          findKeyNormalized(const [
+            'hoa',
+            'association',
+            'maintenance',
+          ], contains: true),
+    );
+
+    final lotKey = findKeyNormalized(const [
+      'lot_size',
+      'land_size',
+      'plot_size',
+    ], contains: false);
+    add(
+      'Lot',
+      findValue(const ['lot_size', 'land_size', 'plot_size']) ??
+          findValueByContains(const ['lot', 'land', 'plot']),
+      consumedKey:
+          lotKey ??
+          findKeyNormalized(const ['lot', 'land', 'plot'], contains: true),
+    );
+
+    // Keep the section compact.
+    final cappedFacts = facts.take(8).toList();
+    return _KeyFactsResult(
+      facts: cappedFacts,
+      consumedNormalizedKeys: consumed,
+    );
+  }
+
+  String _normalizeMetadataKey(String raw) {
+    return raw
+        .trim()
+        .toLowerCase()
+        .replaceAll('-', '_')
+        .replaceAll(RegExp(r'\s+'), '_');
+  }
+
+  bool _shouldHideMetadataKey(String rawKey) {
+    final key = _normalizeMetadataKey(rawKey);
+    if (key.isEmpty) return true;
+    if (key.startsWith('_')) return true;
+    if (key.contains('internal')) return true;
+    if (key == 'pivot') return true;
+    if (key == 'deleted_at') return true;
+    return false;
+  }
+
+  bool _isUsefulMetadataValue(Object? value) {
+    if (value == null) return false;
+    if (value is String) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) return false;
+      if (trimmed.toLowerCase() == 'null') return false;
+      return true;
+    }
+    if (value is Iterable) return value.isNotEmpty;
+    if (value is Map) return value.isNotEmpty;
+    return true;
+  }
+
+  String _formatMetadataKey(String raw) {
+    final cleaned = raw.replaceAll('_', ' ').replaceAll('-', ' ').trim();
+    return _titleCase(cleaned);
+  }
+
+  String _formatMetadataValue(Object? value) {
+    if (value == null) return '-';
+    if (value is bool) return value ? 'Yes' : 'No';
+    if (value is num) {
+      if (value is int) return value.toString();
+      final number = NumberFormat('#,##0.##', 'en_US');
+      return number.format(value);
+    }
+    if (value is String) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) return '-';
+      final parsed = DateTime.tryParse(trimmed);
+      if (parsed != null) {
+        return DateFormat.yMMMd().format(parsed);
+      }
+      return trimmed;
+    }
+    return value.toString();
+  }
+
+  String _titleCase(String value) {
+    final words = value
+        .split(RegExp(r'\s+'))
+        .map((w) => w.trim())
+        .where((w) => w.isNotEmpty)
+        .toList();
+    return words
+        .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase())
+        .join(' ');
+  }
+
+  String _formatTimeAgo(DateTime value) {
+    final now = DateTime.now();
+    final diff = now.difference(value);
+
+    if (diff.inMinutes < 1) return 'just now';
+    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
+    if (diff.inDays < 1) return '${diff.inHours}h ago';
+    if (diff.inDays < 30) return '${diff.inDays}d ago';
+
+    final months = (diff.inDays / 30).floor();
+    if (months < 12) return '${months}mo ago';
+
+    final years = (diff.inDays / 365).floor();
+    return '${years}y ago';
   }
 }
 
@@ -562,11 +1021,17 @@ class _GallerySection extends StatelessWidget {
             itemBuilder: (_, index) {
               final item = images[index];
               final url = ImageHelper.fixUrl(item.previewUrl ?? item.url);
-              return Image.network(
-                url,
+              return CachedNetworkImage(
+                imageUrl: url,
                 fit: BoxFit.cover,
-                cacheWidth: 1080, // Optimize memory usage for detail view
-                errorBuilder: (_, __, ___) => Container(
+                memCacheWidth: 1080, // Optimize memory usage for detail view
+                placeholder: (_, __) => Container(
+                  color: AppColors.primaryBlue.withAlpha((0.08 * 255).round()),
+                  child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+                errorWidget: (_, __, ___) => Container(
                   color: AppColors.primaryBlue.withAlpha((0.08 * 255).round()),
                   child: const Center(
                     child: Icon(Icons.broken_image_outlined, size: 48),
@@ -597,9 +1062,180 @@ class _GallerySection extends StatelessWidget {
               ),
             ),
           ),
+        if (images.length > 1)
+          Positioned(
+            right: 12,
+            top: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.black.withAlpha((0.55 * 255).round()),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '${currentIndex + 1}/${images.length}',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.white),
+              ),
+            ),
+          ),
       ],
     );
   }
+}
+
+class _DecisionSnapshotCard extends StatelessWidget {
+  const _DecisionSnapshotCard({required this.property});
+
+  final Property property;
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = Theme.of(context).colorScheme.surfaceContainerHighest;
+    final price = property.price;
+    final size = property.size;
+    final unit = property.sizeUnit ?? 'unit';
+    final currency = (property.currency ?? 'USD').toUpperCase();
+    final number = NumberFormat('#,##0', 'en_US');
+
+    String fmtMoney(double? value) {
+      if (value == null) return '-';
+      return '$currency ${number.format(value)}';
+    }
+
+    String fmtUnitPrice() {
+      if (price == null || size == null || size <= 0) return '-';
+      return '$currency ${number.format(price / size)}/$unit';
+    }
+
+    final history = (property.priceHistory ?? const <dynamic>[])
+        .whereType<PropertyPriceHistory>()
+        .toList();
+    history.sort((a, b) {
+      final aDate = a.changedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final bDate = b.changedAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      return bDate.compareTo(aDate);
+    });
+
+    String fmtLastMove() {
+      if (history.isEmpty) return '-';
+      final latest = history.first;
+      final diff = (latest.newPrice ?? 0) - (latest.oldPrice ?? 0);
+      final sign = diff > 0 ? '+' : '';
+      final date = latest.changedAt != null
+          ? DateFormat.yMMMd().format(latest.changedAt!)
+          : null;
+      final amount = '$sign$currency ${number.format(diff.abs())}';
+      return date == null ? amount : '$amount · $date';
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Decision snapshot',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _SnapshotItem(
+                  label: 'Unit price',
+                  value: fmtUnitPrice(),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _SnapshotItem(
+                  label: 'Last price move',
+                  value: fmtLastMove(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _SnapshotItem(
+                  label: 'Listed',
+                  value: property.createdAt != null
+                      ? DateFormat.yMMMd().format(property.createdAt!)
+                      : '-',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _SnapshotItem(
+                  label: 'Price',
+                  value: fmtMoney(property.price),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SnapshotItem extends StatelessWidget {
+  const _SnapshotItem({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+      ],
+    );
+  }
+}
+
+class _KeyFact {
+  const _KeyFact({required this.label, required this.value});
+
+  final String label;
+  final String value;
+}
+
+class _KeyFactsResult {
+  const _KeyFactsResult({
+    required this.facts,
+    required this.consumedNormalizedKeys,
+  });
+
+  final List<_KeyFact> facts;
+  final Set<String> consumedNormalizedKeys;
 }
 
 class _InfoChip extends StatelessWidget {
@@ -610,10 +1246,11 @@ class _InfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = Theme.of(context).colorScheme.surfaceContainerHighest;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.backgroundGray,
+        color: surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -747,11 +1384,12 @@ class _OwnerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final borderColor = Theme.of(context).colorScheme.surfaceContainerHighest;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.backgroundGray),
+        border: Border.all(color: borderColor),
       ),
       child: Row(
         children: [
@@ -780,7 +1418,7 @@ class _OwnerCard extends StatelessWidget {
                 ),
                 if (owner.preferredRole != null)
                   Text(
-                    owner.preferredRole!,
+                    owner.formattedRole,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),

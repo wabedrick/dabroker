@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'property_price_history.dart';
 
 part 'property.g.dart';
 
@@ -38,6 +39,12 @@ class Property {
   final bool? isAvailable;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final String? videoUrl;
+  final String? virtualTourUrl;
+  final List<Map<String, dynamic>>? nearbyPlaces;
+  final DateTime? verifiedAt;
+  final List<PropertyPriceHistory>? priceHistory;
+  final List<Property>? similarProperties;
 
   const Property({
     required this.id,
@@ -68,6 +75,12 @@ class Property {
     this.isAvailable,
     this.createdAt,
     this.updatedAt,
+    this.videoUrl,
+    this.virtualTourUrl,
+    this.nearbyPlaces,
+    this.verifiedAt,
+    this.priceHistory,
+    this.similarProperties,
   });
 
   Property copyWith({
@@ -99,6 +112,12 @@ class Property {
     bool? isAvailable,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? videoUrl,
+    String? virtualTourUrl,
+    List<Map<String, dynamic>>? nearbyPlaces,
+    DateTime? verifiedAt,
+    List<PropertyPriceHistory>? priceHistory,
+    List<Property>? similarProperties,
   }) {
     return Property(
       id: id ?? this.id,
@@ -129,6 +148,12 @@ class Property {
       isAvailable: isAvailable ?? this.isAvailable,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      videoUrl: videoUrl ?? this.videoUrl,
+      virtualTourUrl: virtualTourUrl ?? this.virtualTourUrl,
+      nearbyPlaces: nearbyPlaces ?? this.nearbyPlaces,
+      verifiedAt: verifiedAt ?? this.verifiedAt,
+      priceHistory: priceHistory ?? this.priceHistory,
+      similarProperties: similarProperties ?? this.similarProperties,
     );
   }
 
@@ -171,6 +196,17 @@ class PropertyUserSummary {
     required this.name,
     this.preferredRole,
   });
+
+  String get formattedRole {
+    if (preferredRole == null) return '';
+    return preferredRole!
+        .split('_')
+        .map((word) {
+          if (word.isEmpty) return '';
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
+  }
 
   factory PropertyUserSummary.fromJson(Map<String, dynamic> json) =>
       _$PropertyUserSummaryFromJson(json);

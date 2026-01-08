@@ -39,10 +39,18 @@ class PropertyInquiryReplyNotification extends Notification implements ShouldQue
     {
         $url = rtrim(config('app.frontend_url', config('app.url')), '/') . '/inquiries/' . $this->inquiry->public_id;
 
+        $subject = $this->inquiry->property
+            ? 'New reply on your inquiry about ' . $this->inquiry->property->title
+            : 'New reply on your professional inquiry';
+
+        $line = $this->inquiry->property
+            ? 'You have a new message about "' . $this->inquiry->property->title . '".'
+            : 'You have a new message in your professional inquiry.';
+
         return (new MailMessage())
-            ->subject('New reply on your inquiry')
+            ->subject($subject)
             ->greeting('Hello ' . $notifiable->name . ',')
-            ->line('You have a new message about "' . ($this->inquiry->property?->title ?? 'a property') . '".')
+            ->line($line)
             ->line('"' . Str::limit($this->message->message, 160) . '"')
             ->action('View conversation', $url)
             ->line('Reply to keep the conversation going.');

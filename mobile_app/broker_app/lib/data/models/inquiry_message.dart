@@ -42,8 +42,8 @@ class InquiryMessage {
           ? json['sender_id']
           : int.tryParse(json['sender_id']?.toString() ?? '0') ?? 0,
       message: json['message']?.toString() ?? '',
-      createdAt: DateTime.tryParse(json['created_at']?.toString() ?? '')
-              ?.toLocal() ??
+      createdAt:
+          DateTime.tryParse(json['created_at']?.toString() ?? '')?.toLocal() ??
           DateTime.now(),
       sender: sender,
     );

@@ -37,6 +37,9 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
           ? null
           : ProfessionalProfile.fromJson(
               json['professional_profile'] as Map<String, dynamic>),
+      avatar: json['avatar'] as String?,
+      averageRating: (json['average_rating'] as num?)?.toDouble() ?? 0.0,
+      ratingsCount: (json['ratings_count'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
@@ -56,6 +59,9 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'roles': instance.roles,
       'permissions': instance.permissions,
       'professional_profile': instance.professionalProfile,
+      'avatar': instance.avatar,
+      'average_rating': instance.averageRating,
+      'ratings_count': instance.ratingsCount,
     };
 
 AuthResponse _$AuthResponseFromJson(Map<String, dynamic> json) => AuthResponse(

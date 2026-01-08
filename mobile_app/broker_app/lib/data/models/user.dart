@@ -21,6 +21,9 @@ class User {
   final List<String> roles;
   final List<String> permissions;
   final ProfessionalProfile? professionalProfile;
+  final String? avatar;
+  final double averageRating;
+  final int ratingsCount;
 
   User({
     required this.id,
@@ -39,7 +42,20 @@ class User {
     this.roles = const [],
     this.permissions = const [],
     this.professionalProfile,
+    this.avatar,
+    this.averageRating = 0.0,
+    this.ratingsCount = 0,
   });
+
+  String get formattedRole {
+    return preferredRole
+        .split('_')
+        .map((word) {
+          if (word.isEmpty) return '';
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
+  }
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
   Map<String, dynamic> toJson() => _$UserToJson(this);
@@ -59,7 +75,20 @@ class AuthResponse {
     required this.data,
   });
 
-  factory AuthResponse.fromJson(Map<String, dynamic> json) =>
-      _$AuthResponseFromJson(json);
+  factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    // Handle nested structure from login response where data contains user and token
+    if (json['data'] is Map<String, dynamic> &&
+        (json['data'] as Map<String, dynamic>).containsKey('user')) {
+      final dataMap = json['data'] as Map<String, dynamic>;
+      return AuthResponse(
+        message: json['message'] as String,
+        token: dataMap['token'] as String?,
+        tokenType: dataMap['token_type'] as String?,
+        data: User.fromJson(dataMap['user'] as Map<String, dynamic>),
+      );
+    }
+
+    return _$AuthResponseFromJson(json);
+  }
   Map<String, dynamic> toJson() => _$AuthResponseToJson(this);
 }

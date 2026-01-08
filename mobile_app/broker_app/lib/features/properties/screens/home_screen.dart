@@ -59,6 +59,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final state = ref.watch(propertyListProvider);
     final authState = ref.watch(authStateProvider);
     _syncSearchField(state.params.search ?? '');
+
+    final header = _HomeHeaderModel.from(state: state);
     final actions = <Widget>[
       if (authState.user?.preferredRole == 'admin')
         const _AdminDashboardAction(),
@@ -68,22 +70,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(title: const Text('Discover Homes'), actions: actions),
+      appBar: AppBar(
+        toolbarHeight: 76,
+        titleSpacing: 16,
+        title: _HomeHeaderTitle(model: header),
+        actions: actions,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          ),
+        ),
+      ),
       body: Column(
         children: [
-          _SearchBar(
-            controller: _searchController,
-            onSubmitted: (value) => _applyFilters(
-              state.params.copyWith(
-                search: value.trim().isEmpty ? null : value.trim(),
-              ),
-            ),
-            onClear: () => _applyFilters(state.params.copyWith(search: null)),
-          ),
-          _FilterChips(
-            selectedType: state.params.category,
-            onFilterSelected: (category) =>
-                _applyFilters(state.params.copyWith(category: category)),
+          _HeaderPanel(
+            state: state,
+            searchController: _searchController,
+            onApplyFilters: _applyFilters,
           ),
           Expanded(
             child: RefreshIndicator(
@@ -150,6 +156,133 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 }
 
+class _HeaderPanel extends StatelessWidget {
+  const _HeaderPanel({
+    required this.state,
+    required this.searchController,
+    required this.onApplyFilters,
+  });
+
+  final PropertyListState state;
+  final TextEditingController searchController;
+  final ValueChanged<PropertyQueryParams> onApplyFilters;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final surface = colorScheme.surface;
+    final outline = colorScheme.outlineVariant;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+        decoration: BoxDecoration(
+          color: surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: outline),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _SearchBar(
+              controller: searchController,
+              onSubmitted: (value) {
+                onApplyFilters(
+                  state.params.copyWith(
+                    search: value.trim().isEmpty ? null : value.trim(),
+                  ),
+                );
+              },
+              onClear: () {
+                onApplyFilters(state.params.copyWith(search: null));
+              },
+              padding: EdgeInsets.zero,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Category',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _FilterChips(
+              selectedType: state.params.category,
+              onFilterSelected: (category) {
+                onApplyFilters(state.params.copyWith(category: category));
+              },
+              padding: EdgeInsets.zero,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeHeaderModel {
+  const _HomeHeaderModel({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
+
+  static _HomeHeaderModel from({required PropertyListState state}) {
+    final category = state.params.category;
+    final filterLabel = switch (category) {
+      'rent' => 'For rent',
+      'sale' => 'For sale',
+      _ => 'All listings',
+    };
+
+    final countLabel = state.items.length == 1
+        ? 'Showing 1'
+        : 'Showing ${state.items.length}';
+
+    final search = state.params.search?.trim();
+    final hasSearch = search != null && search.isNotEmpty;
+    final statusLabel = state.isRefreshing
+        ? 'Updating'
+        : state.isLoading
+        ? 'Loading'
+        : null;
+
+    final parts = <String>[filterLabel, countLabel];
+    if (hasSearch) parts.add('Search');
+    if (statusLabel != null) parts.add(statusLabel);
+
+    return _HomeHeaderModel(title: 'Properties', subtitle: parts.join(' • '));
+  }
+}
+
+class _HomeHeaderTitle extends StatelessWidget {
+  const _HomeHeaderTitle({required this.model});
+
+  final _HomeHeaderModel model;
+
+  @override
+  Widget build(BuildContext context) {
+    final subtitleStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(model.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        const SizedBox(height: 2),
+        Text(
+          model.subtitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: subtitleStyle,
+        ),
+      ],
+    );
+  }
+}
+
 class _PropertyFeed extends StatelessWidget {
   const _PropertyFeed({required this.state, required this.controller});
 
@@ -203,7 +336,9 @@ class _PropertyFeed extends StatelessWidget {
 
     return ListView.builder(
       controller: controller,
-      physics: const AlwaysScrollableScrollPhysics(),
+      physics: const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       itemCount: state.items.length + extraCount,
       itemBuilder: (context, index) {
@@ -249,16 +384,18 @@ class _SearchBar extends StatelessWidget {
     required this.controller,
     required this.onSubmitted,
     required this.onClear,
+    this.padding = const EdgeInsets.fromLTRB(16, 12, 16, 8),
   });
 
   final TextEditingController controller;
   final ValueChanged<String> onSubmitted;
   final VoidCallback onClear;
+  final EdgeInsets padding;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: padding,
       child: ValueListenableBuilder<TextEditingValue>(
         valueListenable: controller,
         builder: (_, value, __) {
@@ -290,10 +427,12 @@ class _FilterChips extends StatelessWidget {
   const _FilterChips({
     required this.selectedType,
     required this.onFilterSelected,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16),
   });
 
   final String? selectedType;
   final ValueChanged<String?> onFilterSelected;
+  final EdgeInsets padding;
 
   static const _filters = [
     (label: 'All', value: null),
@@ -307,7 +446,8 @@ class _FilterChips extends StatelessWidget {
       height: 48,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        physics: const BouncingScrollPhysics(),
+        padding: padding,
         itemBuilder: (context, index) {
           final filter = _filters[index];
           final isSelected = selectedType == filter.value;
@@ -368,6 +508,7 @@ class _NotificationAction extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(notificationCountersProvider);
+    final tooltip = _NotificationBadge.buildTooltip(state);
 
     return Padding(
       padding: const EdgeInsets.only(right: 4),
@@ -375,6 +516,7 @@ class _NotificationAction extends ConsumerWidget {
         clipBehavior: Clip.none,
         children: [
           IconButton(
+            tooltip: tooltip,
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () async {
               final notifier = ref.read(notificationCountersProvider.notifier);
@@ -387,7 +529,11 @@ class _NotificationAction extends ConsumerWidget {
               }
             },
           ),
-          Positioned(right: 8, top: 6, child: _NotificationBadge(state: state)),
+          Positioned(
+            right: 8,
+            top: 6,
+            child: IgnorePointer(child: _NotificationBadge(state: state)),
+          ),
         ],
       ),
     );
@@ -414,6 +560,19 @@ class _AdminDashboardAction extends StatelessWidget {
 class _UserProfileButton extends ConsumerWidget {
   const _UserProfileButton();
 
+  static String _initialsFromName(String name) {
+    final parts = name
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .toList(growable: false);
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    final first = parts.first.substring(0, 1).toUpperCase();
+    final last = parts.last.substring(0, 1).toUpperCase();
+    return '$first$last';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
@@ -421,17 +580,41 @@ class _UserProfileButton extends ConsumerWidget {
 
     if (user == null) return const SizedBox.shrink();
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final initials = _initialsFromName(user.name);
+
     return PopupMenuButton<String>(
       offset: const Offset(0, 45),
       tooltip: 'Account',
-      icon: CircleAvatar(
-        radius: 16,
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        child: Text(
-          user.name.isNotEmpty ? user.name.substring(0, 1).toUpperCase() : '?',
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
-            fontWeight: FontWeight.bold,
+      color: colorScheme.surface,
+      elevation: 10,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: colorScheme.outlineVariant),
+      ),
+      icon: Semantics(
+        label: 'Account menu. ${user.name}',
+        button: true,
+        child: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: colorScheme.outlineVariant),
+          ),
+          padding: const EdgeInsets.all(2),
+          child: CircleAvatar(
+            radius: 16,
+            backgroundColor: colorScheme.primaryContainer,
+            child: Text(
+              initials,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+              ),
+            ),
           ),
         ),
       ),
@@ -449,7 +632,7 @@ class _UserProfileButton extends ConsumerWidget {
                 ),
                 TextButton(
                   style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.error,
+                    foregroundColor: theme.colorScheme.error,
                   ),
                   onPressed: () => Navigator.pop(context, true),
                   child: const Text('Logout'),
@@ -482,32 +665,94 @@ class _UserProfileButton extends ConsumerWidget {
       itemBuilder: (context) => [
         PopupMenuItem(
           enabled: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                user.name,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                user.email,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 240),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: colorScheme.outlineVariant),
+                  ),
+                  padding: const EdgeInsets.all(2),
+                  child: CircleAvatar(
+                    backgroundColor: colorScheme.primaryContainer,
+                    child: Text(
+                      initials,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        user.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        user.email,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(color: colorScheme.outlineVariant),
+                        ),
+                        child: Text(
+                          user.formattedRole,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         const PopupMenuDivider(),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'logout',
           child: Row(
             children: [
-              Icon(Icons.logout, color: Colors.red, size: 20),
+              Icon(Icons.logout, color: colorScheme.error, size: 20),
               SizedBox(width: 12),
-              Text('Logout', style: TextStyle(color: Colors.red)),
+              Text(
+                'Logout',
+                style: TextStyle(
+                  color: colorScheme.error,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
         ),
@@ -520,6 +765,32 @@ class _NotificationBadge extends StatelessWidget {
   const _NotificationBadge({required this.state});
 
   final NotificationCountersState state;
+
+  static String? buildTooltip(NotificationCountersState state) {
+    final counters = state.counters;
+    if (counters == null) return 'Notifications';
+
+    final inquiryUnread =
+        counters.unreadInquiries + counters.buyerUnreadInquiries;
+    final favoriteUnread = counters.unreadFavorites;
+    final pendingReservations = counters.pendingReservations;
+    final confirmedBookings = counters.confirmedBookings;
+
+    final totalUnread =
+        inquiryUnread +
+        favoriteUnread +
+        pendingReservations +
+        confirmedBookings;
+
+    if (totalUnread <= 0) return 'Notifications';
+
+    return 'Unread notifications: $totalUnread\n'
+        'Buyer inquiries: ${counters.buyerUnreadInquiries}\n'
+        'General inquiries: ${counters.unreadInquiries}\n'
+        'Favorite updates: ${counters.unreadFavorites}\n'
+        'Pending reservations: ${counters.pendingReservations}\n'
+        'Confirmed bookings: ${counters.confirmedBookings}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -535,84 +806,35 @@ class _NotificationBadge extends StatelessWidget {
     final favoriteUnread = counters.unreadFavorites;
     final pendingReservations = counters.pendingReservations;
     final confirmedBookings = counters.confirmedBookings;
-    
-    final totalUnread = inquiryUnread + favoriteUnread + pendingReservations + confirmedBookings;
+
+    final totalUnread =
+        inquiryUnread +
+        favoriteUnread +
+        pendingReservations +
+        confirmedBookings;
 
     if (totalUnread <= 0) {
       return const SizedBox.shrink();
     }
 
     final label = totalUnread > 9 ? '9+' : '$totalUnread';
-    final tooltip =
-        'Buyer inquiries: ${counters.buyerUnreadInquiries}\n'
-        'General inquiries: ${counters.unreadInquiries}\n'
-        'Favorite updates: ${counters.unreadFavorites}\n'
-        'Pending reservations: ${counters.pendingReservations}\n'
-        'Confirmed bookings: ${counters.confirmedBookings}';
 
     return Semantics(
-      label: 'Unread notifications. $tooltip',
-      child: Tooltip(
-        message: tooltip,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-          decoration: BoxDecoration(
-            color: AppColors.error,
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (inquiryUnread > 0) ...[
-                const SizedBox(width: 4),
-                _NotificationBadgeDot(color: AppColors.primaryBlue, label: 'I'),
-              ],
-              if (favoriteUnread > 0) ...[
-                const SizedBox(width: 2),
-                _NotificationBadgeDot(color: AppColors.warning, label: 'F'),
-              ],
-              if (pendingReservations > 0) ...[
-                const SizedBox(width: 2),
-                _NotificationBadgeDot(color: Colors.orange, label: 'R'),
-              ],
-              if (confirmedBookings > 0) ...[
-                const SizedBox(width: 2),
-                _NotificationBadgeDot(color: Colors.green, label: 'B'),
-              ],
-            ],
-          ),
+      label: 'Unread notifications: $label',
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: AppColors.error,
+          borderRadius: BorderRadius.circular(999),
         ),
-      ),
-    );
-  }
-}
-
-class _NotificationBadgeDot extends StatelessWidget {
-  const _NotificationBadgeDot({required this.color, required this.label});
-
-  final Color color;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 14,
-      height: 14,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      alignment: Alignment.center,
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: Colors.white,
-          fontSize: 8,
-          fontWeight: FontWeight.bold,
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

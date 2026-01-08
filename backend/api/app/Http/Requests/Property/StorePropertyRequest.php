@@ -17,11 +17,11 @@ class StorePropertyRequest extends FormRequest
      */
     public function rules(): array
     {
-        $propertyTypes = ['land', 'house'];
+        // $propertyTypes = ['land', 'house']; // Removed restriction to allow more types
 
         return [
             'title' => ['required', 'string', 'max:150'],
-            'type' => ['required', Rule::in($propertyTypes)],
+            'type' => ['required', 'string', 'max:50'], // Changed to string
             'category' => ['nullable', 'string', 'max:120'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'currency' => ['required', 'string', 'size:3'],
@@ -41,6 +41,12 @@ class StorePropertyRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'available_from' => ['nullable', 'date'],
             'published_at' => ['nullable', 'date'],
+            'video_url' => ['nullable', 'url', 'max:255'],
+            'virtual_tour_url' => ['nullable', 'url', 'max:255'],
+            'nearby_places' => ['nullable', 'array'],
+            'nearby_places.*.name' => ['required', 'string', 'max:100'],
+            'nearby_places.*.distance' => ['required', 'string', 'max:50'],
+            'nearby_places.*.type' => ['required', 'string', 'max:50'],
         ];
     }
 }

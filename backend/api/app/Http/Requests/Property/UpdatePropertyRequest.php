@@ -17,11 +17,11 @@ class UpdatePropertyRequest extends FormRequest
      */
     public function rules(): array
     {
-        $propertyTypes = ['land', 'house'];
+        // $propertyTypes = ['land', 'house'];
 
         return [
             'title' => ['sometimes', 'required', 'string', 'max:150'],
-            'type' => ['sometimes', 'required', Rule::in($propertyTypes)],
+            'type' => ['sometimes', 'required', 'string', 'max:50'],
             'category' => ['sometimes', 'nullable', 'string', 'max:120'],
             'price' => ['sometimes', 'nullable', 'numeric', 'min:0'],
             'currency' => ['sometimes', 'required', 'string', 'size:3'],
@@ -42,6 +42,12 @@ class UpdatePropertyRequest extends FormRequest
             'available_from' => ['sometimes', 'nullable', 'date'],
             'is_available' => ['sometimes', 'boolean'],
             'published_at' => ['sometimes', 'nullable', 'date'],
+            'video_url' => ['sometimes', 'nullable', 'url', 'max:255'],
+            'virtual_tour_url' => ['sometimes', 'nullable', 'url', 'max:255'],
+            'nearby_places' => ['sometimes', 'nullable', 'array'],
+            'nearby_places.*.name' => ['required', 'string', 'max:100'],
+            'nearby_places.*.distance' => ['required', 'string', 'max:50'],
+            'nearby_places.*.type' => ['required', 'string', 'max:50'],
         ];
     }
 }

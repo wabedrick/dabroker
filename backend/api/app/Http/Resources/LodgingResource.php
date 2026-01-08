@@ -39,14 +39,16 @@ class LodgingResource extends JsonResource
                 return $this->getMedia('gallery')->map(function ($media) {
                     return [
                         'id' => $media->id,
-                        'url' => $media->getUrl(),
-                        'thumb_url' => $media->hasGeneratedConversion('thumb') ? $media->getUrl('thumb') : $media->getUrl(),
-                        'preview_url' => $media->hasGeneratedConversion('preview') ? $media->getUrl('preview') : $media->getUrl(),
+                        'url' => $media->getFullUrl(),
+                        'thumb_url' => $media->hasGeneratedConversion('thumb') ? $media->getFullUrl('thumb') : $media->getFullUrl(),
+                        'preview_url' => $media->hasGeneratedConversion('preview') ? $media->getFullUrl('preview') : $media->getFullUrl(),
                     ];
                 });
             }),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'average_rating' => $this->averageRating(),
+            'ratings_count' => $this->ratingsCount(),
             'distance' => $this->when(isset($this->distance), function () {
                 return round($this->distance, 1);
             }),

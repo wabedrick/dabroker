@@ -73,12 +73,12 @@ class LodgingTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        
+
         // Verify availability was set
         $availability = \App\Models\LodgingAvailability::where('lodging_id', $lodging->id)
             ->whereDate('date', '2025-12-01')
             ->first();
-        
+
         $this->assertNotNull($availability);
         $this->assertEquals(0, $availability->is_available);
     }

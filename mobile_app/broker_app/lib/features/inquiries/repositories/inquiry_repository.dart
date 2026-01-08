@@ -39,8 +39,9 @@ class InquiryRepository {
 
   Future<List<Inquiry>> getOwnerInquiries({int page = 1}) async {
     try {
+      // We use the general inquiries endpoint which now returns both sent and received inquiries
       final response = await _client.dio.get(
-        ApiEndpoints.ownerInquiries,
+        '/inquiries', // Updated to use the general endpoint
         queryParameters: {'page': page},
       );
       return (response.data['data'] as List)

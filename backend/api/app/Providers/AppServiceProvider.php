@@ -33,6 +33,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Dynamically set APP_URL and storage URL based on request in local environment
+        // This ensures images work regardless of the IP address used to access the API
+        if ($this->app->environment('local') && request()->server->has('HTTP_HOST')) {
+            $host = request()->getSchemeAndHttpHost();
+            config(['app.url' => $host]);
+            config(['filesystems.disks.public.url' => $host . '/storage']);
+        }
+
         if (config('app.force_https')) {
             URL::forceScheme('https');
         }

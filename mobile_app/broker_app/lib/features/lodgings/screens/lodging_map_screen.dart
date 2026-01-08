@@ -16,8 +16,29 @@ class _LodgingMapScreenState extends ConsumerState<LodgingMapScreen> {
   final MapController _mapController = MapController();
   bool _showSearchButton = false;
 
+  Widget _buildLodgingMarker({required ColorScheme colorScheme}) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: colorScheme.primary,
+        shape: BoxShape.circle,
+        border: Border.all(color: colorScheme.onPrimary, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.16),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Icon(Icons.location_on, color: colorScheme.onPrimary, size: 22),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final lodgingState = ref.watch(lodgingListProvider);
     final lodgings = lodgingState.items;
 
@@ -29,9 +50,14 @@ class _LodgingMapScreenState extends ConsumerState<LodgingMapScreen> {
     if (lodgingState.latitude != null && lodgingState.longitude != null) {
       initialCenter = LatLng(lodgingState.latitude!, lodgingState.longitude!);
     } else if (lodgings.isNotEmpty) {
-      final firstWithLocation = lodgings.where((l) => l.latitude != null && l.longitude != null).firstOrNull;
+      final firstWithLocation = lodgings
+          .where((l) => l.latitude != null && l.longitude != null)
+          .firstOrNull;
       if (firstWithLocation != null) {
-        initialCenter = LatLng(firstWithLocation.latitude!, firstWithLocation.longitude!);
+        initialCenter = LatLng(
+          firstWithLocation.latitude!,
+          firstWithLocation.longitude!,
+        );
       }
     }
 
@@ -59,26 +85,32 @@ class _LodgingMapScreenState extends ConsumerState<LodgingMapScreen> {
                 markers: lodgings
                     .where((l) => l.latitude != null && l.longitude != null)
                     .map((lodging) {
-                  return Marker(
-                    point: LatLng(lodging.latitude!, lodging.longitude!),
-                    width: 40,
-                    height: 40,
-                    child: GestureDetector(
-                      onTap: () {
-                         Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => LodgingDetailScreen(
-                              lodgingId: lodging.id,
-                              initialLodging: lodging,
-                            ),
-                          ),
-                        );
-                      },
-                      child: const Icon(Icons.location_on, color: Colors.red, size: 40),
-                    ),
-                  );
-                }).toList(),
+                      return Marker(
+                        point: LatLng(lodging.latitude!, lodging.longitude!),
+                        width: 40,
+                        height: 40,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => LodgingDetailScreen(
+                                  lodgingId: lodging.id,
+                                  initialLodging: lodging,
+                                ),
+                              ),
+                            );
+                          },
+                          child: _buildLodgingMarker(colorScheme: colorScheme),
+                        ),
+                      );
+                    })
+                    .toList(),
+              ),
+              RichAttributionWidget(
+                attributions: const [
+                  TextSourceAttribution('© OpenStreetMap contributors'),
+                ],
               ),
             ],
           ),
@@ -93,8 +125,8 @@ class _LodgingMapScreenState extends ConsumerState<LodgingMapScreen> {
                   icon: const Icon(Icons.search),
                   label: const Text('Search this area'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
+                    backgroundColor: colorScheme.surface,
+                    foregroundColor: colorScheme.onSurface,
                     elevation: 4,
                   ),
                 ),
@@ -106,13 +138,22 @@ class _LodgingMapScreenState extends ConsumerState<LodgingMapScreen> {
   }
 
   void _searchArea() {
-    final bounds = _mapController.camera.visibleBounds;
-    ref.read(lodgingListProvider.notifier).updateBoundsFilter(
-      bounds.north,
-      bounds.south,
-      bounds.east,
-      bounds.west,
-    );
-    setState(() => _showSearchButton = false);
+    try {
+      final bounds = _mapController.camera.visibleBounds;
+      ref
+          .read(lodgingListProvider.notifier)
+          .updateBoundsFilter(
+            bounds.north,
+            bounds.south,
+            bounds.east,
+            bounds.west,
+          );
+      setState(() => _showSearchButton = false);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Map is still loading. Try again.')),
+      );
+    }
   }
 }

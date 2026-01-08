@@ -165,9 +165,9 @@ class _HostBookingCard extends ConsumerWidget {
               if (booking.createdAt != null)
                 Text(
                   'Booked: ${DateFormat('MMM d, h:mm a').format(booking.createdAt!.toLocal())}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey),
                 ),
               const SizedBox(height: 4),
               Row(

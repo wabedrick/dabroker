@@ -13,7 +13,7 @@ class ConsultationController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         $consultations = Consultation::query()
             ->where('user_id', $user->id)
             ->orWhere('professional_id', $user->id)
@@ -26,6 +26,27 @@ class ConsultationController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+
+        // If the user is a professional, they can schedule a consultation for a client
+        if ($user->professionalProfile && $request->has('user_id')) {
+            $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'scheduled_at' => 'required|date|after:now',
+                'notes' => 'nullable|string',
+            ]);
+
+            $consultation = Consultation::create([
+                'user_id' => $request->user_id,
+                'professional_id' => $user->id,
+                'scheduled_at' => $request->scheduled_at,
+                'notes' => $request->notes,
+                'status' => 'confirmed',
+            ]);
+
+            return response()->json(['message' => 'Consultation scheduled.', 'data' => $consultation], 201);
+        }
+
         $request->validate([
             'professional_id' => 'required|exists:users,id',
             'scheduled_at' => 'required|date|after:now',

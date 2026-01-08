@@ -5,11 +5,7 @@ class InquiryProperty {
   final String title;
   final String? status;
 
-  InquiryProperty({
-    required this.id,
-    required this.title,
-    this.status,
-  });
+  InquiryProperty({required this.id, required this.title, this.status});
 
   factory InquiryProperty.fromJson(Map<String, dynamic> json) {
     return InquiryProperty(
@@ -25,11 +21,18 @@ class InquirySender {
   final String name;
   final String? preferredRole;
 
-  InquirySender({
-    required this.id,
-    required this.name,
-    this.preferredRole,
-  });
+  InquirySender({required this.id, required this.name, this.preferredRole});
+
+  String get formattedRole {
+    if (preferredRole == null) return '';
+    return preferredRole!
+        .split('_')
+        .map((word) {
+          if (word.isEmpty) return '';
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
+  }
 
   factory InquirySender.fromJson(Map<String, dynamic> json) {
     return InquirySender(
@@ -46,6 +49,7 @@ class Inquiry {
   final List<InquiryMessage> messages;
   final InquiryProperty? property;
   final InquirySender? sender;
+  final InquirySender? owner;
 
   Inquiry({
     required this.publicId,
@@ -53,13 +57,15 @@ class Inquiry {
     required this.messages,
     this.property,
     this.sender,
+    this.owner,
   });
 
   factory Inquiry.fromJson(Map<String, dynamic> json) {
     return Inquiry(
       publicId: json['public_id'] as String,
       status: json['status'] as String,
-      messages: (json['messages'] as List<dynamic>?)
+      messages:
+          (json['messages'] as List<dynamic>?)
               ?.map((e) => InquiryMessage.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -68,6 +74,9 @@ class Inquiry {
           : null,
       sender: json['sender'] != null
           ? InquirySender.fromJson(json['sender'] as Map<String, dynamic>)
+          : null,
+      owner: json['owner'] != null
+          ? InquirySender.fromJson(json['owner'] as Map<String, dynamic>)
           : null,
     );
   }

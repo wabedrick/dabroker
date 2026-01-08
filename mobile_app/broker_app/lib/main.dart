@@ -157,6 +157,8 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: SafeArea(
         child: LayoutBuilder(
@@ -196,8 +198,10 @@ class WelcomeScreen extends StatelessWidget {
                         // Subtitle
                         Text(
                           'Discover the best properties and lodging options in your area',
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(color: AppColors.textSecondary),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyLarge
+                              ?.copyWith(color: colorScheme.onSurfaceVariant),
                           textAlign: TextAlign.center,
                         ),
                         const Spacer(),

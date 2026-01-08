@@ -37,7 +37,15 @@ Route::prefix('v1')->group(function (): void {
     Route::get('professionals', [App\Http\Controllers\API\ProfessionalController::class, 'index']);
     Route::get('professionals/{user}', [App\Http\Controllers\API\ProfessionalController::class, 'show']);
 
+    Route::get('ratings', [App\Http\Controllers\API\RatingController::class, 'index']);
+
+    // Public auction routes
+    Route::get('auctions', [App\Http\Controllers\AuctionController::class, 'index']);
+    Route::get('auctions/{auction:public_id}', [App\Http\Controllers\AuctionController::class, 'show']);
+
     Route::middleware('auth:sanctum')->group(function (): void {
+        Route::post('professionals/{user}/contact', [App\Http\Controllers\API\ProfessionalController::class, 'contact'])
+            ->middleware('throttle:5,1');
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::get('profile', [AuthController::class, 'me']);
 
@@ -48,12 +56,26 @@ Route::prefix('v1')->group(function (): void {
             Route::post('favorites/acknowledge', [FavoriteNotificationController::class, 'acknowledge']);
         });
 
-        Route::post('properties/{property:public_id}/contact', [PropertyInquiryController::class, 'store']);
+        Route::post('properties/{property:public_id}/contact', [PropertyInquiryController::class, 'store'])
+            ->middleware('throttle:5,1');
+
+        Route::post('ratings', [App\Http\Controllers\API\RatingController::class, 'store']);
+        Route::apiResource('consultations', App\Http\Controllers\API\ConsultationController::class);
 
         Route::get('inquiries', [PropertyInquiryController::class, 'index']);
         Route::get('inquiries/{inquiry:public_id}', [PropertyInquiryController::class, 'show']);
         Route::post('inquiries/{inquiry:public_id}/messages', [PropertyInquiryMessageController::class, 'store']);
         Route::post('inquiries/{inquiry:public_id}/read', [PropertyInquiryMessageController::class, 'markRead']);
+
+        Route::prefix('professional')->group(function (): void {
+            Route::post('profile', [App\Http\Controllers\API\ProfessionalController::class, 'store']);
+            Route::match(['put', 'patch'], 'profile', [App\Http\Controllers\API\ProfessionalController::class, 'update']);
+
+            Route::get('portfolio', [App\Http\Controllers\API\ProfessionalPortfolioController::class, 'index']);
+            Route::post('portfolio', [App\Http\Controllers\API\ProfessionalPortfolioController::class, 'store']);
+            Route::match(['put', 'patch'], 'portfolio/{id}', [App\Http\Controllers\API\ProfessionalPortfolioController::class, 'update']);
+            Route::delete('portfolio/{id}', [App\Http\Controllers\API\ProfessionalPortfolioController::class, 'destroy']);
+        });
 
         Route::prefix('host')->group(function (): void {
             Route::get('lodgings', [App\Http\Controllers\API\HostLodgingController::class, 'index']);
@@ -110,7 +132,6 @@ Route::prefix('v1')->group(function (): void {
             });
 
         Route::prefix('favorites')
-            ->middleware('can:properties.save')
             ->group(function (): void {
                 Route::get('properties', [FavoritePropertyController::class, 'index']);
                 Route::post('properties/{property:public_id}', [FavoritePropertyController::class, 'store']);
@@ -119,6 +140,7 @@ Route::prefix('v1')->group(function (): void {
 
         // Professional application (authenticated)
         Route::post('professionals/apply', [App\Http\Controllers\API\ProfessionalController::class, 'store']);
+        Route::match(['put', 'patch'], 'professionals/profile', [App\Http\Controllers\API\ProfessionalController::class, 'update']);
 
         Route::get('consultations', [App\Http\Controllers\API\ConsultationController::class, 'index']);
         Route::post('consultations', [App\Http\Controllers\API\ConsultationController::class, 'store']);
@@ -139,5 +161,9 @@ Route::prefix('v1')->group(function (): void {
         // Booking routes
         Route::get('bookings/{booking:public_id}/inquiry', [App\Http\Controllers\API\BookingInquiryController::class, 'show']);
         Route::apiResource('bookings', App\Http\Controllers\API\BookingController::class)->except(['destroy']);
+
+        // Auction routes
+        Route::post('auctions', [App\Http\Controllers\AuctionController::class, 'store']);
+        Route::post('auctions/{auction:public_id}/bid', [App\Http\Controllers\AuctionController::class, 'placeBid']);
     });
 });

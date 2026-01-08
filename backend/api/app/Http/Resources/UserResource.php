@@ -20,6 +20,7 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone,
+            'avatar' => $this->getFirstMediaUrl('avatar'),
             'country_code' => $this->country_code,
             'status' => $this->status,
             'preferred_role' => $this->preferred_role,
@@ -27,7 +28,7 @@ class UserResource extends JsonResource
             'permissions' => $this->getPermissionNames()->values()->all(),
             'email_verified_at' => $this->email_verified_at,
             'phone_verified_at' => $this->phone_verified_at,
-            'last_login_at' => $this->whenHas('last_login_at', fn () => $this->last_login_at),
+            'last_login_at' => $this->whenHas('last_login_at', fn() => $this->last_login_at),
             'bio' => $this->bio,
             'metadata' => $this->metadata,
             'professional_profile' => $this->whenLoaded('professionalProfile', function () {
@@ -38,13 +39,22 @@ class UserResource extends JsonResource
                     'specialties' => $this->professionalProfile->specialties,
                     'bio' => $this->professionalProfile->bio,
                     'hourly_rate' => (float) $this->professionalProfile->hourly_rate,
+                    'experience_years' => $this->professionalProfile->experience_years,
+                    'languages' => $this->professionalProfile->languages,
+                    'education' => $this->professionalProfile->education,
+                    'certifications' => $this->professionalProfile->certifications,
+                    'social_links' => $this->professionalProfile->social_links,
                     'verification_status' => $this->professionalProfile->verification_status,
+                    'is_available' => (bool) $this->professionalProfile->is_available,
+                    'portfolios' => $this->professionalProfile->relationLoaded('portfolios') ? $this->professionalProfile->portfolios : [],
                     'created_at' => $this->professionalProfile->created_at->toIso8601String(),
                     'updated_at' => $this->professionalProfile->updated_at->toIso8601String(),
                 ];
             }),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'average_rating' => $this->averageRating(),
+            'ratings_count' => $this->ratingsCount(),
         ];
     }
 }

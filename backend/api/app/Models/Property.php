@@ -51,6 +51,10 @@ class Property extends Model implements HasMedia
         'approved_by',
         'rejection_reason',
         'available_from',
+        'video_url',
+        'virtual_tour_url',
+        'nearby_places',
+        'verified_at',
     ];
 
     protected $casts = [
@@ -61,8 +65,10 @@ class Property extends Model implements HasMedia
         'longitude' => 'decimal:7',
         'amenities' => 'array',
         'metadata' => 'array',
+        'nearby_places' => 'array',
         'published_at' => 'datetime',
         'approved_at' => 'datetime',
+        'verified_at' => 'datetime',
         'available_from' => 'datetime',
         'status' => PropertyStatus::class,
         'is_available' => 'boolean',
@@ -73,6 +79,17 @@ class Property extends Model implements HasMedia
         static::creating(function (Property $property): void {
             $property->public_id ??= (string) Str::uuid();
             $property->slug ??= Str::slug(Str::limit($property->title, 60) . '-' . Str::random(6));
+        });
+
+        static::updating(function (Property $property) {
+            if ($property->isDirty('price')) {
+                PropertyPriceHistory::create([
+                    'property_id' => $property->id,
+                    'old_price' => $property->getOriginal('price'),
+                    'new_price' => $property->price,
+                    'changed_at' => now(),
+                ]);
+            }
         });
     }
 
@@ -97,6 +114,21 @@ class Property extends Model implements HasMedia
     public function inquiries()
     {
         return $this->hasMany(PropertyInquiry::class);
+    }
+
+    public function auctions()
+    {
+        return $this->hasMany(Auction::class);
+    }
+
+    public function activeAuction()
+    {
+        return $this->hasOne(Auction::class)->where('status', 'active')->latest();
+    }
+
+    public function priceHistory()
+    {
+        return $this->hasMany(PropertyPriceHistory::class)->orderByDesc('changed_at');
     }
 
     public function shouldBeSearchable(): bool

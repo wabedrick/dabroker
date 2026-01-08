@@ -328,17 +328,15 @@ class _NotificationTile extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => ChatScreen(
-                    inquiryId: inquiryId,
-                    title: item.title,
-                  ),
+                  builder: (_) =>
+                      ChatScreen(inquiryId: inquiryId, title: item.title),
                 ),
               );
             }
           } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Could not open chat: $e')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Could not open chat: $e')));
           }
         }
       },
@@ -364,16 +362,13 @@ class _NotificationTile extends ConsumerWidget {
                     color: accent.withAlpha((0.15 * 255).round()),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(
-                    switch (item.category) {
-                      NotificationCategory.favorites => Icons.favorite_outline,
-                      NotificationCategory.bookings => Icons.calendar_today,
-                      NotificationCategory.reservations =>
-                        Icons.bedroom_parent_outlined,
-                      _ => Icons.chat_bubble_outline,
-                    },
-                    color: accent,
-                  ),
+                  child: Icon(switch (item.category) {
+                    NotificationCategory.favorites => Icons.favorite_outline,
+                    NotificationCategory.bookings => Icons.calendar_today,
+                    NotificationCategory.reservations =>
+                      Icons.bedroom_parent_outlined,
+                    _ => Icons.chat_bubble_outline,
+                  }, color: accent),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

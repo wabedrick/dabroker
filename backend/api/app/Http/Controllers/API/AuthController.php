@@ -122,35 +122,25 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $credentials = $request->validated();
-        $identifier = $credentials['identifier'];
+        $user = $this->findUserByIdentifier($request->identifier, true);
 
-        $user = User::query()
-            ->where('email', $identifier)
-            ->orWhere('phone', $identifier)
-            ->first();
-
-        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+        if (! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
-                'identifier' => __('The provided credentials are incorrect.'),
+                'password' => __('auth.password'),
             ]);
         }
 
-        if (! $this->otpEnabled() && $user->status === 'pending') {
-            $this->activateUserWithoutOtp($user);
-        }
+        $token = $user->createToken($request->device_name ?? 'auth_token')->plainTextToken;
 
-        $token = $user->createToken($credentials['device_name'] ?? 'mobile')->plainTextToken;
-
-        $user->forceFill([
-            'last_login_at' => now(),
-        ])->save();
+        // Update last login
+        $user->update(['last_login_at' => now()]);
 
         return response()->json([
             'message' => 'Login successful.',
-            'token' => $token,
-            'token_type' => 'Bearer',
-            'data' => new UserResource($user),
+            'data' => [
+                'user' => new UserResource($user->load('professionalProfile')),
+                'token' => $token,
+            ],
         ]);
     }
 
@@ -208,7 +198,7 @@ class AuthController extends Controller
 
     public function me(Request $request): UserResource
     {
-        return new UserResource($request->user());
+        return new UserResource($request->user()->load('professionalProfile'));
     }
 
     private function otpEnabled(): bool

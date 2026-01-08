@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "broker_app (OSM compliant run)",
+            "request": "launch",
+            "type": "dart",
+            "cwd": "${workspaceFolder}/mobile_app/broker_app",
+            "program": "${workspaceFolder}/mobile_app/broker_app/lib/main.dart",
+            "args": [
+                "--dart-define",
+                "flutter.flutter_map.unblockOSM=Our tile servers are not: they are funded by donations and sponsorship, and capacity is limited."
+            ]
+        }
+    ]
+}

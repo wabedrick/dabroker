@@ -39,6 +39,10 @@ class Lodging {
   final DateTime? updatedAt;
   @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson)
   final double? distance;
+  @JsonKey(defaultValue: 0.0, fromJson: _doubleFromJsonNonNull)
+  final double averageRating;
+  @JsonKey(defaultValue: 0)
+  final int ratingsCount;
 
   const Lodging({
     required this.id,
@@ -69,6 +73,8 @@ class Lodging {
     this.createdAt,
     this.updatedAt,
     this.distance,
+    this.averageRating = 0.0,
+    this.ratingsCount = 0,
   });
 
   Lodging copyWith({
@@ -181,6 +187,13 @@ double? _doubleFromJson(Object? value) {
   if (value is num) return value.toDouble();
   if (value is String) return double.tryParse(value);
   return null;
+}
+
+double _doubleFromJsonNonNull(Object? value) {
+  if (value == null) return 0.0;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? 0.0;
+  return 0.0;
 }
 
 Object? _doubleToJson(double? value) => value;

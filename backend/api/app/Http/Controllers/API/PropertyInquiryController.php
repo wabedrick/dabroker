@@ -18,9 +18,14 @@ class PropertyInquiryController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
+        $userId = $request->user()->id;
+
         $inquiries = PropertyInquiry::query()
-            ->with(['property:id,public_id,title,status', 'owner:id,name,preferred_role'])
-            ->where('sender_id', $request->user()->id)
+            ->with(['property:id,public_id,title,status', 'owner:id,name,preferred_role', 'sender:id,name,preferred_role'])
+            ->where(function ($query) use ($userId) {
+                $query->where('sender_id', $userId)
+                    ->orWhere('owner_id', $userId);
+            })
             ->latest()
             ->paginate((int) $request->integer('per_page', 15));
 

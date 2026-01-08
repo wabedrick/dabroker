@@ -26,6 +26,9 @@ class LodgingListState {
   final List<Lodging> items;
   final bool isLoading;
   final bool isRefreshing;
+  final bool hasMore;
+  final int currentPage;
+  final int? totalResults;
   final String? error;
   final String? typeFilter;
   final String? searchQuery;
@@ -42,6 +45,9 @@ class LodgingListState {
     this.items = const [],
     this.isLoading = false,
     this.isRefreshing = false,
+    this.hasMore = true,
+    this.currentPage = 1,
+    this.totalResults,
     this.error,
     this.typeFilter,
     this.searchQuery,
@@ -59,6 +65,9 @@ class LodgingListState {
     List<Lodging>? items,
     bool? isLoading,
     bool? isRefreshing,
+    bool? hasMore,
+    int? currentPage,
+    int? totalResults,
     String? error,
     String? typeFilter,
     String? searchQuery,
@@ -75,6 +84,9 @@ class LodgingListState {
       items: items ?? this.items,
       isLoading: isLoading ?? this.isLoading,
       isRefreshing: isRefreshing ?? this.isRefreshing,
+      hasMore: hasMore ?? this.hasMore,
+      currentPage: currentPage ?? this.currentPage,
+      totalResults: totalResults ?? this.totalResults,
       error: error,
       typeFilter: typeFilter ?? this.typeFilter,
       searchQuery: searchQuery ?? this.searchQuery,
@@ -94,6 +106,7 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
   LodgingListNotifier(this._repository) : super(const LodgingListState());
 
   final LodgingRepository _repository;
+  static const int _perPage = 20;
 
   Future<void> load({
     String? type,
@@ -108,6 +121,7 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
     String? sortBy,
   }) async {
     state = state.copyWith(
+      items: const [],
       isLoading: true,
       error: null,
       typeFilter: type,
@@ -120,11 +134,13 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
       east: east,
       west: west,
       sortBy: sortBy,
+      hasMore: true,
+      currentPage: 1,
     );
     try {
       final response = await _repository.fetchLodgings(
         page: 1,
-        perPage: 20,
+        perPage: _perPage,
         type: type,
         search: search,
         latitude: latitude,
@@ -136,7 +152,13 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
         west: west,
         sortBy: sortBy,
       );
-      state = state.copyWith(items: response.data, isLoading: false);
+      state = state.copyWith(
+        items: response.data,
+        isLoading: false,
+        hasMore: response.meta.hasMore,
+        currentPage: response.meta.currentPage,
+        totalResults: response.meta.total,
+      );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -147,7 +169,7 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
     try {
       final response = await _repository.fetchLodgings(
         page: 1,
-        perPage: 20,
+        perPage: _perPage,
         type: state.typeFilter,
         search: state.searchQuery,
         latitude: state.latitude,
@@ -159,9 +181,48 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
         west: state.west,
         sortBy: state.sortBy,
       );
-      state = state.copyWith(items: response.data, isRefreshing: false);
+      state = state.copyWith(
+        items: response.data,
+        isRefreshing: false,
+        hasMore: response.meta.hasMore,
+        currentPage: response.meta.currentPage,
+        totalResults: response.meta.total,
+      );
     } catch (e) {
       state = state.copyWith(isRefreshing: false, error: e.toString());
+    }
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoading || !state.hasMore) return;
+
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final nextPage = state.currentPage + 1;
+      final response = await _repository.fetchLodgings(
+        page: nextPage,
+        perPage: _perPage,
+        type: state.typeFilter,
+        search: state.searchQuery,
+        latitude: state.latitude,
+        longitude: state.longitude,
+        radius: state.radius,
+        north: state.north,
+        south: state.south,
+        east: state.east,
+        west: state.west,
+        sortBy: state.sortBy,
+      );
+
+      state = state.copyWith(
+        items: [...state.items, ...response.data],
+        isLoading: false,
+        hasMore: response.meta.hasMore,
+        currentPage: response.meta.currentPage,
+        totalResults: response.meta.total,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -260,7 +321,7 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
     if (newSortBy == 'nearest') {
       newSortBy = null;
     }
-    load(type: state.typeFilter, sortBy: newSortBy);
+    load(type: state.typeFilter, search: state.searchQuery, sortBy: newSortBy);
   }
 
   Future<void> deleteLodging(String id) async {

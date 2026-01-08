@@ -101,7 +101,8 @@ class NotificationItem {
         id: json['id'].toString(),
         title: title,
         body: body,
-        createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
+        createdAt:
+            DateTime.tryParse(json['created_at'] as String? ?? '') ??
             DateTime.now(),
         isRead: true, // Bookings don't have a read state in this context yet
         category: category,

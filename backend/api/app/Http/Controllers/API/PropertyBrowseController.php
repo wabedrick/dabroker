@@ -47,9 +47,24 @@ class PropertyBrowseController extends Controller
             ]);
         }
 
-        return new PropertyResource(
+        $property->load(['priceHistory']);
+
+        $similarProperties = Property::query()
+            ->approved()
+            ->where('id', '!=', $property->id)
+            ->where(function ($query) use ($property) {
+                $query->where('city', $property->city)
+                      ->orWhere('type', $property->type)
+                      ->orWhereBetween('price', [$property->price * 0.8, $property->price * 1.2]);
+            })
+            ->limit(5)
+            ->get();
+
+        return (new PropertyResource(
             $property->loadMissing(['owner:id,name,preferred_role', 'media'])
-        );
+        ))->additional([
+            'similar_properties' => PropertyResource::collection($similarProperties)
+        ]);
     }
 
     private function applyFilters(Builder $builder, Request $request): Builder

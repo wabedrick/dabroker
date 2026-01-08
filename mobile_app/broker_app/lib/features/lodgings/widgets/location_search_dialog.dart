@@ -15,21 +15,29 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
   List<Location> _locations = [];
   bool _isLoading = false;
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   Future<void> _search() async {
-    if (_controller.text.isEmpty) return;
+    if (_isLoading) return;
+    final query = _controller.text.trim();
+    if (query.isEmpty) return;
     setState(() {
       _isLoading = true;
       _locations = [];
     });
-    
+
     try {
-      List<Location> locations = await locationFromAddress(_controller.text);
+      final locations = await locationFromAddress(query);
       setState(() => _locations = locations);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not find location: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not find location: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -38,6 +46,8 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final query = _controller.text.trim();
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
@@ -45,10 +55,7 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Where to?',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            Text('Where to?', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
             TextField(
               controller: _controller,
@@ -59,64 +66,65 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  onPressed: _search,
+                  icon: _isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.arrow_forward),
+                  onPressed: _isLoading ? null : _search,
                 ),
               ),
               onSubmitted: (_) => _search(),
               textInputAction: TextInputAction.search,
             ),
             const SizedBox(height: 16),
-            if (_isLoading)
-              const CircularProgressIndicator()
-            else
-              Flexible(
-                child: SizedBox(
-                  height: 200, // Limit height
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: [
-                      if (_controller.text.isNotEmpty)
-                        ListTile(
-                          leading: const Icon(Icons.search),
-                          title: Text('Search for "${_controller.text}"'),
-                          onTap: () {
-                            widget.onSearch(query: _controller.text);
-                            Navigator.pop(context);
-                          },
+            Flexible(
+              child: SizedBox(
+                height: 200, // Limit height
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    if (query.isNotEmpty)
+                      ListTile(
+                        leading: const Icon(Icons.search),
+                        title: Text('Search for "$query"'),
+                        onTap: () {
+                          widget.onSearch(query: query);
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ..._locations.map((loc) {
+                      return ListTile(
+                        leading: const Icon(Icons.location_on_outlined),
+                        title: Text(query.isEmpty ? _controller.text : query),
+                        subtitle: Text(
+                          '${loc.latitude.toStringAsFixed(4)}, ${loc.longitude.toStringAsFixed(4)}',
                         ),
-                      ..._locations.map((loc) {
-                        return ListTile(
-                          leading: const Icon(Icons.location_on_outlined),
-                          title: Text(_controller.text),
-                          subtitle: Text(
-                            '${loc.latitude.toStringAsFixed(4)}, ${loc.longitude.toStringAsFixed(4)}',
-                          ),
-                          onTap: () {
-                            widget.onSearch(
-                              lat: loc.latitude,
-                              lng: loc.longitude,
-                              query: _controller.text,
-                            );
-                            Navigator.pop(context);
-                          },
-                        );
-                      }),
-                      if (_locations.isEmpty &&
-                          _controller.text.isNotEmpty &&
-                          !_isLoading)
-                        const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Text(
-                            'No location results found',
-                            style: TextStyle(color: Colors.grey),
-                            textAlign: TextAlign.center,
-                          ),
+                        onTap: () {
+                          widget.onSearch(
+                            lat: loc.latitude,
+                            lng: loc.longitude,
+                            query: query,
+                          );
+                          Navigator.pop(context);
+                        },
+                      );
+                    }),
+                    if (_locations.isEmpty && query.isNotEmpty && !_isLoading)
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          'No location results found',
+                          style: TextStyle(color: colorScheme.onSurfaceVariant),
+                          textAlign: TextAlign.center,
                         ),
-                    ],
-                  ),
+                      ),
+                  ],
                 ),
               ),
+            ),
           ],
         ),
       ),

@@ -184,11 +184,8 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
     final LatLng? result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder:
-            (context) => LocationPickerScreen(
-              initialLatitude: lat,
-              initialLongitude: lng,
-            ),
+        builder: (context) =>
+            LocationPickerScreen(initialLatitude: lat, initialLongitude: lng),
       ),
     );
 

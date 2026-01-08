@@ -1,6 +1,6 @@
 // ignore_for_file: unused_field
 
-import 'package:broker_app/core/theme/app_theme.dart';
+import 'package:broker_app/core/widgets/rating_dialog.dart';
 import 'package:broker_app/core/utils/image_helper.dart';
 import 'package:broker_app/features/bookings/providers/booking_provider.dart';
 import 'package:broker_app/features/lodgings/providers/lodging_list_provider.dart';
@@ -82,6 +82,35 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
     }
   }
 
+  Future<void> _showRatingDialog(BuildContext context, WidgetRef ref) async {
+    if (_lodging == null) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => RatingDialog(
+        onSubmit: (rating, review) async {
+          try {
+            await ref
+                .read(lodgingRepositoryProvider)
+                .rateLodging(_lodging!.id, rating.toInt(), review);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Rating submitted successfully')),
+              );
+              _fetchLodging(); // Refresh to show new rating
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Error: $e')));
+            }
+          }
+        },
+      ),
+    );
+  }
+
   Future<void> _toggleAvailability(bool value) async {
     if (_lodging == null) return;
 
@@ -111,6 +140,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
   }
 
   Future<void> _confirmDelete(BuildContext context, String lodgingId) async {
+    final colorScheme = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -124,7 +154,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
             child: const Text('Cancel'),
           ),
           TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: colorScheme.error),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Delete'),
           ),
@@ -164,6 +194,8 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
       );
       return;
     }
+
+    final colorScheme = Theme.of(context).colorScheme;
 
     DateTimeRange? dateRange;
     int guests = 1;
@@ -245,10 +277,10 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.meeting_room,
                         size: 16,
-                        color: Colors.grey,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                       const SizedBox(width: 8),
                       if (checkingAvailability)
@@ -305,7 +337,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                     Text(
                       'No rooms available for the selected dates',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.red,
+                        color: colorScheme.error,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -313,7 +345,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                     Text(
                       'You have selected all available rooms',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.orange,
+                        color: colorScheme.tertiary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -362,7 +394,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                           '${lodging.currency} ${totalPrice.toStringAsFixed(2)}',
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(
-                                color: AppColors.primaryBlue,
+                                color: colorScheme.primary,
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
@@ -410,7 +442,6 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                                         ? 'Booking request sent! $available rooms remaining'
                                         : 'Booking request sent!',
                                   ),
-                                  backgroundColor: Colors.green,
                                 ),
                               );
                             } else {
@@ -418,7 +449,6 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                               messenger.showSnackBar(
                                 SnackBar(
                                   content: Text('Failed to book: $error'),
-                                  backgroundColor: Colors.red,
                                 ),
                               );
                             }
@@ -456,6 +486,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -507,13 +538,15 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.7),
+                              color: colorScheme.surface.withValues(
+                                alpha: 0.85,
+                              ),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
                               '${_currentImageIndex + 1} / ${lodging.media!.length}',
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: colorScheme.onSurface,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -522,8 +555,12 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                       ],
                     )
                   : Container(
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.hotel, size: 64),
+                      color: colorScheme.surfaceContainerHighest,
+                      child: Icon(
+                        Icons.hotel,
+                        size: 64,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
             ),
             actions: [
@@ -581,7 +618,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                               '${lodging.currency} ${lodging.pricePerNight!.toStringAsFixed(0)}',
                               style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(
-                                    color: AppColors.primaryBlue,
+                                    color: colorScheme.primary,
                                     fontWeight: FontWeight.bold,
                                   ),
                             ),
@@ -596,36 +633,59 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(
+                      const Icon(Icons.star, color: Colors.amber, size: 20),
+                      const SizedBox(width: 4),
+                      Text(
+                        lodging.averageRating.toStringAsFixed(1),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        ' (${lodging.ratingsCount} reviews)',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const Spacer(),
+                      if (!isHost)
+                        TextButton.icon(
+                          onPressed: () => _showRatingDialog(context, ref),
+                          icon: const Icon(Icons.star_outline, size: 18),
+                          label: const Text('Rate'),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(
                         Icons.location_on,
                         size: 16,
-                        color: Colors.grey,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '${lodging.city}, ${lodging.country}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.grey[400]
-                                  : Colors.grey[600],
-                            ),
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.hotel, size: 16, color: Colors.grey),
+                      Icon(
+                        Icons.hotel,
+                        size: 16,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${lodging.totalRooms ?? 1} Rooms • ${lodging.maxGuests ?? 1} Guests/room',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.grey[400]
-                                  : Colors.grey[600],
-                            ),
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -668,11 +728,18 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                                   ),
                                   width: 40,
                                   height: 40,
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.location_on,
-                                    color: AppColors.primaryBlue,
+                                    color: colorScheme.primary,
                                     size: 40,
                                   ),
+                                ),
+                              ],
+                            ),
+                            RichAttributionWidget(
+                              attributions: const [
+                                TextSourceAttribution(
+                                  '© OpenStreetMap contributors',
                                 ),
                               ],
                             ),
@@ -693,10 +760,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                             Icon(
                               _getAmenityIcon(amenity),
                               size: 24,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.grey[300]
-                                  : Colors.grey[700],
+                              color: colorScheme.onSurfaceVariant,
                             ),
                             const SizedBox(width: 16),
                             Text(
@@ -731,10 +795,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                               'Joined ${DateFormat.yMMMM().format(lodging.host!.createdAt)}',
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(
-                                    color: Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Colors.grey[400]
-                                        : Colors.grey[600],
+                                    color: colorScheme.onSurfaceVariant,
                                   ),
                             ),
                           ],
@@ -757,7 +818,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                 color: Theme.of(context).cardColor,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, -5),
                   ),

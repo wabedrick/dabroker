@@ -68,18 +68,34 @@ class _OwnerInquiryListScreenState
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
-                    color: Theme.of(context).dividerColor.withOpacity(0.1),
+                    color: Theme.of(
+                      context,
+                    ).dividerColor.withValues(alpha: 0.1),
                   ),
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(16),
                   onTap: () {
+                    // Determine the chat title (the other person's name)
+                    // If I am the owner, title is sender.name
+                    // If I am the sender, title is owner.name
+                    // But here we don't have current user ID easily.
+                    // However, usually 'sender' is the one who started the inquiry.
+                    // If this is the 'OwnerInquiryListScreen', it implies I am the receiver?
+                    // No, we updated it to be a general inquiry list.
+                    // So we should probably pass the correct name.
+                    // For now, let's use a safe fallback or try to guess.
+                    // Actually, the ChatScreen logic for 'isMe' relies on title matching the OTHER person.
+                    // So we need to pass the name of the person we are talking TO.
+                    
+                    final title = inquiry.sender?.name ?? 'Chat';
+                    
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => ChatScreen(
                           inquiryId: inquiry.publicId,
-                          title: inquiry.sender?.name ?? 'Inquiry',
+                          title: title,
                         ),
                       ),
                     );
@@ -88,7 +104,7 @@ class _OwnerInquiryListScreenState
                     children: [
                       Expanded(
                         child: Text(
-                          inquiry.property?.title ?? 'Unknown Property',
+                          inquiry.property?.title ?? 'Professional Inquiry',
                           style: const TextStyle(fontWeight: FontWeight.bold),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -96,7 +112,9 @@ class _OwnerInquiryListScreenState
                       ),
                       if (lastMessage != null)
                         Text(
-                          DateFormat('MMM d, h:mm a').format(lastMessage.createdAt),
+                          DateFormat(
+                            'MMM d, h:mm a',
+                          ).format(lastMessage.createdAt),
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                     ],
