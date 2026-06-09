@@ -1,4 +1,3 @@
-import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/data/models/consultation.dart';
 import 'package:broker_app/features/auth/providers/auth_provider.dart';
 import 'package:broker_app/features/consultations/providers/consultation_provider.dart';
@@ -13,6 +12,7 @@ class ConsultationListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(consultationListProvider);
     final currentUser = ref.watch(authStateProvider).user;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: const Text('My Consultations')),
@@ -26,12 +26,12 @@ class ConsultationListScreen extends ConsumerWidget {
                   Icon(
                     Icons.calendar_today_outlined,
                     size: 64,
-                    color: Colors.grey[300],
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'No consultations scheduled',
-                    style: TextStyle(color: Colors.grey[500]),
+                    style: TextStyle(color: colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
@@ -39,9 +39,8 @@ class ConsultationListScreen extends ConsumerWidget {
           }
 
           return RefreshIndicator(
-            onRefresh: () => ref
-                .read(consultationListProvider.notifier)
-                .loadConsultations(),
+            onRefresh: () =>
+                ref.read(consultationListProvider.notifier).loadConsultations(),
             child: ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: consultations.length,
@@ -50,10 +49,9 @@ class ConsultationListScreen extends ConsumerWidget {
                 final consultation = consultations[index];
                 final isMeProfessional =
                     currentUser?.id == consultation.professionalId;
-                final otherParty =
-                    isMeProfessional
-                        ? consultation.user
-                        : consultation.professional;
+                final otherParty = isMeProfessional
+                    ? consultation.user
+                    : consultation.professional;
 
                 return _ConsultationCard(
                   consultation: consultation,
@@ -65,29 +63,23 @@ class ConsultationListScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error:
-            (error, stack) => Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 48,
-                    color: AppColors.error,
-                  ),
-                  const SizedBox(height: 16),
-                  Text('Error: $error'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed:
-                        () => ref
-                            .read(consultationListProvider.notifier)
-                            .loadConsultations(),
-                    child: const Text('Retry'),
-                  ),
-                ],
+        error: (error, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 48, color: colorScheme.error),
+              const SizedBox(height: 16),
+              Text('Error: $error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref
+                    .read(consultationListProvider.notifier)
+                    .loadConsultations(),
+                child: const Text('Retry'),
               ),
-            ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -104,19 +96,42 @@ class _ConsultationCard extends ConsumerWidget {
     required this.isMeProfessional,
   });
 
-  Color _getStatusColor(String status) {
+  ({Color bg, Color fg, Color border}) _statusColors(
+    ColorScheme scheme,
+    String status,
+  ) {
     switch (status.toLowerCase()) {
       case 'confirmed':
-        return Colors.green;
+        return (
+          bg: scheme.tertiaryContainer,
+          fg: scheme.onTertiaryContainer,
+          border: scheme.tertiary,
+        );
       case 'pending':
-        return Colors.orange;
+        return (
+          bg: scheme.secondaryContainer,
+          fg: scheme.onSecondaryContainer,
+          border: scheme.secondary,
+        );
       case 'cancelled':
       case 'rejected':
-        return Colors.red;
+        return (
+          bg: scheme.errorContainer,
+          fg: scheme.onErrorContainer,
+          border: scheme.error,
+        );
       case 'completed':
-        return Colors.blue;
+        return (
+          bg: scheme.primaryContainer,
+          fg: scheme.onPrimaryContainer,
+          border: scheme.primary,
+        );
       default:
-        return Colors.grey;
+        return (
+          bg: scheme.surfaceContainerHighest,
+          fg: scheme.onSurfaceVariant,
+          border: scheme.outlineVariant,
+        );
     }
   }
 
@@ -130,9 +145,9 @@ class _ConsultationCard extends ConsumerWidget {
           .read(consultationListProvider.notifier)
           .updateStatus(consultation.publicId, status);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Consultation $status')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Consultation $status')));
       }
     } catch (e) {
       if (context.mounted) {
@@ -145,7 +160,8 @@ class _ConsultationCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final statusColor = _getStatusColor(consultation.status);
+    final colorScheme = Theme.of(context).colorScheme;
+    final statusColors = _statusColors(colorScheme, consultation.status);
     final dateFormat = DateFormat('MMM d, y • h:mm a');
 
     return Card(
@@ -165,16 +181,14 @@ class _ConsultationCard extends ConsumerWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
+                    color: statusColors.bg,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: statusColor.withValues(alpha: 0.5),
-                    ),
+                    border: Border.all(color: statusColors.border),
                   ),
                   child: Text(
                     consultation.status.toUpperCase(),
                     style: TextStyle(
-                      color: statusColor,
+                      color: statusColors.fg,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -190,12 +204,12 @@ class _ConsultationCard extends ConsumerWidget {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
+                  backgroundColor: colorScheme.primaryContainer,
                   child: Text(
                     otherPartyName.isNotEmpty
                         ? otherPartyName[0].toUpperCase()
                         : '?',
-                    style: const TextStyle(color: AppColors.primaryBlue),
+                    style: TextStyle(color: colorScheme.onPrimaryContainer),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -207,11 +221,8 @@ class _ConsultationCard extends ConsumerWidget {
                         isMeProfessional
                             ? 'Client: $otherPartyName'
                             : 'Professional: $otherPartyName',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       if (consultation.notes != null &&
                           consultation.notes!.isNotEmpty) ...[
@@ -234,22 +245,16 @@ class _ConsultationCard extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   OutlinedButton(
-                    onPressed:
-                        () => _updateStatus(context, ref, 'rejected'),
+                    onPressed: () => _updateStatus(context, ref, 'rejected'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
+                      foregroundColor: colorScheme.error,
+                      side: BorderSide(color: colorScheme.error),
                     ),
                     child: const Text('Reject'),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
-                    onPressed:
-                        () => _updateStatus(context, ref, 'confirmed'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                    ),
+                    onPressed: () => _updateStatus(context, ref, 'confirmed'),
                     child: const Text('Confirm'),
                   ),
                 ],
@@ -261,12 +266,7 @@ class _ConsultationCard extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   ElevatedButton(
-                    onPressed:
-                        () => _updateStatus(context, ref, 'completed'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryBlue,
-                      foregroundColor: Colors.white,
-                    ),
+                    onPressed: () => _updateStatus(context, ref, 'completed'),
                     child: const Text('Mark Completed'),
                   ),
                 ],

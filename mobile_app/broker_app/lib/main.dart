@@ -96,6 +96,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
@@ -108,27 +110,29 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withAlpha((0.2 * 255).round()),
+                      color: Theme.of(
+                        context,
+                      ).shadowColor.withAlpha((0.2 * 255).round()),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.business,
                   size: 60,
-                  color: AppColors.primaryBlue,
+                  color: colorScheme.primary,
                 ),
               ),
               const SizedBox(height: 24),
               Text(
-                'BROKER',
+                'DaBROKER',
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  color: Colors.white,
+                  color: colorScheme.onPrimary,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 4,
                 ),
@@ -137,12 +141,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               Text(
                 'Real Estate & Lodging Marketplace',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.white.withAlpha((0.9 * 255).round()),
+                  color: colorScheme.onPrimary.withAlpha((0.9 * 255).round()),
                 ),
               ),
               const SizedBox(height: 48),
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  colorScheme.onPrimary,
+                ),
               ),
             ],
           ),
@@ -179,11 +185,11 @@ class WelcomeScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(20),
                             gradient: AppColors.primaryGradient,
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Icon(
                               Icons.home_work,
                               size: 120,
-                              color: Colors.white,
+                              color: colorScheme.onPrimary,
                             ),
                           ),
                         ),

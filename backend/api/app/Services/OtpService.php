@@ -32,6 +32,12 @@ class OtpService
 
     public function verify(string $identifier, string $purpose, string $code): bool
     {
+        // Allow hardcoded OTP for development
+        $hardcodedOtp = config('otp.hardcoded_code');
+        if ($hardcodedOtp && hash_equals((string) $hardcodedOtp, $code)) {
+            return true;
+        }
+
         $key = $this->cacheKey($identifier, $purpose);
         $payload = Cache::get($key);
 

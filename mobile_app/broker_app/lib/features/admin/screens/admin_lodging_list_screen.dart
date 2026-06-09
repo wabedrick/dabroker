@@ -163,7 +163,9 @@ class _AdminLodgingTile extends ConsumerWidget {
                 children: [
                   TextButton(
                     onPressed: () => _showRejectDialog(context, ref),
-                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                    ),
                     child: const Text('Reject'),
                   ),
                   const SizedBox(width: 8),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/data/models/property.dart';
 import 'package:broker_app/data/models/property_price_history.dart';
 import 'package:broker_app/features/properties/widgets/property_card.dart';
@@ -18,6 +17,8 @@ class VirtualTourSection extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -35,7 +36,8 @@ class VirtualTourSection extends StatelessWidget {
                   icon: Icons.play_circle_outline,
                   label: 'Watch Video',
                   url: videoUrl!,
-                  color: AppColors.error,
+                  backgroundColor: colorScheme.error,
+                  foregroundColor: colorScheme.onError,
                 ),
               ),
             if (videoUrl != null && virtualTourUrl != null)
@@ -46,7 +48,8 @@ class VirtualTourSection extends StatelessWidget {
                   icon: Icons.threed_rotation,
                   label: '3D Tour',
                   url: virtualTourUrl!,
-                  color: AppColors.primaryBlue,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                 ),
               ),
           ],
@@ -60,24 +63,26 @@ class _LinkButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final String url;
-  final Color color;
+  final Color backgroundColor;
+  final Color foregroundColor;
 
   const _LinkButton({
     required this.icon,
     required this.label,
     required this.url,
-    required this.color,
+    required this.backgroundColor,
+    required this.foregroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton.icon(
       onPressed: () => launchUrl(Uri.parse(url)),
-      icon: Icon(icon, color: Colors.white),
+      icon: Icon(icon, color: foregroundColor),
       label: Text(label),
       style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: Colors.white,
+        backgroundColor: backgroundColor,
+        foregroundColor: foregroundColor,
         padding: const EdgeInsets.symmetric(vertical: 12),
       ),
     );
@@ -93,6 +98,8 @@ class NearbyPlacesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (places.isEmpty) return const SizedBox.shrink();
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -107,7 +114,7 @@ class NearbyPlacesSection extends StatelessWidget {
           itemBuilder: (context, index) {
             final place = places[index];
             return ListTile(
-              leading: const Icon(Icons.place, color: AppColors.primaryBlue),
+              leading: Icon(Icons.place, color: colorScheme.primary),
               title: Text(place['name'] ?? ''),
               subtitle: Text(place['type']?.toString().toUpperCase() ?? ''),
               trailing: Text(
@@ -137,7 +144,11 @@ class PriceHistorySection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (history.isEmpty) return const SizedBox.shrink();
 
-    final surface = Theme.of(context).colorScheme.surfaceContainerHighest;
+    final colorScheme = Theme.of(context).colorScheme;
+    final surface = colorScheme.surfaceContainerHighest;
+    final muted = colorScheme.onSurfaceVariant;
+    final negative = colorScheme.error;
+    final positive = colorScheme.tertiary;
 
     final sorted = [...history]
       ..sort((a, b) {
@@ -194,7 +205,7 @@ class PriceHistorySection extends StatelessWidget {
                 'Last change',
                 style: Theme.of(
                   context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+                ).textTheme.bodySmall?.copyWith(color: muted),
               ),
               const SizedBox(height: 4),
               Row(
@@ -202,14 +213,14 @@ class PriceHistorySection extends StatelessWidget {
                   Icon(
                     latestIsUp ? Icons.arrow_upward : Icons.arrow_downward,
                     size: 16,
-                    color: latestIsUp ? AppColors.error : AppColors.success,
+                    color: latestIsUp ? negative : positive,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     fmtDelta(latestDiff),
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: latestIsUp ? AppColors.error : AppColors.success,
+                      color: latestIsUp ? negative : positive,
                     ),
                   ),
                   const Spacer(),
@@ -226,7 +237,7 @@ class PriceHistorySection extends StatelessWidget {
                 'Total change',
                 style: Theme.of(
                   context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+                ).textTheme.bodySmall?.copyWith(color: muted),
               ),
               const SizedBox(height: 4),
               Row(
@@ -234,14 +245,14 @@ class PriceHistorySection extends StatelessWidget {
                   Icon(
                     totalIsUp ? Icons.trending_up : Icons.trending_down,
                     size: 16,
-                    color: totalIsUp ? AppColors.error : AppColors.success,
+                    color: totalIsUp ? negative : positive,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     fmtDelta(totalDiff),
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: totalIsUp ? AppColors.error : AppColors.success,
+                      color: totalIsUp ? negative : positive,
                     ),
                   ),
                 ],
@@ -270,14 +281,14 @@ class PriceHistorySection extends StatelessWidget {
                 children: [
                   Icon(
                     isUp ? Icons.arrow_upward : Icons.arrow_downward,
-                    color: isUp ? AppColors.error : AppColors.success,
+                    color: isUp ? negative : positive,
                     size: 16,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     fmtDelta(diff),
                     style: TextStyle(
-                      color: isUp ? AppColors.error : AppColors.success,
+                      color: isUp ? negative : positive,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

@@ -39,7 +39,7 @@ class AuctionController extends Controller
         $property = Property::where('public_id', $validated['property_id'])->firstOrFail();
 
         if ($property->owner_id !== Auth::id()) {
-             return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $auction = Auction::create([
@@ -75,9 +75,9 @@ class AuctionController extends Controller
         $amount = $validated['amount'];
 
         $minBid = $auction->current_price ? $auction->current_price : $auction->starting_price;
-        
+
         if ($amount <= $minBid) {
-             return response()->json(['message' => 'Bid must be higher than current price'], 400);
+            return response()->json(['message' => 'Bid must be higher than current price'], 400);
         }
 
         $bid = DB::transaction(function () use ($auction, $amount, $request) {
@@ -91,7 +91,7 @@ class AuctionController extends Controller
             ]);
 
             $auction->update(['current_price' => $amount]);
-            
+
             return $bid;
         });
 

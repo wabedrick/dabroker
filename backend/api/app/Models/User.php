@@ -37,6 +37,8 @@ class User extends Authenticatable implements HasMedia
         'bio',
         'metadata',
         'last_login_at',
+        'phone_verified_at',
+        'email_verified_at',
     ];
 
     /**

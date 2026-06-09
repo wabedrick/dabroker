@@ -51,7 +51,7 @@ class CloseEndedAuctions extends Command
                     $auction->update(['status' => 'unsold']);
                     $this->info("Auction {$auction->id} ended with no bids.");
                 }
-                
+
                 broadcast(new AuctionUpdated($auction));
             });
         }

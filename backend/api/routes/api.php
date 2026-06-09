@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\BuyerDashboardController;
 use App\Http\Controllers\API\FavoriteNotificationController;
 use App\Http\Controllers\API\FavoritePropertyController;
 use App\Http\Controllers\API\InterestedBuyerController;
 use App\Http\Controllers\API\OwnerDashboardController;
 use App\Http\Controllers\API\NotificationCounterController;
 use App\Http\Controllers\API\NotificationPreferenceController;
+use App\Http\Controllers\API\AiPropertySearchController;
 use App\Http\Controllers\API\OwnerPropertyController;
 use App\Http\Controllers\API\OwnerPropertyMediaController;
 use App\Http\Controllers\API\OwnerPropertyInquiryController;
@@ -14,11 +16,13 @@ use App\Http\Controllers\API\PropertyApprovalController;
 use App\Http\Controllers\API\PropertyBrowseController;
 use App\Http\Controllers\API\PropertyInquiryMessageController;
 use App\Http\Controllers\API\PropertyInquiryController;
+use App\Http\Controllers\API\LodgingBrowseController;
 use App\Models\Property;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
     Route::get('properties', [PropertyBrowseController::class, 'index']);
+    Route::post('properties/ai-search', AiPropertySearchController::class)->middleware('throttle:10,1');
     Route::get('properties/{property:public_id}', [PropertyBrowseController::class, 'show']);
 
     Route::post('auth/register', [AuthController::class, 'register']);
@@ -29,8 +33,8 @@ Route::prefix('v1')->group(function (): void {
     Route::post('auth/password/reset', [AuthController::class, 'resetPassword']);
 
     // Public lodging routes
-    Route::get('lodgings', [App\Http\Controllers\API\LodgingBrowseController::class, 'index']);
-    Route::get('lodgings/{lodging:public_id}', [App\Http\Controllers\API\LodgingBrowseController::class, 'show']);
+    Route::get('lodgings', [LodgingBrowseController::class, 'index']);
+    Route::get('lodgings/{lodging:public_id}', [LodgingBrowseController::class, 'show']);
     Route::get('lodgings/{lodging:public_id}/availability', [App\Http\Controllers\API\LodgingAvailabilityController::class, 'index']);
 
     // Public professionals routes
@@ -104,6 +108,10 @@ Route::prefix('v1')->group(function (): void {
 
             Route::get('interested-buyers', [InterestedBuyerController::class, 'index']);
             Route::post('interested-buyers/{favorite:public_id}/read', [InterestedBuyerController::class, 'markRead']);
+        });
+
+        Route::prefix('buyer')->group(function (): void {
+            Route::get('dashboard', BuyerDashboardController::class);
         });
 
         Route::prefix('admin')

@@ -33,8 +33,12 @@ class NotificationRepository {
   ) async {
     try {
       final String endpoint = switch (category) {
-        NotificationCategory.inquiries => ApiEndpoints.ownerInquiries,
-        NotificationCategory.favorites => ApiEndpoints.ownerInterestedBuyers,
+        // For inquiries: /inquiries returns buyer's sent inquiries (chats)
+        // /owner/inquiries returns owner's received inquiries
+        NotificationCategory.inquiries => ApiEndpoints.inquiries,
+        // Favorites: /favorites/properties returns buyer's saved properties
+        // /owner/interested-buyers returns interested buyers for owner
+        NotificationCategory.favorites => ApiEndpoints.favoriteProperties,
         NotificationCategory.bookings => ApiEndpoints.bookings,
         NotificationCategory.reservations => ApiEndpoints.hostBookings,
       };

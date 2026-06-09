@@ -1,12 +1,15 @@
 import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/core/widgets/skeleton_box.dart';
 import 'package:broker_app/data/models/booking.dart';
+import 'package:broker_app/data/models/property.dart';
 import 'package:broker_app/features/auth/providers/auth_provider.dart';
 import 'package:broker_app/features/bookings/screens/booking_detail_screen.dart';
 import 'package:broker_app/features/inquiries/screens/chat_screen.dart';
 import 'package:broker_app/features/notifications/models/notification_item.dart';
 import 'package:broker_app/features/notifications/providers/notification_counters_provider.dart';
 import 'package:broker_app/features/notifications/providers/notification_list_provider.dart';
+import 'package:broker_app/features/properties/screens/property_detail_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -31,14 +34,19 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen>
     final isSeller = user?.roles.contains('seller') ?? false;
     final isOwner = isHost || isSeller;
 
-    _categories = [
-      if (isOwner) ...[
-        NotificationCategory.inquiries,
-        NotificationCategory.favorites,
-        NotificationCategory.reservations,
-      ],
-      NotificationCategory.bookings,
-    ];
+    // For buyers (non-owners), show: Chats, Bookings, Favourites
+    // For owners/hosts, show: Inquiries (received), Interested Buyers, Reservations
+    _categories = isOwner
+        ? [
+            NotificationCategory.inquiries,
+            NotificationCategory.favorites,
+            NotificationCategory.reservations,
+          ]
+        : [
+            NotificationCategory.inquiries,
+            NotificationCategory.bookings,
+            NotificationCategory.favorites,
+          ];
 
     _tabController = TabController(length: _categories.length, vsync: this);
     _tabController.addListener(_handleTabChange);
@@ -81,7 +89,10 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen>
       ),
       body: Column(
         children: [
-          _SummaryChips(state: countersState),
+          _NavigationChips(
+            categories: _categories,
+            tabController: _tabController,
+          ),
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -110,6 +121,69 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen>
   }
 }
 
+class _NavigationChips extends StatelessWidget {
+  const _NavigationChips({
+    required this.categories,
+    required this.tabController,
+  });
+
+  final List<NotificationCategory> categories;
+  final TabController tabController;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(categories.length, (index) {
+            final category = categories[index];
+            final isSelected = tabController.index == index;
+            final color = switch (category) {
+              NotificationCategory.inquiries => colorScheme.primary,
+              NotificationCategory.bookings => colorScheme.tertiary,
+              NotificationCategory.favorites => colorScheme.error,
+              NotificationCategory.reservations => colorScheme.secondary,
+            };
+
+            return Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: GestureDetector(
+                onTap: () {
+                  tabController.animateTo(index);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? color
+                        : color.withAlpha((0.1 * 255).round()),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: color, width: isSelected ? 0 : 1),
+                  ),
+                  child: Text(
+                    category.label,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: isSelected ? colorScheme.onPrimary : color,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+      ),
+    );
+  }
+}
+
 class _SummaryChips extends StatelessWidget {
   const _SummaryChips({required this.state});
 
@@ -118,6 +192,7 @@ class _SummaryChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final counters = state.counters;
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: Row(
@@ -126,17 +201,17 @@ class _SummaryChips extends StatelessWidget {
           _SummaryChip(
             label: 'Buyer',
             value: counters?.buyerUnreadInquiries ?? 0,
-            color: AppColors.primaryBlue,
+            color: colorScheme.primary,
           ),
           _SummaryChip(
             label: 'General',
             value: counters?.unreadInquiries ?? 0,
-            color: AppColors.warning,
+            color: colorScheme.secondary,
           ),
           _SummaryChip(
             label: 'Favorites',
             value: counters?.unreadFavorites ?? 0,
-            color: AppColors.error,
+            color: colorScheme.error,
           ),
         ],
       ),
@@ -288,11 +363,12 @@ class _NotificationTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formatter = DateFormat('MMM d, h:mm a');
+    final colorScheme = Theme.of(context).colorScheme;
     final accent = switch (item.category) {
-      NotificationCategory.favorites => AppColors.error,
+      NotificationCategory.favorites => colorScheme.error,
       NotificationCategory.bookings ||
-      NotificationCategory.reservations => Colors.green,
-      _ => AppColors.primaryBlue,
+      NotificationCategory.reservations => colorScheme.tertiary,
+      _ => colorScheme.primary,
     };
 
     final isPendingReservation =
@@ -338,6 +414,36 @@ class _NotificationTile extends ConsumerWidget {
               context,
             ).showSnackBar(SnackBar(content: Text('Could not open chat: $e')));
           }
+        } else if (item.category == NotificationCategory.favorites &&
+            item.relatedPropertyId != null) {
+          try {
+            // Try to deserialize the property from metadata to avoid re-fetching
+            Property? initialProperty;
+            if (item.metadata != null) {
+              try {
+                initialProperty = Property.fromJson(
+                  item.metadata! as Map<String, dynamic>,
+                );
+              } catch (e) {
+                // If deserialization fails, we'll fetch it by ID
+                debugPrint('Could not deserialize property from metadata: $e');
+              }
+            }
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PropertyDetailScreen(
+                  propertyId: item.relatedPropertyId!,
+                  initialProperty: initialProperty,
+                ),
+              ),
+            );
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Could not open property: $e')),
+            );
+          }
         }
       },
       child: Container(
@@ -345,7 +451,9 @@ class _NotificationTile extends ConsumerWidget {
         decoration: BoxDecoration(
           color: item.isRead
               ? Theme.of(context).cardColor
-              : AppColors.primaryBlue.withAlpha((0.05 * 255).round()),
+              : Theme.of(
+                  context,
+                ).colorScheme.primary.withAlpha((0.05 * 255).round()),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: accent.withAlpha((0.15 * 255).round())),
         ),
@@ -387,7 +495,11 @@ class _NotificationTile extends ConsumerWidget {
                           Text(
                             formatter.format(item.createdAt),
                             style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: AppColors.textSecondary),
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
                           ),
                         ],
                       ),
@@ -438,8 +550,10 @@ class _NotificationTile extends ConsumerWidget {
                         }
                       },
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.error,
-                        side: const BorderSide(color: AppColors.error),
+                        foregroundColor: Theme.of(context).colorScheme.error,
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                       ),
                       child: const Text('Reject'),
                     ),
@@ -469,8 +583,10 @@ class _NotificationTile extends ConsumerWidget {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onPrimary,
                       ),
                       child: const Text('Approve'),
                     ),
@@ -493,21 +609,18 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (icon, message) = switch (category) {
-      NotificationCategory.favorites => (
-        Icons.favorite_border,
-        'No favorite updates yet',
-      ),
+      NotificationCategory.inquiries => (Icons.chat_outlined, 'No chats yet'),
       NotificationCategory.bookings => (
         Icons.calendar_today_outlined,
-        'No trips booked yet',
+        'No bookings yet',
+      ),
+      NotificationCategory.favorites => (
+        Icons.favorite_border,
+        'No favourite properties yet',
       ),
       NotificationCategory.reservations => (
         Icons.bedroom_parent_outlined,
         'No reservations received yet',
-      ),
-      NotificationCategory.inquiries => (
-        Icons.mark_chat_unread_outlined,
-        'No inquiries yet',
       ),
     };
 
@@ -515,7 +628,11 @@ class _EmptyState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 80),
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
-        Icon(icon, size: 64, color: AppColors.textSecondary),
+        Icon(
+          icon,
+          size: 64,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
         const SizedBox(height: 16),
         Text(
           message,
@@ -525,9 +642,9 @@ class _EmptyState extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           'Keep exploring properties and conversations. Updates will show up here.',
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           textAlign: TextAlign.center,
         ),
       ],

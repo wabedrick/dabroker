@@ -225,6 +225,7 @@ class _AddLodgingScreenState extends ConsumerState<AddLodgingScreen> {
     final state = ref.watch(lodgingManagementProvider);
     final isLoading = state.isLoading;
     final isEditing = widget.lodging != null;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: Text(isEditing ? 'Edit Lodging' : 'Add Lodging')),
@@ -304,12 +305,12 @@ class _AddLodgingScreenState extends ConsumerState<AddLodgingScreen> {
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
+                          border: Border.all(color: colorScheme.outlineVariant),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.add_a_photo,
-                          color: Colors.grey,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ),

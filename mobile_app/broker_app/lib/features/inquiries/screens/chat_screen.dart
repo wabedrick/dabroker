@@ -1,4 +1,3 @@
-import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/data/models/inquiry.dart';
 import 'package:broker_app/features/auth/providers/auth_provider.dart';
 import 'package:broker_app/features/inquiries/repositories/consultation_repository.dart';
@@ -122,6 +121,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(title: Text(widget.title)),
       body: Column(
@@ -151,6 +151,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       // Check if the message is from the current user
                       final currentUser = ref.read(authStateProvider).user;
                       final isMe = message.senderId == currentUser?.id;
+                      final bubbleColor = isMe
+                          ? colorScheme.primary
+                          : colorScheme.surfaceContainerHighest;
+                      final messageColor = isMe
+                          ? colorScheme.onPrimary
+                          : colorScheme.onSurface;
+                      final timeColor = isMe
+                          ? colorScheme.onPrimary.withValues(alpha: 0.75)
+                          : colorScheme.onSurfaceVariant;
 
                       return Align(
                         alignment: isMe
@@ -163,9 +172,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: isMe
-                                ? AppColors.primaryBlue
-                                : Colors.grey[200],
+                            color: bubbleColor,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           constraints: BoxConstraints(
@@ -176,9 +183,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             children: [
                               Text(
                                 message.message,
-                                style: TextStyle(
-                                  color: isMe ? Colors.white : Colors.black,
-                                ),
+                                style: TextStyle(color: messageColor),
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -187,7 +192,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                 ).format(message.createdAt),
                                 style: TextStyle(
                                   fontSize: 10,
-                                  color: isMe ? Colors.white70 : Colors.black54,
+                                  color: timeColor,
                                 ),
                               ),
                             ],
@@ -200,10 +205,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Theme.of(context).shadowColor.withValues(alpha: 0.08),
                   blurRadius: 4,
                   offset: const Offset(0, -2),
                 ),
@@ -215,14 +220,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 children: [
                   // Add "Make Program" button for professionals
                   if (_inquiry != null &&
-                      ref.read(authStateProvider).user?.professionalProfile != null)
+                      ref.read(authStateProvider).user?.professionalProfile !=
+                          null)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
                           onPressed: () {
-                            // TODO: Navigate to create consultation screen
+                            // Navigate to create consultation screen
                             // For now, show a dialog or placeholder
                             _showScheduleConsultationDialog(context);
                           },
@@ -242,7 +248,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           decoration: const InputDecoration(
                             hintText: 'Type a message...',
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                            ),
                           ),
                           onSubmitted: (_) => _sendMessage(),
                         ),
@@ -252,9 +260,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             ? const SizedBox(
                                 width: 24,
                                 height: 24,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
-                            : const Icon(Icons.send, color: AppColors.primaryBlue),
+                            : Icon(Icons.send, color: colorScheme.primary),
                         onPressed: _isSending ? null : _sendMessage,
                       ),
                     ],
@@ -324,9 +334,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: notesController,
-              decoration: const InputDecoration(
-                labelText: 'Notes (Optional)',
-              ),
+              decoration: const InputDecoration(labelText: 'Notes (Optional)'),
               maxLines: 2,
             ),
           ],
@@ -364,11 +372,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   throw 'Could not determine client ID';
                 }
 
-                await ref.read(consultationRepositoryProvider).createConsultation(
-                  userId: otherUserId,
-                  scheduledAt: scheduledAt,
-                  notes: notesController.text.trim(),
-                );
+                await ref
+                    .read(consultationRepositoryProvider)
+                    .createConsultation(
+                      userId: otherUserId,
+                      scheduledAt: scheduledAt,
+                      notes: notesController.text.trim(),
+                    );
 
                 if (context.mounted) {
                   Navigator.pop(context);
@@ -378,9 +388,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e')),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('Error: $e')));
                 }
               }
             },

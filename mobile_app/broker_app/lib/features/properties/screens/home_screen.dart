@@ -1,4 +1,3 @@
-import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/core/widgets/skeleton_box.dart';
 import 'package:broker_app/data/models/user.dart';
 import 'package:broker_app/features/admin/screens/admin_dashboard_screen.dart';
@@ -477,23 +476,24 @@ class _InlineError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.error.withAlpha((0.08 * 255).round()),
+        color: colorScheme.errorContainer,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error),
+          Icon(Icons.error_outline, color: colorScheme.error),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               message,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.error),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onErrorContainer,
+              ),
             ),
           ),
         ],
@@ -825,14 +825,14 @@ class _NotificationBadge extends StatelessWidget {
         constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
-          color: AppColors.error,
+          color: Theme.of(context).colorScheme.error,
           borderRadius: BorderRadius.circular(999),
         ),
         alignment: Alignment.center,
         child: Text(
           label,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onError,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -863,13 +863,14 @@ class _ErrorView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+            Icon(Icons.error_outline, size: 48, color: colorScheme.error),
             const SizedBox(height: 12),
             Text(
               'Something went wrong',
@@ -879,9 +880,9 @@ class _ErrorView extends ConsumerWidget {
             Text(
               error,
               textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 16),
             ElevatedButton(

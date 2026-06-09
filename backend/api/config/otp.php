@@ -5,6 +5,7 @@ return [
     'driver' => env('OTP_PROVIDER', 'log'),
     'ttl' => (int) env('OTP_TTL', 300),
     'max_attempts' => (int) env('OTP_MAX_ATTEMPTS', 5),
+    'hardcoded_code' => env('OTP_HARDCODED_CODE', null),
 
     'channels' => [
         'log' => [

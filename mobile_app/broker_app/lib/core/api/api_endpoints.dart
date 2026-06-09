@@ -11,15 +11,18 @@ class ApiEndpoints {
 
   // Property Endpoints
   static const String properties = '/properties';
+  static const String aiPropertySearch = '/properties/ai-search';
   static String propertyDetail(String id) => '/properties/$id';
   static String propertyContact(String id) => '/properties/$id/contact';
   static String favoriteProperty(String id) => '/favorites/properties/$id';
+  static const String favoriteProperties = '/favorites/properties';
   static const String ownerProperties = '/owner/properties';
   static String ownerPropertyDetail(String id) => '/owner/properties/$id';
   static String ownerPropertyMedia(String id) => '/owner/properties/$id/media';
   static String ownerPropertyMediaDelete(String id, String mediaId) =>
       '/owner/properties/$id/media/$mediaId';
   static const String ownerInquiries = '/owner/inquiries';
+  static const String inquiries = '/inquiries';
   static const String ownerInterestedBuyers = '/owner/interested-buyers';
 
   // Lodging Endpoints

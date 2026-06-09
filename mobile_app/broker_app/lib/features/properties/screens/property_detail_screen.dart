@@ -1,10 +1,11 @@
-import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/core/utils/image_helper.dart';
 import 'package:broker_app/core/utils/money_format.dart';
 import 'package:broker_app/core/widgets/skeleton_box.dart';
 import 'package:broker_app/data/models/property.dart';
 import 'package:broker_app/data/models/property_price_history.dart';
 import 'package:broker_app/features/properties/providers/property_list_provider.dart';
+import 'package:broker_app/features/inquiries/repositories/inquiry_repository.dart';
+import 'package:broker_app/features/inquiries/screens/chat_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,6 +67,8 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (_property == null && _isLoading) {
       return const Scaffold(body: PropertyDetailSkeleton());
     }
@@ -79,11 +82,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: AppColors.error,
-                ),
+                Icon(Icons.error_outline, size: 48, color: colorScheme.error),
                 const SizedBox(height: 12),
                 Text(
                   _error ?? 'Unable to load property details',
@@ -116,7 +115,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
             Switch(
               value: property.isAvailable ?? true,
               onChanged: _toggleAvailability,
-              activeTrackColor: Colors.green,
+              activeTrackColor: colorScheme.primary,
             ),
             IconButton(
               icon: const Icon(Icons.edit),
@@ -131,7 +130,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
               },
             ),
             IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
+              icon: Icon(Icons.delete, color: colorScheme.error),
               onPressed: () => _confirmDelete(context, property.id),
             ),
           ],
@@ -157,7 +156,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                         price,
                         style: Theme.of(context).textTheme.displaySmall
                             ?.copyWith(
-                              color: AppColors.primaryBlue,
+                              color: colorScheme.primary,
                               fontWeight: FontWeight.bold,
                             ),
                       ),
@@ -184,17 +183,19 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.location_on_outlined,
                               size: 18,
-                              color: AppColors.textSecondary,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
                                 location,
                                 style: Theme.of(context).textTheme.bodyLarge
-                                    ?.copyWith(color: AppColors.textSecondary),
+                                    ?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
                               ),
                             ),
                           ],
@@ -205,7 +206,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                         Text(
                           property.address!,
                           style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: AppColors.textSecondary),
+                              ?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                       ],
 
@@ -340,7 +341,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                                         .textTheme
                                         .bodyMedium
                                         ?.copyWith(
-                                          color: AppColors.textSecondary,
+                                          color: colorScheme.onSurfaceVariant,
                                         ),
                                   ),
                                 ),
@@ -406,7 +407,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
           if (_isLoading)
             Positioned.fill(
               child: Container(
-                color: Colors.black.withAlpha((0.05 * 255).round()),
+                color: colorScheme.scrim.withAlpha((0.05 * 255).round()),
                 child: const PropertyDetailSkeleton(),
               ),
             ),
@@ -438,7 +439,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                             ? Icons.favorite
                             : Icons.favorite_border,
                         color: property.isFavorited == true
-                            ? AppColors.error
+                            ? colorScheme.error
                             : null,
                       ),
               ),
@@ -558,7 +559,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error.toString()),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     } finally {
@@ -574,22 +575,62 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
     final property = _property;
     if (property == null) return;
 
-    final message = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => _ContactOwnerSheet(propertyTitle: property.title),
-    );
-
-    if (message == null || message.trim().isEmpty) return;
-
     setState(() {
       _isContacting = true;
     });
 
     try {
+      // Check for existing inquiry with this property owner
+      final inquiries = await ref
+          .read(inquiryRepositoryProvider)
+          .getOwnerInquiries();
+
+      // Find inquiry for this property, if one already exists.
+      final matchingInquiries = inquiries
+          .where((inquiry) => inquiry.property?.id == property.id)
+          .toList();
+      final existingInquiry = matchingInquiries.isEmpty
+          ? null
+          : matchingInquiries.first;
+
+      if (existingInquiry != null) {
+        // Existing inquiry found, navigate to chat
+        if (!mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ChatScreen(
+              inquiryId: existingInquiry.publicId,
+              title: 'Chat: ${property.title}',
+            ),
+          ),
+        );
+        setState(() {
+          _isContacting = false;
+        });
+        return;
+      }
+
+      // No existing inquiry, show contact sheet
+      if (!mounted) return;
+      final message = await showModalBottomSheet<String>(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => _ContactOwnerSheet(propertyTitle: property.title),
+      );
+
+      if (message == null || message.trim().isEmpty) {
+        setState(() {
+          _isContacting = false;
+        });
+        return;
+      }
+
+      // Create new inquiry
       await ref
           .read(propertyRepositoryProvider)
           .contactOwner(propertyId: property.id, message: message.trim());
+
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
@@ -599,7 +640,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error.toString()),
-          backgroundColor: AppColors.error,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     } finally {
@@ -657,7 +698,9 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
             child: const Text('Cancel'),
           ),
           TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Delete'),
           ),
@@ -1002,10 +1045,11 @@ class _GallerySection extends StatelessWidget {
     final images = media ?? const [];
 
     if (images.isEmpty) {
+      final colorScheme = Theme.of(context).colorScheme;
       return AspectRatio(
         aspectRatio: 16 / 9,
         child: Container(
-          color: AppColors.primaryBlue.withAlpha((0.08 * 255).round()),
+          color: colorScheme.primary.withAlpha((0.08 * 255).round()),
           child: const Center(child: Icon(Icons.home_outlined, size: 64)),
         ),
       );
@@ -1027,13 +1071,17 @@ class _GallerySection extends StatelessWidget {
                 fit: BoxFit.cover,
                 memCacheWidth: 1080, // Optimize memory usage for detail view
                 placeholder: (_, __) => Container(
-                  color: AppColors.primaryBlue.withAlpha((0.08 * 255).round()),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withAlpha((0.08 * 255).round()),
                   child: const Center(
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 ),
                 errorWidget: (_, __, ___) => Container(
-                  color: AppColors.primaryBlue.withAlpha((0.08 * 255).round()),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withAlpha((0.08 * 255).round()),
                   child: const Center(
                     child: Icon(Icons.broken_image_outlined, size: 48),
                   ),
@@ -1055,8 +1103,10 @@ class _GallerySection extends StatelessWidget {
                   height: 8,
                   decoration: BoxDecoration(
                     color: currentIndex == index
-                        ? AppColors.primaryBlue
-                        : AppColors.white.withAlpha((0.7 * 255).round()),
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(
+                            context,
+                          ).colorScheme.surface.withAlpha((0.7 * 255).round()),
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
@@ -1070,14 +1120,16 @@ class _GallerySection extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.black.withAlpha((0.55 * 255).round()),
+                color: Theme.of(
+                  context,
+                ).colorScheme.scrim.withAlpha((0.55 * 255).round()),
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
                 '${currentIndex + 1}/${images.length}',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.white),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
               ),
             ),
           ),
@@ -1094,6 +1146,7 @@ class _DecisionSnapshotCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = Theme.of(context).colorScheme.surfaceContainerHighest;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     final price = property.price;
     final size = property.size;
     final unit = property.sizeUnit ?? 'unit';
@@ -1145,7 +1198,7 @@ class _DecisionSnapshotCard extends StatelessWidget {
             'Decision snapshot',
             style: Theme.of(
               context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodySmall?.copyWith(color: muted),
           ),
           const SizedBox(height: 10),
           Row(
@@ -1199,14 +1252,13 @@ class _SnapshotItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: muted),
         ),
         const SizedBox(height: 2),
         Text(
@@ -1248,6 +1300,7 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = Theme.of(context).colorScheme.surfaceContainerHighest;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -1262,7 +1315,7 @@ class _InfoChip extends StatelessWidget {
             label,
             style: Theme.of(
               context,
-            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ).textTheme.bodySmall?.copyWith(color: muted),
           ),
           Text(
             value,
@@ -1321,6 +1374,7 @@ class _ContactOwnerSheetState extends State<_ContactOwnerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -1341,9 +1395,9 @@ class _ContactOwnerSheetState extends State<_ContactOwnerSheet> {
             const SizedBox(height: 8),
             Text(
               'Send a quick note about "${widget.propertyTitle}"',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -1385,25 +1439,23 @@ class _OwnerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = Theme.of(context).colorScheme.surfaceContainerHighest;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor: AppColors.primaryBlue.withAlpha(
-              (0.1 * 255).round(),
-            ),
+            backgroundColor: colorScheme.primary.withAlpha((0.1 * 255).round()),
             child: Text(
               owner.name.isNotEmpty ? owner.name[0].toUpperCase() : '?',
               style: Theme.of(
                 context,
-              ).textTheme.titleMedium?.copyWith(color: AppColors.primaryBlue),
+              ).textTheme.titleMedium?.copyWith(color: colorScheme.primary),
             ),
           ),
           const SizedBox(width: 16),
@@ -1421,7 +1473,7 @@ class _OwnerCard extends StatelessWidget {
                   Text(
                     owner.formattedRole,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
               ],
@@ -1429,7 +1481,7 @@ class _OwnerCard extends StatelessWidget {
           ),
           IconButton(
             onPressed: () {
-              // TODO: Navigate to owner profile once available.
+              // Navigate to owner profile once available.
             },
             icon: const Icon(Icons.chat_bubble_outline),
           ),

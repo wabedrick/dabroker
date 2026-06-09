@@ -1,4 +1,3 @@
-import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/features/consultations/repositories/consultation_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,18 +37,6 @@ class _ScheduleConsultationScreenState
       initialDate: DateTime.now().add(const Duration(days: 1)),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 90)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primaryBlue,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -62,18 +49,6 @@ class _ScheduleConsultationScreenState
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: const TimeOfDay(hour: 9, minute: 0),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primaryBlue,
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
     if (picked != null && picked != _selectedTime) {
       setState(() {
@@ -101,11 +76,13 @@ class _ScheduleConsultationScreenState
         _selectedTime!.minute,
       );
 
-      await ref.read(consultationRepositoryProvider).requestConsultation(
-        professionalId: widget.professionalId,
-        scheduledAt: scheduledAt,
-        notes: _notesController.text,
-      );
+      await ref
+          .read(consultationRepositoryProvider)
+          .requestConsultation(
+            professionalId: widget.professionalId,
+            scheduledAt: scheduledAt,
+            notes: _notesController.text,
+          );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -115,9 +92,9 @@ class _ScheduleConsultationScreenState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) {
@@ -128,6 +105,7 @@ class _ScheduleConsultationScreenState
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(title: const Text('Schedule Consultation')),
       body: SingleChildScrollView(
@@ -142,9 +120,9 @@ class _ScheduleConsultationScreenState
             const SizedBox(height: 32),
             Text(
               'Select Date',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             InkWell(
@@ -153,17 +131,19 @@ class _ScheduleConsultationScreenState
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey[300]!),
+                  border: Border.all(color: colorScheme.outlineVariant),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_today, color: AppColors.primaryBlue),
+                    Icon(Icons.calendar_today, color: colorScheme.primary),
                     const SizedBox(width: 12),
                     Text(
                       _selectedDate == null
                           ? 'Choose a date'
-                          : DateFormat('EEEE, MMMM d, y').format(_selectedDate!),
+                          : DateFormat(
+                              'EEEE, MMMM d, y',
+                            ).format(_selectedDate!),
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ],
@@ -173,9 +153,9 @@ class _ScheduleConsultationScreenState
             const SizedBox(height: 24),
             Text(
               'Select Time',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             InkWell(
@@ -184,12 +164,12 @@ class _ScheduleConsultationScreenState
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey[300]!),
+                  border: Border.all(color: colorScheme.outlineVariant),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.access_time, color: AppColors.primaryBlue),
+                    Icon(Icons.access_time, color: colorScheme.primary),
                     const SizedBox(width: 12),
                     Text(
                       _selectedTime == null
@@ -204,9 +184,9 @@ class _ScheduleConsultationScreenState
             const SizedBox(height: 24),
             Text(
               'Notes (Optional)',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -216,11 +196,11 @@ class _ScheduleConsultationScreenState
                 hintText: 'Briefly describe what you want to discuss...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderSide: BorderSide(color: colorScheme.outlineVariant),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderSide: BorderSide(color: colorScheme.outlineVariant),
                 ),
               ),
             ),
@@ -231,19 +211,17 @@ class _ScheduleConsultationScreenState
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submitBooking,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? CircularProgressIndicator(color: colorScheme.onPrimary)
                     : const Text(
                         'Confirm Booking',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
                         ),
                       ),
               ),

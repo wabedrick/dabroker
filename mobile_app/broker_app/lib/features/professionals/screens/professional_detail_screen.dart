@@ -1,4 +1,3 @@
-import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/core/widgets/rating_dialog.dart';
 import 'package:broker_app/data/models/pagination.dart';
 import 'package:broker_app/data/models/user.dart';
@@ -29,6 +28,7 @@ class ProfessionalDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = professional.professionalProfile;
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       body: DefaultTabController(
@@ -47,8 +47,8 @@ class ProfessionalDetailScreen extends ConsumerWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          AppColors.primaryBlue.withValues(alpha: 0.8),
-                          AppColors.primaryBlue,
+                          colorScheme.primary.withValues(alpha: 0.8),
+                          colorScheme.primary,
                         ],
                       ),
                     ),
@@ -63,11 +63,17 @@ class ProfessionalDetailScreen extends ConsumerWidget {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (_) => Scaffold(
-                                    backgroundColor: Colors.black,
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).colorScheme.scrim,
                                     appBar: AppBar(
-                                      backgroundColor: Colors.black,
-                                      iconTheme: const IconThemeData(
-                                        color: Colors.white,
+                                      backgroundColor: Theme.of(
+                                        context,
+                                      ).colorScheme.scrim,
+                                      iconTheme: IconThemeData(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurface,
                                       ),
                                     ),
                                     body: Center(
@@ -89,7 +95,7 @@ class ProfessionalDetailScreen extends ConsumerWidget {
                             tag: 'professional_avatar_${professional.id}',
                             child: CircleAvatar(
                               radius: 50,
-                              backgroundColor: Colors.white,
+                              backgroundColor: colorScheme.surface,
                               backgroundImage:
                                   professional.avatar != null &&
                                       professional.avatar!.startsWith('http')
@@ -100,10 +106,10 @@ class ProfessionalDetailScreen extends ConsumerWidget {
                                       !professional.avatar!.startsWith('http')
                                   ? Text(
                                       professional.name[0].toUpperCase(),
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 40,
                                         fontWeight: FontWeight.bold,
-                                        color: AppColors.primaryBlue,
+                                        color: colorScheme.primary,
                                       ),
                                     )
                                   : null,
@@ -114,7 +120,7 @@ class ProfessionalDetailScreen extends ConsumerWidget {
                         Text(
                           professional.name,
                           style: theme.textTheme.headlineSmall?.copyWith(
-                            color: Colors.white,
+                            color: colorScheme.onPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -125,13 +131,13 @@ class ProfessionalDetailScreen extends ConsumerWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: colorScheme.onPrimary.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             professional.preferredRole.toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: colorScheme.onPrimary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -149,19 +155,23 @@ class ProfessionalDetailScreen extends ConsumerWidget {
                               const SizedBox(width: 4),
                               Text(
                                 '${professional.averageRating.toStringAsFixed(1)} Rating',
-                                style: const TextStyle(color: Colors.white),
+                                style: TextStyle(color: colorScheme.onPrimary),
                               ),
                               if (profile.experienceYears != null) ...[
                                 const SizedBox(width: 16),
-                                const Icon(
+                                Icon(
                                   Icons.work_history,
-                                  color: Colors.white70,
+                                  color: colorScheme.onPrimary.withValues(
+                                    alpha: 0.75,
+                                  ),
                                   size: 20,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   '${profile.experienceYears} Yrs Exp',
-                                  style: const TextStyle(color: Colors.white),
+                                  style: TextStyle(
+                                    color: colorScheme.onPrimary,
+                                  ),
                                 ),
                               ],
                             ],
@@ -208,9 +218,11 @@ class ProfessionalDetailScreen extends ConsumerWidget {
               SliverPersistentHeader(
                 delegate: _SliverAppBarDelegate(
                   TabBar(
-                    labelColor: AppColors.primaryBlue,
-                    unselectedLabelColor: Colors.grey,
-                    indicatorColor: AppColors.primaryBlue,
+                    labelColor: colorScheme.onPrimary,
+                    unselectedLabelColor: colorScheme.onPrimary.withValues(
+                      alpha: 0.75,
+                    ),
+                    indicatorColor: colorScheme.onPrimary,
                     tabs: const [
                       Tab(text: 'Profile'),
                       Tab(text: 'Portfolio'),
@@ -234,10 +246,10 @@ class ProfessionalDetailScreen extends ConsumerWidget {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: theme.shadowColor.withValues(alpha: 0.08),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),
@@ -275,7 +287,7 @@ class ProfessionalDetailScreen extends ConsumerWidget {
                 },
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  side: const BorderSide(color: AppColors.primaryBlue),
+                  side: BorderSide(color: colorScheme.primary),
                 ),
                 child: const Text('Message'),
               ),
@@ -295,13 +307,11 @@ class ProfessionalDetailScreen extends ConsumerWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text(
-                  'Book Consultation',
-                  style: TextStyle(color: Colors.white),
-                ),
+                child: const Text('Book Consultation'),
               ),
             ),
           ],
@@ -346,8 +356,12 @@ class _ProfileTab extends StatelessWidget {
               children: profile.specialties!.map((specialty) {
                 return Chip(
                   label: Text(specialty),
-                  backgroundColor: AppColors.primaryBlue.withValues(alpha: 0.1),
-                  labelStyle: const TextStyle(color: AppColors.primaryBlue),
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer,
+                  labelStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
                 );
               }).toList(),
             ),
@@ -364,7 +378,9 @@ class _ProfileTab extends StatelessWidget {
                 return Chip(
                   avatar: const Icon(Icons.language, size: 16),
                   label: Text(lang),
-                  backgroundColor: Colors.grey[100],
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest,
                 );
               }).toList(),
             ),
@@ -381,7 +397,10 @@ class _ProfileTab extends StatelessWidget {
               ].where((e) => e != null && e.toString().isNotEmpty).join(' • ');
               return ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.school, color: Colors.grey),
+                leading: Icon(
+                  Icons.school,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
                 title: Text(edu['degree'] ?? 'Degree'),
                 subtitle: subtitle.isNotEmpty ? Text(subtitle) : null,
               );
@@ -439,15 +458,20 @@ class _PortfolioTab extends StatelessWidget {
     final portfolios = professional.professionalProfile?.portfolios;
 
     if (portfolios == null || portfolios.isEmpty) {
+      final colorScheme = Theme.of(context).colorScheme;
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.folder_open, size: 64, color: Colors.grey[300]),
+            Icon(
+              Icons.folder_open,
+              size: 64,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.55),
+            ),
             const SizedBox(height: 16),
             Text(
               'No portfolio items yet',
-              style: TextStyle(color: Colors.grey[500]),
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
           ],
         ),
@@ -470,9 +494,13 @@ class _PortfolioTab extends StatelessWidget {
                 Container(
                   height: 150,
                   width: double.infinity,
-                  color: Colors.grey[200],
-                  child: const Center(
-                    child: Icon(Icons.image, size: 48, color: Colors.grey),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  child: Center(
+                    child: Icon(
+                      Icons.image,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               Padding(
@@ -490,9 +518,9 @@ class _PortfolioTab extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         'Completed: ${item.projectDate!.toString().split(' ')[0]}',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                     if (item.description != null) ...[
@@ -546,7 +574,7 @@ class _ReviewsTab extends ConsumerWidget {
                     professional.averageRating.toStringAsFixed(1),
                     style: Theme.of(context).textTheme.displayMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primaryBlue,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   Row(
@@ -723,18 +751,19 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-        Icon(icon, size: 20, color: Colors.grey),
+        Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
         const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               label,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             Text(value, style: Theme.of(context).textTheme.bodyMedium),
           ],
@@ -760,7 +789,10 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return Container(color: Colors.white, child: _tabBar);
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      child: _tabBar,
+    );
   }
 
   @override

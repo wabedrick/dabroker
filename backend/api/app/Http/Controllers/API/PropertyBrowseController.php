@@ -54,8 +54,8 @@ class PropertyBrowseController extends Controller
             ->where('id', '!=', $property->id)
             ->where(function ($query) use ($property) {
                 $query->where('city', $property->city)
-                      ->orWhere('type', $property->type)
-                      ->orWhereBetween('price', [$property->price * 0.8, $property->price * 1.2]);
+                    ->orWhere('type', $property->type)
+                    ->orWhereBetween('price', [$property->price * 0.8, $property->price * 1.2]);
             })
             ->limit(5)
             ->get();

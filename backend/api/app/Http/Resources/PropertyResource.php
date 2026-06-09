@@ -53,10 +53,17 @@ class PropertyResource extends JsonResource
             'approver' => $this->formatUserSummary('approver'),
             'gallery' => $this->formatGallery(),
             'is_favorited' => $this->isFavorited($request),
+            'ai_match' => $this->when($this->hasAiMatch(), fn() => $this->resource->getAttribute('ai_match')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'deleted_at' => $this->deleted_at,
         ];
+    }
+
+    private function hasAiMatch(): bool
+    {
+        return $this->resource instanceof Model
+            && array_key_exists('ai_match', $this->resource->getAttributes());
     }
 
     private function isFavorited(Request $request): bool

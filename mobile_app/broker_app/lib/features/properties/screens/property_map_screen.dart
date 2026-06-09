@@ -1,4 +1,3 @@
-import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/core/utils/money_format.dart';
 import 'package:broker_app/data/models/property.dart';
 import 'package:broker_app/features/properties/screens/property_detail_screen.dart';
@@ -75,6 +74,14 @@ class _PropertyMapScreenState extends State<PropertyMapScreen> {
   }
 
   Marker _buildMarker({required Property property, required bool isSelected}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final fillColor = isSelected
+        ? colorScheme.primary
+        : colorScheme.primaryContainer;
+    final iconColor = isSelected
+        ? colorScheme.onPrimary
+        : colorScheme.onPrimaryContainer;
+
     return Marker(
       point: LatLng(property.latitude!, property.longitude!),
       width: 50,
@@ -101,27 +108,23 @@ class _PropertyMapScreenState extends State<PropertyMapScreen> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           decoration: BoxDecoration(
-            color: isSelected
-                ? AppColors.primaryBlue
-                : AppColors.primaryBlue.withValues(alpha: 0.85),
+            color: fillColor,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2),
+            border: Border.all(color: colorScheme.surface, width: 2),
             // Shadows are expensive when you have many markers; only apply to selection.
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.22),
+                      color: Theme.of(
+                        context,
+                      ).shadowColor.withValues(alpha: 0.22),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
                   ]
                 : const [],
           ),
-          child: Icon(
-            Icons.home,
-            color: Colors.white,
-            size: isSelected ? 30 : 24,
-          ),
+          child: Icon(Icons.home, color: iconColor, size: isSelected ? 30 : 24),
         ),
       ),
     );
@@ -196,6 +199,7 @@ class _PropertyMapCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
@@ -262,9 +266,8 @@ class _PropertyMapCard extends StatelessWidget {
                 children: [
                   Text(
                     property.title,
-                    style: const TextStyle(
+                    style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -276,10 +279,9 @@ class _PropertyMapCard extends StatelessWidget {
                       property.currency,
                       fractionDigits: 0,
                     ),
-                    style: const TextStyle(
-                      color: AppColors.primaryBlue,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.primary,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
                     ),
                   ),
                   const SizedBox(height: 4),
