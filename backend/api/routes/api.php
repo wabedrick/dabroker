@@ -116,6 +116,7 @@ Route::prefix('v1')->group(function (): void {
 
         Route::prefix('admin')
             ->middleware('can:properties.approve')
+            ->name('admin.')
             ->group(function (): void {
                 Route::get('dashboard/stats', [App\Http\Controllers\API\Admin\AdminDashboardController::class, 'stats']);
                 Route::get('dashboard/analytics', [App\Http\Controllers\API\Admin\AdminDashboardController::class, 'analytics']);
