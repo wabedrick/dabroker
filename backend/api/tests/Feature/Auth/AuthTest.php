@@ -38,12 +38,12 @@ class AuthTest extends TestCase
         $response = $this->postJson('/api/v1/auth/register', $payload);
 
         $response->assertCreated()
-            ->assertJsonPath('data.status', 'active')
+            ->assertJsonPath('data.status', 'pending')
             ->assertJsonPath('data.preferred_role', 'buyer');
 
         $this->assertDatabaseHas('users', [
             'email' => 'alice@example.com',
-            'status' => 'active',
+            'status' => 'pending',
         ]);
     }
 
@@ -89,7 +89,7 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertOk()
-            ->assertJsonStructure(['token', 'data' => ['id', 'email']]);
+            ->assertJsonStructure(['data' => ['token', 'user' => ['id', 'email']]]);
 
         $this->assertNotNull($user->fresh()->last_login_at);
     }
@@ -113,7 +113,7 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertOk()
-            ->assertJsonStructure(['token']);
+            ->assertJsonStructure(['data' => ['token', 'user']]);
 
         $this->assertSame('active', $user->fresh()->status);
     }

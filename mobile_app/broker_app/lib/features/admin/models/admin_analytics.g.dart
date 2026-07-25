@@ -10,11 +10,14 @@ AdminAnalytics _$AdminAnalyticsFromJson(Map<String, dynamic> json) =>
     AdminAnalytics(
       users: AnalyticsUsers.fromJson(json['users'] as Map<String, dynamic>),
       properties: AnalyticsProperties.fromJson(
-          json['properties'] as Map<String, dynamic>),
-      lodgings:
-          AnalyticsLodgings.fromJson(json['lodgings'] as Map<String, dynamic>),
+        json['properties'] as Map<String, dynamic>,
+      ),
+      lodgings: AnalyticsLodgings.fromJson(
+        json['lodgings'] as Map<String, dynamic>,
+      ),
       moderation: AnalyticsModeration.fromJson(
-          json['moderation'] as Map<String, dynamic>),
+        json['moderation'] as Map<String, dynamic>,
+      ),
     );
 
 Map<String, dynamic> _$AdminAnalyticsToJson(AdminAnalytics instance) =>
@@ -51,12 +54,12 @@ AnalyticsProperties _$AnalyticsPropertiesFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$AnalyticsPropertiesToJson(
-        AnalyticsProperties instance) =>
-    <String, dynamic>{
-      'daily_new': instance.dailyNew.map((e) => e.toJson()).toList(),
-      'daily_approved': instance.dailyApproved.map((e) => e.toJson()).toList(),
-      'pending': instance.pending,
-    };
+  AnalyticsProperties instance,
+) => <String, dynamic>{
+  'daily_new': instance.dailyNew.map((e) => e.toJson()).toList(),
+  'daily_approved': instance.dailyApproved.map((e) => e.toJson()).toList(),
+  'pending': instance.pending,
+};
 
 AnalyticsLodgings _$AnalyticsLodgingsFromJson(Map<String, dynamic> json) =>
     AnalyticsLodgings(
@@ -84,10 +87,10 @@ AnalyticsModeration _$AnalyticsModerationFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$AnalyticsModerationToJson(
-        AnalyticsModeration instance) =>
-    <String, dynamic>{
-      'top_actions': instance.topActions.map((e) => e.toJson()).toList(),
-    };
+  AnalyticsModeration instance,
+) => <String, dynamic>{
+  'top_actions': instance.topActions.map((e) => e.toJson()).toList(),
+};
 
 TimeSeriesPoint _$TimeSeriesPointFromJson(Map<String, dynamic> json) =>
     TimeSeriesPoint(
@@ -96,10 +99,7 @@ TimeSeriesPoint _$TimeSeriesPointFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$TimeSeriesPointToJson(TimeSeriesPoint instance) =>
-    <String, dynamic>{
-      'date': instance.date,
-      'count': instance.count,
-    };
+    <String, dynamic>{'date': instance.date, 'count': instance.count};
 
 TopModerationAction _$TopModerationActionFromJson(Map<String, dynamic> json) =>
     TopModerationAction(
@@ -108,8 +108,5 @@ TopModerationAction _$TopModerationActionFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$TopModerationActionToJson(
-        TopModerationAction instance) =>
-    <String, dynamic>{
-      'action': instance.action,
-      'count': instance.count,
-    };
+  TopModerationAction instance,
+) => <String, dynamic>{'action': instance.action, 'count': instance.count};

@@ -1,26 +1,28 @@
-import 'package:broker_app/core/api/api_endpoints.dart';
-import 'package:broker_app/core/api/dio_client.dart';
 import 'package:broker_app/core/providers/app_providers.dart';
 import 'package:broker_app/core/utils/api_error_handler.dart';
 import 'package:broker_app/data/models/inquiry.dart';
 import 'package:broker_app/data/models/inquiry_message.dart';
+import 'package:broker_app/features/inquiries/repositories/inquiry_api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+final inquiryApiClientProvider = Provider<InquiryApiClient>((ref) {
+  final client = ref.watch(dioClientProvider);
+  return InquiryApiClient(client.dio);
+});
+
 final inquiryRepositoryProvider = Provider<InquiryRepository>((ref) {
-  return InquiryRepository(ref.read(dioClientProvider));
+  return InquiryRepository(ref.watch(inquiryApiClientProvider));
 });
 
 class InquiryRepository {
-  final DioClient _client;
+  final InquiryApiClient _apiClient;
 
-  InquiryRepository(this._client);
+  InquiryRepository(this._apiClient);
 
   Future<Inquiry> getBookingInquiry(String bookingId) async {
     try {
-      final response = await _client.dio.get(
-        ApiEndpoints.bookingInquiry(bookingId),
-      );
-      return Inquiry.fromJson(response.data['data']);
+      final response = await _apiClient.getBookingInquiryRaw(bookingId);
+      return Inquiry.fromJson(response['data'] as Map<String, dynamic>);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }
@@ -28,10 +30,8 @@ class InquiryRepository {
 
   Future<Inquiry> getInquiry(String inquiryId) async {
     try {
-      final response = await _client.dio.get(
-        ApiEndpoints.inquiryDetail(inquiryId),
-      );
-      return Inquiry.fromJson(response.data['data']);
+      final response = await _apiClient.getInquiryRaw(inquiryId);
+      return Inquiry.fromJson(response['data'] as Map<String, dynamic>);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }
@@ -39,13 +39,9 @@ class InquiryRepository {
 
   Future<List<Inquiry>> getOwnerInquiries({int page = 1}) async {
     try {
-      // We use the general inquiries endpoint which now returns both sent and received inquiries
-      final response = await _client.dio.get(
-        '/inquiries', // Updated to use the general endpoint
-        queryParameters: {'page': page},
-      );
-      return (response.data['data'] as List)
-          .map((e) => Inquiry.fromJson(e))
+      final response = await _apiClient.getOwnerInquiriesRaw(page);
+      return (response['data'] as List)
+          .map((e) => Inquiry.fromJson(e as Map<String, dynamic>))
           .toList();
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
@@ -54,17 +50,8 @@ class InquiryRepository {
 
   Future<InquiryMessage> sendMessage(String inquiryId, String message) async {
     try {
-      final response = await _client.dio.post(
-        ApiEndpoints.inquiryMessages(inquiryId),
-        data: {'message': message},
-      );
-      // The API might return the message or the updated inquiry.
-      // Based on PropertyInquiryMessageController, it returns the message resource?
-      // Wait, I didn't check the return of PropertyInquiryMessageController.
-      // Let's assume it returns the message or I can just reload the inquiry.
-      // But for better UX, appending the message is better.
-      // Let's check the controller return.
-      return InquiryMessage.fromJson(response.data['data'] ?? response.data);
+      final response = await _apiClient.sendMessageRaw(inquiryId, {'message': message});
+      return InquiryMessage.fromJson((response['data'] ?? response) as Map<String, dynamic>);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }

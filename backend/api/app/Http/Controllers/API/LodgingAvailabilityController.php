@@ -21,7 +21,7 @@ class LodgingAvailabilityController extends Controller
         $checkOut = Carbon::parse($validated['check_out']);
 
         $bookedRooms = Booking::where('lodging_id', $lodging->id)
-            ->where('status', '!=', 'cancelled')
+            ->where('status', 'confirmed')
             ->where(function ($query) use ($checkIn, $checkOut) {
                 $query->whereBetween('check_in', [$checkIn, $checkOut])
                     ->orWhereBetween('check_out', [$checkIn, $checkOut])

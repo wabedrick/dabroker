@@ -8,6 +8,7 @@ import 'package:broker_app/features/inquiries/repositories/inquiry_repository.da
 import 'package:broker_app/features/inquiries/screens/chat_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:broker_app/features/auth/providers/auth_provider.dart';
@@ -109,7 +110,13 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(property.title),
+        title: Hero(
+          tag: 'property_title_${property.id}',
+          child: Material(
+            type: MaterialType.transparency,
+            child: Text(property.title),
+          ),
+        ),
         actions: [
           if (isOwner) ...[
             Switch(
@@ -146,6 +153,7 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                   controller: _pageController,
                   currentIndex: _currentPage,
                   media: property.gallery,
+                  propertyId: property.id,
                 ),
                 Padding(
                   padding: const EdgeInsets.all(20),
@@ -516,6 +524,8 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
 
     final target = !(property.isFavorited ?? false);
     final previous = property.isFavorited ?? false;
+    
+    HapticFeedback.mediumImpact();
 
     // Optimistic update: make the UI instant.
     setState(() {
@@ -1034,11 +1044,13 @@ class _GallerySection extends StatelessWidget {
     required this.controller,
     required this.currentIndex,
     required this.media,
+    required this.propertyId,
   });
 
   final PageController controller;
   final int currentIndex;
   final List<PropertyMedia>? media;
+  final String propertyId;
 
   @override
   Widget build(BuildContext context) {
@@ -1058,9 +1070,11 @@ class _GallerySection extends StatelessWidget {
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
-        AspectRatio(
-          aspectRatio: 16 / 9,
-          child: PageView.builder(
+        Hero(
+          tag: 'property_image_$propertyId',
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: PageView.builder(
             controller: controller,
             itemCount: images.length,
             itemBuilder: (_, index) {
@@ -1088,6 +1102,7 @@ class _GallerySection extends StatelessWidget {
                 ),
               );
             },
+          ),
           ),
         ),
         if (images.length > 1)

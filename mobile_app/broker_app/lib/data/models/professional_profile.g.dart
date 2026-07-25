@@ -27,29 +27,30 @@ ProfessionalProfile _$ProfessionalProfileFromJson(Map<String, dynamic> json) =>
       isAvailable: json['is_available'] as bool? ?? true,
       portfolios: (json['portfolios'] as List<dynamic>?)
           ?.map(
-              (e) => ProfessionalPortfolio.fromJson(e as Map<String, dynamic>))
+            (e) => ProfessionalPortfolio.fromJson(e as Map<String, dynamic>),
+          )
           .toList(),
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
 
 Map<String, dynamic> _$ProfessionalProfileToJson(
-        ProfessionalProfile instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'user_id': instance.userId,
-      'license_number': instance.licenseNumber,
-      'specialties': instance.specialties,
-      'bio': instance.bio,
-      'hourly_rate': instance.hourlyRate,
-      'experience_years': instance.experienceYears,
-      'languages': instance.languages,
-      'education': instance.education,
-      'certifications': instance.certifications,
-      'social_links': instance.socialLinks,
-      'verification_status': instance.verificationStatus,
-      'is_available': instance.isAvailable,
-      'portfolios': instance.portfolios,
-      'created_at': instance.createdAt.toIso8601String(),
-      'updated_at': instance.updatedAt.toIso8601String(),
-    };
+  ProfessionalProfile instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'user_id': instance.userId,
+  'license_number': instance.licenseNumber,
+  'specialties': instance.specialties,
+  'bio': instance.bio,
+  'hourly_rate': instance.hourlyRate,
+  'experience_years': instance.experienceYears,
+  'languages': instance.languages,
+  'education': instance.education,
+  'certifications': instance.certifications,
+  'social_links': instance.socialLinks,
+  'verification_status': instance.verificationStatus,
+  'is_available': instance.isAvailable,
+  'portfolios': instance.portfolios,
+  'created_at': instance.createdAt.toIso8601String(),
+  'updated_at': instance.updatedAt.toIso8601String(),
+};

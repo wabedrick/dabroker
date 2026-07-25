@@ -130,6 +130,14 @@ class AuthController extends Controller
             ]);
         }
 
+        if (! $this->otpEnabled() && $user->status === 'pending') {
+            $user->update([
+                'status' => 'active',
+                'phone_verified_at' => filter_var($request->identifier, FILTER_VALIDATE_EMAIL) ? $user->phone_verified_at : now(),
+                'email_verified_at' => filter_var($request->identifier, FILTER_VALIDATE_EMAIL) ? now() : $user->email_verified_at,
+            ]);
+        }
+
         $token = $user->createToken($request->device_name ?? 'auth_token')->plainTextToken;
 
         // Update last login

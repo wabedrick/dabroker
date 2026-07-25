@@ -1,19 +1,16 @@
 import 'dart:io';
 
-import 'package:dio/dio.dart';
-
-import 'package:broker_app/core/api/api_endpoints.dart';
-import 'package:broker_app/core/api/dio_client.dart';
 import 'package:broker_app/core/utils/api_error_handler.dart';
 import 'package:broker_app/data/models/property.dart';
 import 'package:broker_app/data/models/property_list_response.dart';
+import 'package:broker_app/features/properties/repositories/property_api_client.dart';
 
 import '../models/property_query_params.dart';
 
 class PropertyRepository {
-  final DioClient _client;
+  final PropertyApiClient _apiClient;
 
-  PropertyRepository(this._client);
+  PropertyRepository(this._apiClient);
 
   Future<PropertyListResponse> fetchProperties({
     required int page,
@@ -21,18 +18,12 @@ class PropertyRepository {
     PropertyQueryParams? params,
   }) async {
     try {
-      final response = await _client.dio.get(
-        ApiEndpoints.properties,
-        queryParameters: {
-          ...?params?.toQueryParameters(page: page, perPage: perPage),
-          if (params == null) 'page': page,
-          if (params == null) 'per_page': perPage,
-        },
-      );
-
-      return PropertyListResponse.fromJson(
-        response.data as Map<String, dynamic>,
-      );
+      final queries = {
+        ...?params?.toQueryParameters(page: page, perPage: perPage),
+        if (params == null) 'page': page,
+        if (params == null) 'per_page': perPage,
+      };
+      return await _apiClient.fetchProperties(queries);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }
@@ -40,8 +31,7 @@ class PropertyRepository {
 
   Future<Property> fetchPropertyDetail(String id) async {
     try {
-      final response = await _client.dio.get(ApiEndpoints.propertyDetail(id));
-      return Property.fromJson(response.data as Map<String, dynamic>);
+      return await _apiClient.fetchPropertyDetail(id);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }
@@ -52,10 +42,7 @@ class PropertyRepository {
     required String message,
   }) async {
     try {
-      await _client.dio.post(
-        ApiEndpoints.propertyContact(propertyId),
-        data: {'message': message},
-      );
+      await _apiClient.contactOwner(propertyId, {'message': message});
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }
@@ -67,9 +54,9 @@ class PropertyRepository {
   }) async {
     try {
       if (favorite) {
-        await _client.dio.post(ApiEndpoints.favoriteProperty(propertyId));
+        await _apiClient.favoriteProperty(propertyId);
       } else {
-        await _client.dio.delete(ApiEndpoints.favoriteProperty(propertyId));
+        await _apiClient.unfavoriteProperty(propertyId);
       }
       return favorite;
     } catch (error) {
@@ -79,11 +66,7 @@ class PropertyRepository {
 
   Future<Property> createProperty(Map<String, dynamic> data) async {
     try {
-      final response = await _client.dio.post(
-        ApiEndpoints.ownerProperties,
-        data: data,
-      );
-      return Property.fromJson(response.data['data'] as Map<String, dynamic>);
+      return await _apiClient.createProperty(data);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }
@@ -91,15 +74,7 @@ class PropertyRepository {
 
   Future<void> uploadPropertyMedia(String propertyId, File file) async {
     try {
-      String fileName = file.path.split('/').last;
-      FormData formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(file.path, filename: fileName),
-      });
-
-      await _client.dio.post(
-        ApiEndpoints.ownerPropertyMedia(propertyId),
-        data: formData,
-      );
+      await _apiClient.uploadPropertyMedia(propertyId, file);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }
@@ -107,9 +82,7 @@ class PropertyRepository {
 
   Future<void> deletePropertyMedia(String propertyId, String mediaId) async {
     try {
-      await _client.dio.delete(
-        ApiEndpoints.ownerPropertyMediaDelete(propertyId, mediaId),
-      );
+      await _apiClient.deletePropertyMedia(propertyId, mediaId);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }
@@ -117,11 +90,7 @@ class PropertyRepository {
 
   Future<Property> updateProperty(String id, Map<String, dynamic> data) async {
     try {
-      final response = await _client.dio.put(
-        ApiEndpoints.ownerPropertyDetail(id),
-        data: data,
-      );
-      return Property.fromJson(response.data['data'] as Map<String, dynamic>);
+      return await _apiClient.updateProperty(id, data);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }
@@ -129,7 +98,7 @@ class PropertyRepository {
 
   Future<void> deleteProperty(String id) async {
     try {
-      await _client.dio.delete(ApiEndpoints.ownerPropertyDetail(id));
+      await _apiClient.deleteProperty(id);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }

@@ -13,7 +13,11 @@ final storageServiceProvider = Provider<StorageService>((ref) {
   return StorageService(prefs);
 });
 
+final cacheDirectoryProvider = Provider<String>((ref) {
+  throw UnimplementedError();
+});
+
 final dioClientProvider = Provider<DioClient>((ref) {
-  final prefs = ref.watch(sharedPreferencesProvider);
-  return DioClient(prefs);
+  final cacheDir = ref.watch(cacheDirectoryProvider);
+  return DioClient(cacheDir: cacheDir);
 });

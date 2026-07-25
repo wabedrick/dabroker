@@ -23,10 +23,13 @@ class BookingTest extends TestCase
 
         \Laravel\Sanctum\Sanctum::actingAs($user, ['*']);
 
+        $checkIn = now()->addDays(10)->format('Y-m-d');
+        $checkOut = now()->addDays(15)->format('Y-m-d');
+
         $response = $this->postJson('/api/v1/bookings', [
             'lodging_id' => $lodging->public_id,
-            'check_in' => '2025-12-20',
-            'check_out' => '2025-12-25',
+            'check_in' => $checkIn,
+            'check_out' => $checkOut,
             'guests_count' => 2,
             'rooms_count' => 1,
         ]);
@@ -45,11 +48,17 @@ class BookingTest extends TestCase
         $user = User::factory()->create();
         $lodging = Lodging::factory()->create(['status' => 'approved']);
 
+        $checkIn1 = now()->addDays(10)->format('Y-m-d');
+        $checkOut1 = now()->addDays(15)->format('Y-m-d');
+        
+        $checkIn2 = now()->addDays(12)->format('Y-m-d');
+        $checkOut2 = now()->addDays(17)->format('Y-m-d');
+
         // Create existing booking
         Booking::factory()->create([
             'lodging_id' => $lodging->id,
-            'check_in' => '2025-12-20',
-            'check_out' => '2025-12-25',
+            'check_in' => $checkIn1,
+            'check_out' => $checkOut1,
             'status' => 'confirmed',
         ]);
 
@@ -57,8 +66,8 @@ class BookingTest extends TestCase
 
         $response = $this->postJson('/api/v1/bookings', [
             'lodging_id' => $lodging->public_id,
-            'check_in' => '2025-12-22',
-            'check_out' => '2025-12-27',
+            'check_in' => $checkIn2,
+            'check_out' => $checkOut2,
             'guests_count' => 2,
             'rooms_count' => 1,
         ]);

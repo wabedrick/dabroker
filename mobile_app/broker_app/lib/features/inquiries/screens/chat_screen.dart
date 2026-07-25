@@ -2,6 +2,7 @@ import 'package:broker_app/data/models/inquiry.dart';
 import 'package:broker_app/features/auth/providers/auth_provider.dart';
 import 'package:broker_app/features/inquiries/repositories/consultation_repository.dart';
 import 'package:broker_app/features/inquiries/repositories/inquiry_repository.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -28,6 +29,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
+  Timer? _pollingTimer;
   bool _isLoading = true;
   bool _isSending = false;
   Inquiry? _inquiry;
@@ -37,14 +39,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     _loadInquiry();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!_isSending && mounted) {
+        _loadInquiry(isPolling: true);
+      }
+    });
   }
 
-  Future<void> _loadInquiry() async {
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadInquiry({bool isPolling = false}) async {
     try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
+      if (!isPolling) {
+        setState(() {
+          _isLoading = true;
+          _error = null;
+        });
+      }
 
       final Inquiry inquiry;
       if (widget.bookingId != null) {
@@ -58,14 +75,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       }
 
       if (mounted) {
+        final shouldScroll = _inquiry == null || inquiry.messages.length > _inquiry!.messages.length;
         setState(() {
           _inquiry = inquiry;
           _isLoading = false;
         });
-        _scrollToBottom();
+        if (shouldScroll) {
+          _scrollToBottom();
+        }
       }
     } catch (e) {
-      if (mounted) {
+      if (mounted && !isPolling) {
         setState(() {
           _error = e.toString();
           _isLoading = false;

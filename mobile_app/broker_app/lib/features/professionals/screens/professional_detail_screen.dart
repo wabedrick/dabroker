@@ -117,11 +117,17 @@ class ProfessionalDetailScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Text(
-                          professional.name,
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            color: colorScheme.onPrimary,
-                            fontWeight: FontWeight.bold,
+                        Hero(
+                          tag: 'professional_name_${professional.id}',
+                          child: Material(
+                            color: Colors.transparent,
+                            child: Text(
+                              professional.name,
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                color: colorScheme.onPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 8),

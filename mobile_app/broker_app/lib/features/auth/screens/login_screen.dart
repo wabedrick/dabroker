@@ -3,6 +3,7 @@ import 'package:broker_app/features/auth/widgets/auth_form_skeleton.dart';
 import 'package:broker_app/features/home/screens/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../providers/auth_provider.dart';
 import 'register_screen.dart';
@@ -27,44 +28,47 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  void _handleLogin() {
     if (!_formKey.currentState!.validate()) return;
+    
+    // Unfocus keyboard
+    FocusScope.of(context).unfocus();
 
-    final success = await ref
-        .read(authStateProvider.notifier)
-        .login(
+    ref.read(authStateProvider.notifier).login(
           identifier: _identifierController.text.trim(),
           password: _passwordController.text,
         );
-
-    if (!mounted) return;
-
-    if (success) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const MainScreen()),
-        (route) => false,
-      );
-    } else {
-      final error = ref.read(authStateProvider).error;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error ?? 'Login failed'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authStateProvider, (previous, next) {
+      if (previous?.isLoading == true && !next.isLoading) {
+        if (next.isAuthenticated) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const MainScreen()),
+            (route) => false,
+          );
+        } else if (next.error != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(next.error!),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      }
+    });
     final authState = ref.watch(authStateProvider);
     final showSkeleton = authState.isLoading && !authState.isAuthenticated;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.xl),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.xl),
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
             child: showSkeleton
@@ -220,13 +224,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ],
                           ),
-                        ],
+                        ].animate(interval: 50.ms).fade(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
                       ),
                     ),
                   ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

@@ -31,7 +31,10 @@ class PropertyCard extends StatelessWidget {
           children: [
             Stack(
               children: [
-                _PropertyImage(images: images),
+                Hero(
+                  tag: 'property_image_${property.id}',
+                  child: _PropertyImage(images: images, propertyId: property.id),
+                ),
                 if (property.category != null)
                   Positioned(
                     top: 12,
@@ -65,10 +68,16 @@ class PropertyCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    property.title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                  Hero(
+                    tag: 'property_title_${property.id}',
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: Text(
+                        property.title,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                   if (location != null) ...[
@@ -88,6 +97,23 @@ class PropertyCard extends StatelessWidget {
                                 ?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                         ),
+                        if (property.distance != null) ...[
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.directions,
+                            size: 16,
+                            color: colorScheme.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${property.distance!.toStringAsFixed(1)} km',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                        ],
                       ],
                     ),
                   ],
@@ -141,9 +167,10 @@ class PropertyCard extends StatelessWidget {
 }
 
 class _PropertyImage extends StatefulWidget {
-  const _PropertyImage({required this.images});
-
+  const _PropertyImage({required this.images, required this.propertyId});
+  
   final List<String> images;
+  final String propertyId;
 
   @override
   State<_PropertyImage> createState() => _PropertyImageState();
@@ -179,20 +206,41 @@ class _PropertyImageState extends State<_PropertyImage> {
             itemCount: widget.images.length,
             onPageChanged: (index) => setState(() => _currentIndex = index),
             itemBuilder: (context, index) {
-              return Image.network(
-                widget.images[index],
-                fit: BoxFit.cover,
-                cacheWidth: 800, // Optimize memory usage
-                errorBuilder: (_, __, ___) => Container(
-                  color: colorScheme.surfaceContainerHighest,
-                  child: Center(
-                    child: Icon(
-                      Icons.broken_image_outlined,
-                      size: 48,
-                      color: colorScheme.onSurfaceVariant,
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.network(
+                    widget.images[index],
+                    fit: BoxFit.cover,
+                    cacheWidth: 800, // Optimize memory usage
+                    errorBuilder: (_, __, ___) => Container(
+                      color: colorScheme.surfaceContainerHighest,
+                      child: Center(
+                        child: Icon(
+                          Icons.broken_image_outlined,
+                          size: 48,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  // Dark gradient overlay for a premium immersive look
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.1),
+                            Colors.black.withValues(alpha: 0.4),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
           ),

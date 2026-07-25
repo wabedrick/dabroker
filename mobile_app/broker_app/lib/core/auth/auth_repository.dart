@@ -1,4 +1,4 @@
-import 'package:broker_app/core/api/api_endpoints.dart';
+import 'package:broker_app/core/api/auth_api_client.dart';
 import 'package:broker_app/core/api/dio_client.dart';
 import 'package:broker_app/core/storage/storage_service.dart';
 import 'package:broker_app/core/utils/api_error_handler.dart';
@@ -7,8 +7,11 @@ import 'package:broker_app/data/models/user.dart';
 class AuthRepository {
   final DioClient _dioClient;
   final StorageService _storage;
+  late final AuthApiClient _apiClient;
 
-  AuthRepository(this._dioClient, this._storage);
+  AuthRepository(this._dioClient, this._storage) {
+    _apiClient = AuthApiClient(_dioClient.dio);
+  }
 
   Future<AuthResponse> register({
     required String name,
@@ -20,20 +23,15 @@ class AuthRepository {
     String? preferredRole,
   }) async {
     try {
-      final response = await _dioClient.dio.post(
-        ApiEndpoints.register,
-        data: {
-          'name': name,
-          'email': email,
-          'phone': phone,
-          'country_code': countryCode,
-          'password': password,
-          'password_confirmation': passwordConfirmation,
-          'preferred_role': preferredRole ?? 'buyer',
-        },
-      );
-
-      final authResponse = AuthResponse.fromJson(response.data);
+      final authResponse = await _apiClient.register({
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'country_code': countryCode,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+        'preferred_role': preferredRole ?? 'buyer',
+      });
 
       // Save user data
       await _storage.saveUser(authResponse.data.toJson());
@@ -49,16 +47,11 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      final response = await _dioClient.dio.post(
-        ApiEndpoints.login,
-        data: {
-          'identifier': identifier,
-          'password': password,
-          'device_name': 'mobile',
-        },
-      );
-
-      final authResponse = AuthResponse.fromJson(response.data);
+      final authResponse = await _apiClient.login({
+        'identifier': identifier,
+        'password': password,
+        'device_name': 'mobile',
+      });
 
       // Save token and user data
       if (authResponse.token != null) {
@@ -79,14 +72,15 @@ class AuthRepository {
     required String purpose,
   }) async {
     try {
-      final response = await _dioClient.dio.post(
-        ApiEndpoints.verifyOtp,
-        data: {'identifier': identifier, 'otp': otp, 'purpose': purpose},
-      );
+      final response = await _apiClient.verifyOtp({
+        'identifier': identifier,
+        'otp': otp,
+        'purpose': purpose,
+      });
 
       // Update user data after verification
-      final data = response.data['data'];
-      if (data is Map<String, dynamic>) {
+      final data = response['data'];
+      if (data != null && data is Map<String, dynamic>) {
         final user = User.fromJson(data);
         await _storage.saveUser(user.toJson());
       }
@@ -100,10 +94,10 @@ class AuthRepository {
     required String purpose,
   }) async {
     try {
-      await _dioClient.dio.post(
-        ApiEndpoints.resendOtp,
-        data: {'identifier': identifier, 'purpose': purpose},
-      );
+      await _apiClient.resendOtp({
+        'identifier': identifier,
+        'purpose': purpose,
+      });
     } catch (e) {
       throw ApiErrorHandler.getErrorMessage(e);
     }
@@ -111,8 +105,8 @@ class AuthRepository {
 
   Future<void> logout() async {
     try {
-      if (_dioClient.isAuthenticated) {
-        await _dioClient.dio.post(ApiEndpoints.logout);
+      if (await _dioClient.isAuthenticated) {
+        await _apiClient.logout();
       }
     } catch (e) {
       // Continue with local logout even if API call fails
@@ -124,8 +118,8 @@ class AuthRepository {
 
   Future<User> getProfile() async {
     try {
-      final response = await _dioClient.dio.get(ApiEndpoints.profile);
-      final user = User.fromJson(response.data['data']);
+      final response = await _apiClient.getProfile();
+      final user = User.fromJson(response['data'] as Map<String, dynamic>);
       await _storage.saveUser(user.toJson());
       return user;
     } catch (e) {
@@ -135,10 +129,9 @@ class AuthRepository {
 
   Future<void> forgotPassword({required String identifier}) async {
     try {
-      await _dioClient.dio.post(
-        ApiEndpoints.forgotPassword,
-        data: {'identifier': identifier},
-      );
+      await _apiClient.forgotPassword({
+        'identifier': identifier,
+      });
     } catch (e) {
       throw ApiErrorHandler.getErrorMessage(e);
     }
@@ -151,15 +144,12 @@ class AuthRepository {
     required String passwordConfirmation,
   }) async {
     try {
-      await _dioClient.dio.post(
-        ApiEndpoints.resetPassword,
-        data: {
-          'identifier': identifier,
-          'otp': otp,
-          'password': password,
-          'password_confirmation': passwordConfirmation,
-        },
-      );
+      await _apiClient.resetPassword({
+        'identifier': identifier,
+        'otp': otp,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      });
     } catch (e) {
       throw ApiErrorHandler.getErrorMessage(e);
     }

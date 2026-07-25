@@ -11,8 +11,11 @@ import 'package:broker_app/features/properties/screens/add_property_screen.dart'
 import 'package:broker_app/features/properties/screens/property_detail_screen.dart';
 import 'package:broker_app/features/properties/widgets/property_card.dart';
 import 'package:broker_app/features/properties/widgets/property_card_skeleton.dart';
+import 'package:broker_app/core/providers/location_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -61,6 +64,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     final header = _HomeHeaderModel.from(state: state);
     final actions = <Widget>[
+      Consumer(
+        builder: (context, ref, child) {
+          final locState = ref.watch(locationProvider);
+          final isLocating = locState.isLoading;
+          final isLocationSet = state.params.latitude != null;
+          return IconButton(
+            icon: isLocating
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Icon(
+                    isLocationSet
+                        ? Icons.location_on
+                        : Icons.location_on_outlined,
+                    color: isLocationSet ? Theme.of(context).colorScheme.primary : null,
+                  ),
+            tooltip: isLocationSet ? 'Clear location' : 'Near me',
+            onPressed: isLocating ? null : _handleNearMe,
+          );
+        },
+      ),
       if (authState.user?.preferredRole == 'admin')
         const _AdminDashboardAction(),
       const _NotificationAction(),
@@ -69,41 +95,99 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        toolbarHeight: 76,
-        titleSpacing: 16,
-        title: _HomeHeaderTitle(model: header),
-        actions: actions,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(
-            height: 1,
-            thickness: 1,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          ),
-        ),
-      ),
-      body: Column(
-        children: [
-          _HeaderPanel(
-            state: state,
-            searchController: _searchController,
-            onApplyFilters: _applyFilters,
-          ),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                await Future.wait([
-                  ref
-                      .read(propertyListProvider.notifier)
-                      .refresh(params: state.params),
-                  ref.read(notificationCountersProvider.notifier).refresh(),
-                ]);
-              },
-              child: _PropertyFeed(state: state, controller: _scrollController),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await Future.wait([
+            ref
+                .read(propertyListProvider.notifier)
+                .refresh(params: state.params),
+            ref.read(notificationCountersProvider.notifier).refresh(),
+          ]);
+        },
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              toolbarHeight: 64,
+              floating: true,
+              pinned: true,
+              titleSpacing: 16,
+              title: _HomeHeaderTitle(
+                model: header,
+                userName: authState.user?.name.split(' ').first,
+              ),
+              actions: actions,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor.withAlpha(240),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(170), // Increased height to prevent RenderFlex overflow
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: _SearchBar(
+                        controller: _searchController,
+                        onSubmitted: (value) {
+                          _applyFilters(
+                            state.params.copyWith(
+                              search: value.trim().isEmpty ? null : value.trim(),
+                            ),
+                          );
+                        },
+                        onClear: () {
+                          _applyFilters(state.params.copyWith(search: null));
+                        },
+                        padding: EdgeInsets.zero,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 48,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        children: [
+                          _QuickFilterPill(
+                            label: 'All listings',
+                            icon: Icons.list,
+                            isSelected: state.params.category == null,
+                            onTap: () => _applyFilters(state.params.copyWith(category: null)),
+                          ),
+                          const SizedBox(width: 8),
+                          _QuickFilterPill(
+                            label: 'For rent',
+                            icon: Icons.key,
+                            isSelected: state.params.category == 'rent',
+                            onTap: () => _applyFilters(state.params.copyWith(category: 'rent')),
+                          ),
+                          const SizedBox(width: 8),
+                          _QuickFilterPill(
+                            label: 'For sale',
+                            icon: Icons.sell,
+                            isSelected: state.params.category == 'sale',
+                            onTap: () => _applyFilters(state.params.copyWith(category: 'sale')),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ],
+            // The Property Feed
+            SliverPadding(
+              padding: EdgeInsets.zero,
+              sliver: _PropertyFeedSliver(state: state),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: _buildFab(context, authState.user),
     );
@@ -150,73 +234,56 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
   }
 
+  Future<void> _handleNearMe() async {
+    final notifier = ref.read(propertyListProvider.notifier);
+    final state = ref.read(propertyListProvider);
+
+    // If already filtering by location, clear it
+    if (state.params.latitude != null) {
+      notifier.updateFilters(state.params.copyWith(
+        latitude: null,
+        longitude: null,
+        radiusKm: null,
+        sort: state.params.sort == 'nearest' ? null : state.params.sort,
+      ));
+      ref.read(locationProvider.notifier).clearLocation();
+      return;
+    }
+
+    final locationStateNotifier = ref.read(locationProvider.notifier);
+    final position = await locationStateNotifier.getCurrentLocation();
+    
+    if (!mounted) return;
+
+    final locationState = ref.read(locationProvider);
+
+    if (locationState.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(locationState.error!),
+          action: (locationState.isServiceDisabled || locationState.isPermissionPermanentlyDenied)
+              ? SnackBarAction(
+                  label: 'Settings',
+                  onPressed: () => locationStateNotifier.openSettings(),
+                )
+              : null,
+        ),
+      );
+      return;
+    }
+
+    if (position != null) {
+      notifier.updateFilters(state.params.copyWith(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        radiusKm: 50, // 50km radius
+        sort: 'nearest',
+      ));
+    }
+  }
+
   void _applyFilters(PropertyQueryParams params) {
     ref.read(propertyListProvider.notifier).updateFilters(params);
-  }
-}
-
-class _HeaderPanel extends StatelessWidget {
-  const _HeaderPanel({
-    required this.state,
-    required this.searchController,
-    required this.onApplyFilters,
-  });
-
-  final PropertyListState state;
-  final TextEditingController searchController;
-  final ValueChanged<PropertyQueryParams> onApplyFilters;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final surface = colorScheme.surface;
-    final outline = colorScheme.outlineVariant;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
-        decoration: BoxDecoration(
-          color: surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: outline),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _SearchBar(
-              controller: searchController,
-              onSubmitted: (value) {
-                onApplyFilters(
-                  state.params.copyWith(
-                    search: value.trim().isEmpty ? null : value.trim(),
-                  ),
-                );
-              },
-              onClear: () {
-                onApplyFilters(state.params.copyWith(search: null));
-              },
-              padding: EdgeInsets.zero,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Category',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _FilterChips(
-              selectedType: state.params.category,
-              onFilterSelected: (category) {
-                onApplyFilters(state.params.copyWith(category: category));
-              },
-              padding: EdgeInsets.zero,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 
@@ -240,6 +307,7 @@ class _HomeHeaderModel {
 
     final search = state.params.search?.trim();
     final hasSearch = search != null && search.isNotEmpty;
+    final hasLocation = state.params.latitude != null;
     final statusLabel = state.isRefreshing
         ? 'Updating'
         : state.isLoading
@@ -248,6 +316,7 @@ class _HomeHeaderModel {
 
     final parts = <String>[filterLabel, countLabel];
     if (hasSearch) parts.add('Search');
+    if (hasLocation) parts.add('Near selected location');
     if (statusLabel != null) parts.add(statusLabel);
 
     return _HomeHeaderModel(title: 'Properties', subtitle: parts.join(' • '));
@@ -255,56 +324,138 @@ class _HomeHeaderModel {
 }
 
 class _HomeHeaderTitle extends StatelessWidget {
-  const _HomeHeaderTitle({required this.model});
+  const _HomeHeaderTitle({required this.model, this.userName});
 
   final _HomeHeaderModel model;
+  final String? userName;
 
   @override
   Widget build(BuildContext context) {
-    final subtitleStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-    );
+    final theme = Theme.of(context);
+    final titleText = userName != null ? 'Hello, $userName 👋' : 'Discover 🌟';
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(model.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-        const SizedBox(height: 2),
         Text(
-          model.subtitle,
+          titleText,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: subtitleStyle,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.auto_awesome,
+              size: 14,
+              color: theme.colorScheme.primary,
+            ),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                model.subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 }
 
-class _PropertyFeed extends StatelessWidget {
-  const _PropertyFeed({required this.state, required this.controller});
+class _PropertyFeedSliver extends ConsumerWidget {
+  const _PropertyFeedSliver({required this.state});
 
   final PropertyListState state;
-  final ScrollController controller;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (state.isRefreshing && state.items.isEmpty) {
-      return const _PropertyFeedSkeleton();
+      return const _PropertyFeedSkeletonSliver();
     }
 
     if (state.error != null && state.items.isEmpty) {
-      return _ErrorView(error: state.error!);
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: _ErrorView(error: state.error!),
+      );
     }
 
     if (!state.isRefreshing && state.items.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.home_work_outlined,
+      if (state.params.latitude != null) {
+        return SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.location_off_outlined,
+                size: 64,
+                color: Theme.of(context).colorScheme.primary.withAlpha(150),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No properties near you',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Try adjusting the search radius\nor viewing all properties.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 24),
+              OutlinedButton.icon(
+                onPressed: () {
+                  ref.read(propertyListProvider.notifier).updateFilters(
+                        state.params.copyWith(
+                          latitude: null,
+                          longitude: null,
+                          radiusKm: null,
+                          sort: state.params.sort == 'nearest' ? null : state.params.sort,
+                        ),
+                      );
+                  ref.read(locationProvider.notifier).clearLocation();
+                },
+                icon: const Icon(Icons.clear),
+                label: const Text('Clear Location Filter'),
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          ).animate().fade(duration: 400.ms).scaleXY(begin: 0.9, end: 1, curve: Curves.easeOutBack),
+        );
+      }
+
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.home_work_outlined,
               size: 64,
               color: Theme.of(context).disabledColor,
             ),
@@ -323,8 +474,9 @@ class _PropertyFeed extends StatelessWidget {
                   color: Theme.of(context).disabledColor,
                 ),
               ),
+              ],
             ],
-          ],
+          ).animate().fade(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
         ),
       );
     }
@@ -333,14 +485,11 @@ class _PropertyFeed extends StatelessWidget {
     final showInlineError = state.error != null && state.items.isNotEmpty;
     final extraCount = (showLoader ? 1 : 0) + (showInlineError ? 1 : 0);
 
-    return ListView.builder(
-      controller: controller,
-      physics: const BouncingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics(),
-      ),
+    return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      itemCount: state.items.length + extraCount,
-      itemBuilder: (context, index) {
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
         if (index >= state.items.length) {
           final extraIndex = index - state.items.length;
           if (showInlineError && extraIndex == 0) {
@@ -372,9 +521,10 @@ class _PropertyFeed extends StatelessWidget {
               );
             },
           ),
-        );
+        ).animate(delay: (index * 50).ms).fade(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
       },
-    );
+      childCount: state.items.length + extraCount,
+    )));
   }
 }
 
@@ -422,52 +572,7 @@ class _SearchBar extends StatelessWidget {
   }
 }
 
-class _FilterChips extends StatelessWidget {
-  const _FilterChips({
-    required this.selectedType,
-    required this.onFilterSelected,
-    this.padding = const EdgeInsets.symmetric(horizontal: 16),
-  });
 
-  final String? selectedType;
-  final ValueChanged<String?> onFilterSelected;
-  final EdgeInsets padding;
-
-  static const _filters = [
-    (label: 'All', value: null),
-    (label: 'Rent', value: 'rent'),
-    (label: 'Sale', value: 'sale'),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 48,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        padding: padding,
-        itemBuilder: (context, index) {
-          final filter = _filters[index];
-          final isSelected = selectedType == filter.value;
-          return ChoiceChip(
-            label: Text(filter.label),
-            selected: isSelected,
-            onSelected: (selected) {
-              if (filter.value == null) {
-                onFilterSelected(null);
-                return;
-              }
-              onFilterSelected(selected && !isSelected ? filter.value : null);
-            },
-          );
-        },
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemCount: _filters.length,
-      ),
-    );
-  }
-}
 
 class _InlineError extends StatelessWidget {
   const _InlineError({required this.message});
@@ -841,17 +946,74 @@ class _NotificationBadge extends StatelessWidget {
   }
 }
 
-class _PropertyFeedSkeleton extends StatelessWidget {
-  const _PropertyFeedSkeleton();
+class _PropertyFeedSkeletonSliver extends StatelessWidget {
+  const _PropertyFeedSkeletonSliver();
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      physics: const NeverScrollableScrollPhysics(),
+    return SliverPadding(
       padding: const EdgeInsets.all(16),
-      itemBuilder: (_, __) => const PropertyCardSkeleton(),
-      separatorBuilder: (_, __) => const SizedBox(height: 16),
-      itemCount: 4,
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (_, index) {
+            return const Padding(
+              padding: EdgeInsets.only(bottom: 16),
+              child: PropertyCardSkeleton(),
+            );
+          },
+          childCount: 4,
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickFilterPill extends StatelessWidget {
+  const _QuickFilterPill({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final backgroundColor = isSelected ? colorScheme.primary : colorScheme.surfaceContainerHighest.withAlpha((0.6 * 255).round());
+    final foregroundColor = isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant;
+    
+    return Material(
+      color: backgroundColor,
+      borderRadius: BorderRadius.circular(24),
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16, color: foregroundColor),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: foregroundColor,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

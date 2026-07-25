@@ -4,6 +4,7 @@ import 'package:broker_app/features/admin/providers/admin_property_provider.dart
 import 'package:broker_app/features/properties/screens/property_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:broker_app/core/utils/image_helper.dart';
 
 class AdminPropertyListScreen extends ConsumerStatefulWidget {
@@ -74,9 +75,29 @@ class _PropertyList extends ConsumerWidget {
                 ref.read(adminPropertiesProvider(status).notifier).load(),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              children: const [
-                SizedBox(height: 100),
-                Center(child: Text('No properties found')),
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.domain_disabled,
+                          size: 64,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No properties found',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                      ],
+                    ).animate().fade(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
+                  ),
+                ),
               ],
             ),
           );
@@ -89,7 +110,10 @@ class _PropertyList extends ConsumerWidget {
             itemCount: properties.length,
             itemBuilder: (context, index) {
               final property = properties[index];
-              return _AdminPropertyTile(property: property, status: status);
+              return _AdminPropertyTile(property: property, status: status)
+                  .animate(delay: (index * 50).ms)
+                  .fade(duration: 400.ms)
+                  .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
             },
           ),
         );

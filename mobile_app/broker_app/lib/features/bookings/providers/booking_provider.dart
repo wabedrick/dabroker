@@ -3,9 +3,16 @@ import 'package:broker_app/data/models/booking.dart';
 import 'package:broker_app/features/bookings/repositories/booking_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final bookingRepositoryProvider = Provider<BookingRepository>((ref) {
+import 'package:broker_app/features/bookings/repositories/booking_api_client.dart';
+
+final bookingApiClientProvider = Provider<BookingApiClient>((ref) {
   final client = ref.watch(dioClientProvider);
-  return BookingRepository(client);
+  return BookingApiClient(client.dio);
+});
+
+final bookingRepositoryProvider = Provider<BookingRepository>((ref) {
+  final apiClient = ref.watch(bookingApiClientProvider);
+  return BookingRepository(apiClient);
 });
 
 final myBookingsProvider = FutureProvider<List<Booking>>((ref) async {

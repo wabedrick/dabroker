@@ -3,13 +3,13 @@ import 'package:broker_app/core/api/dio_client.dart';
 import 'package:broker_app/data/models/user.dart';
 import 'package:broker_app/data/models/property.dart';
 import 'package:broker_app/data/models/lodging.dart';
-import 'package:broker_app/features/lodgings/repositories/lodging_repository.dart';
+
 import 'package:broker_app/features/admin/models/admin_analytics.dart';
 import 'package:broker_app/features/admin/models/admin_dashboard_stats.dart';
 import 'package:broker_app/features/admin/models/moderation_log.dart';
 import 'package:broker_app/features/admin/models/user_list_response.dart';
 import 'package:broker_app/data/models/property_list_response.dart';
-
+import 'package:broker_app/data/models/lodging_list_response.dart';
 class AdminRepository {
   AdminRepository(this._dioClient);
 

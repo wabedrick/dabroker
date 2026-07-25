@@ -38,11 +38,11 @@ class PropertyQueryParams {
       search: search == _unset ? this.search : search as String?,
       type: type == _unset ? this.type : type as String?,
       category: category == _unset ? this.category : category as String?,
-      priceMin: priceMin == _unset ? this.priceMin : priceMin as double?,
-      priceMax: priceMax == _unset ? this.priceMax : priceMax as double?,
-      latitude: latitude == _unset ? this.latitude : latitude as double?,
-      longitude: longitude == _unset ? this.longitude : longitude as double?,
-      radiusKm: radiusKm == _unset ? this.radiusKm : radiusKm as double?,
+      priceMin: priceMin == _unset ? this.priceMin : (priceMin as num?)?.toDouble(),
+      priceMax: priceMax == _unset ? this.priceMax : (priceMax as num?)?.toDouble(),
+      latitude: latitude == _unset ? this.latitude : (latitude as num?)?.toDouble(),
+      longitude: longitude == _unset ? this.longitude : (longitude as num?)?.toDouble(),
+      radiusKm: radiusKm == _unset ? this.radiusKm : (radiusKm as num?)?.toDouble(),
       sort: sort == _unset ? this.sort : sort as String?,
     );
   }

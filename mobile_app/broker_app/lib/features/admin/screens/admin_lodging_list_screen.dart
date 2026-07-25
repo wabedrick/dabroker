@@ -3,6 +3,7 @@ import 'package:broker_app/features/admin/providers/admin_lodging_provider.dart'
 import 'package:broker_app/features/lodgings/screens/lodging_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:broker_app/core/utils/image_helper.dart';
 
 class AdminLodgingListScreen extends ConsumerStatefulWidget {
@@ -72,9 +73,29 @@ class _LodgingList extends ConsumerWidget {
                 ref.read(adminLodgingsProvider(status).notifier).load(),
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              children: const [
-                SizedBox(height: 100),
-                Center(child: Text('No lodgings found')),
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.hotel_outlined,
+                          size: 64,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No lodgings found',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                      ],
+                    ).animate().fade(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
+                  ),
+                ),
               ],
             ),
           );
@@ -87,7 +108,10 @@ class _LodgingList extends ConsumerWidget {
             itemCount: lodgings.length,
             itemBuilder: (context, index) {
               final lodging = lodgings[index];
-              return _AdminLodgingTile(lodging: lodging, status: status);
+              return _AdminLodgingTile(lodging: lodging, status: status)
+                  .animate(delay: (index * 50).ms)
+                  .fade(duration: 400.ms)
+                  .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
             },
           ),
         );

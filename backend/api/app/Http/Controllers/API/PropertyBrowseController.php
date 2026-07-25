@@ -103,6 +103,9 @@ class PropertyBrowseController extends Controller
         match ($sort) {
             'price_asc' => $builder->orderBy('price', 'asc'),
             'price_desc' => $builder->orderBy('price', 'desc'),
+            'nearest' => $request->filled('lat') && $request->filled('lng') && $request->filled('radius_km')
+                ? $builder->orderBy('distance', 'asc')
+                : $builder->latest('published_at')->latest('created_at'),
             default => $builder->latest('published_at')->latest('created_at'),
         };
 
@@ -126,5 +129,13 @@ class PropertyBrowseController extends Controller
 
         $builder->whereBetween('latitude', [$lat - $degreeRadius, $lat + $degreeRadius])
             ->whereBetween('longitude', [$lng - $degreeRadius, $lng + $degreeRadius]);
+
+        $haversine = "( 6371 * acos( cos( radians(?) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(?) ) + sin( radians(?) ) * sin( radians( latitude ) ) ) )";
+
+        if (empty($builder->getQuery()->columns)) {
+            $builder->select('properties.*');
+        }
+        $builder->selectRaw("{$haversine} AS distance", [$lat, $lng, $lat])
+            ->whereRaw("{$haversine} < ?", [$lat, $lng, $lat, $radiusKm]);
     }
 }

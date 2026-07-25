@@ -6,7 +6,8 @@ part of 'consultation.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Consultation _$ConsultationFromJson(Map<String, dynamic> json) => Consultation(
+_Consultation _$ConsultationFromJson(Map<String, dynamic> json) =>
+    _Consultation(
       id: (json['id'] as num).toInt(),
       publicId: json['public_id'] as String,
       userId: (json['user_id'] as num).toInt(),
@@ -24,7 +25,7 @@ Consultation _$ConsultationFromJson(Map<String, dynamic> json) => Consultation(
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
 
-Map<String, dynamic> _$ConsultationToJson(Consultation instance) =>
+Map<String, dynamic> _$ConsultationToJson(_Consultation instance) =>
     <String, dynamic>{
       'id': instance.id,
       'public_id': instance.publicId,
@@ -33,8 +34,8 @@ Map<String, dynamic> _$ConsultationToJson(Consultation instance) =>
       'scheduled_at': instance.scheduledAt.toIso8601String(),
       'status': instance.status,
       'notes': instance.notes,
-      'user': instance.user,
-      'professional': instance.professional,
+      'user': instance.user?.toJson(),
+      'professional': instance.professional?.toJson(),
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
     };

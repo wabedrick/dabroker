@@ -2,6 +2,7 @@ import 'package:broker_app/data/models/user.dart';
 import 'package:broker_app/features/admin/providers/user_management_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class UserManagementScreen extends ConsumerStatefulWidget {
   const UserManagementScreen({super.key});
@@ -97,7 +98,27 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
           else if (state.error != null)
             Expanded(child: Center(child: Text('Error: ${state.error}')))
           else if (state.data?.data.isEmpty ?? true)
-            const Expanded(child: Center(child: Text('No users found')))
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.people_outline,
+                      size: 64,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No users found',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                  ],
+                ).animate().fade(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
+              ),
+            )
           else
             Expanded(
               child: ListView.builder(
@@ -125,7 +146,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                         ),
                       ],
                     ),
-                  );
+                  ).animate(delay: (index * 50).ms).fade(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
                 },
               ),
             ),

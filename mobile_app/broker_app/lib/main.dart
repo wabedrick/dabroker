@@ -2,12 +2,14 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'core/config/app_config.dart';
 import 'core/notifications/notification_service.dart';
 import 'core/providers/app_providers.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
+import 'core/security/biometric_service.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/register_screen.dart';
 import 'features/home/screens/main_screen.dart';
@@ -22,11 +24,13 @@ void main() async {
 
   // Initialize SharedPreferences
   final sharedPreferences = await SharedPreferences.getInstance();
+  final appDocDir = await getApplicationDocumentsDirectory();
 
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+        cacheDirectoryProvider.overrideWithValue(appDocDir.path),
       ],
       child: const BrokerApp(),
     ),
@@ -83,7 +87,28 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     if (mounted) {
       final storage = ref.read(storageServiceProvider);
-      final isLoggedIn = storage.isLoggedIn;
+      final isLoggedIn = await storage.isLoggedIn;
+
+      if (isLoggedIn) {
+        final biometricService = ref.read(biometricServiceProvider);
+        final canAuthenticate = await biometricService.isBiometricAvailable();
+        if (canAuthenticate) {
+          final didAuthenticate = await biometricService.authenticate();
+          if (!didAuthenticate) {
+            // Biometric failed or cancelled, logout for security
+            await storage.clearAuthToken();
+            await storage.clearUser();
+            if (mounted) {
+               Navigator.of(context).pushReplacement(
+                 MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+               );
+            }
+            return;
+          }
+        }
+      }
+
+      if (!mounted) return;
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(

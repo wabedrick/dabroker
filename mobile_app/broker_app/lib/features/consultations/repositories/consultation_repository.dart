@@ -1,18 +1,22 @@
-import 'package:broker_app/core/api/api_endpoints.dart';
-import 'package:broker_app/core/api/dio_client.dart';
 import 'package:broker_app/core/providers/app_providers.dart';
 import 'package:broker_app/core/utils/api_error_handler.dart';
 import 'package:broker_app/data/models/consultation.dart';
+import 'package:broker_app/features/consultations/repositories/consultation_api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+final consultationApiClientProvider = Provider<ConsultationApiClient>((ref) {
+  final client = ref.watch(dioClientProvider);
+  return ConsultationApiClient(client.dio);
+});
+
 final consultationRepositoryProvider = Provider<ConsultationRepository>((ref) {
-  return ConsultationRepository(ref.read(dioClientProvider));
+  return ConsultationRepository(ref.watch(consultationApiClientProvider));
 });
 
 class ConsultationRepository {
-  final DioClient _client;
+  final ConsultationApiClient _apiClient;
 
-  ConsultationRepository(this._client);
+  ConsultationRepository(this._apiClient);
 
   Future<Consultation> requestConsultation({
     required int professionalId,
@@ -20,15 +24,12 @@ class ConsultationRepository {
     String? notes,
   }) async {
     try {
-      final response = await _client.dio.post(
-        ApiEndpoints.consultations,
-        data: {
-          'professional_id': professionalId,
-          'scheduled_at': scheduledAt.toIso8601String(),
-          'notes': notes,
-        },
-      );
-      return Consultation.fromJson(response.data['data']);
+      final response = await _apiClient.requestConsultationRaw({
+        'professional_id': professionalId,
+        'scheduled_at': scheduledAt.toIso8601String(),
+        'notes': notes,
+      });
+      return Consultation.fromJson(response['data'] as Map<String, dynamic>);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }
@@ -36,8 +37,8 @@ class ConsultationRepository {
 
   Future<List<Consultation>> getConsultations() async {
     try {
-      final response = await _client.dio.get(ApiEndpoints.consultations);
-      final dynamic data = response.data;
+      final response = await _apiClient.getConsultationsRaw();
+      final dynamic data = response;
       List<dynamic> list;
 
       if (data is Map<String, dynamic> && data.containsKey('data')) {
@@ -58,11 +59,8 @@ class ConsultationRepository {
 
   Future<Consultation> updateStatus(String publicId, String status) async {
     try {
-      final response = await _client.dio.put(
-        '${ApiEndpoints.consultations}/$publicId',
-        data: {'status': status},
-      );
-      return Consultation.fromJson(response.data['data']);
+      final response = await _apiClient.updateStatusRaw(publicId, {'status': status});
+      return Consultation.fromJson(response['data'] as Map<String, dynamic>);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }

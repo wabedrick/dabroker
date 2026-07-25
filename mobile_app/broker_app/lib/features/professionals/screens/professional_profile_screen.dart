@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/features/auth/providers/auth_provider.dart';
+import 'package:broker_app/features/professionals/providers/professional_provider.dart';
 import 'package:broker_app/features/professionals/repositories/professional_repository.dart';
 import 'package:broker_app/features/professionals/screens/professional_portfolio_screen.dart';
 import 'package:broker_app/features/professionals/widgets/certification_list_editor.dart';
@@ -41,6 +42,17 @@ class _ProfessionalProfileScreenState
   @override
   void initState() {
     super.initState();
+    _nameController = TextEditingController();
+    _phoneController = TextEditingController();
+    _bioController = TextEditingController();
+    _hourlyRateController = TextEditingController();
+    _licenseController = TextEditingController();
+    _specialtiesController = TextEditingController();
+    _languagesController = TextEditingController();
+    _experienceController = TextEditingController();
+    _linkedinController = TextEditingController();
+    _websiteController = TextEditingController();
+
     // Defer state initialization to allow context access if needed,
     // but mainly to ensure we have the latest data.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -55,30 +67,16 @@ class _ProfessionalProfileScreenState
     final profile = user.professionalProfile;
 
     setState(() {
-      _nameController = TextEditingController(text: user.name);
-      _phoneController = TextEditingController(text: user.phone ?? '');
-      _bioController = TextEditingController(text: profile?.bio ?? '');
-      _hourlyRateController = TextEditingController(
-        text: profile?.hourlyRate?.toString() ?? '',
-      );
-      _licenseController = TextEditingController(
-        text: profile?.licenseNumber ?? '',
-      );
-      _specialtiesController = TextEditingController(
-        text: profile?.specialties?.join(', ') ?? '',
-      );
-      _languagesController = TextEditingController(
-        text: profile?.languages?.join(', ') ?? '',
-      );
-      _experienceController = TextEditingController(
-        text: profile?.experienceYears?.toString() ?? '',
-      );
-      _linkedinController = TextEditingController(
-        text: profile?.socialLinks?['linkedin'] ?? '',
-      );
-      _websiteController = TextEditingController(
-        text: profile?.socialLinks?['website'] ?? '',
-      );
+      _nameController.text = user.name;
+      _phoneController.text = user.phone ?? '';
+      _bioController.text = profile?.bio ?? '';
+      _hourlyRateController.text = profile?.hourlyRate?.toString() ?? '';
+      _licenseController.text = profile?.licenseNumber ?? '';
+      _specialtiesController.text = profile?.specialties?.join(', ') ?? '';
+      _languagesController.text = profile?.languages?.join(', ') ?? '';
+      _experienceController.text = profile?.experienceYears?.toString() ?? '';
+      _linkedinController.text = profile?.socialLinks?['linkedin'] ?? '';
+      _websiteController.text = profile?.socialLinks?['website'] ?? '';
       _education = List.from(profile?.education ?? []);
       _certifications = List.from(profile?.certifications ?? []);
       _isAvailable = profile?.isAvailable ?? true;
@@ -162,8 +160,9 @@ class _ProfessionalProfileScreenState
 
       await ref.read(professionalRepositoryProvider).updateProfile(data);
 
-      // Refresh user profile
+      // Refresh user profile and professional list
       await ref.read(authStateProvider.notifier).refreshProfile();
+      ref.invalidate(professionalListProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

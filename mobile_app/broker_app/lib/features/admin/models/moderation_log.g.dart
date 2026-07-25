@@ -7,20 +7,20 @@ part of 'moderation_log.dart';
 // **************************************************************************
 
 ModerationLogResponse _$ModerationLogResponseFromJson(
-        Map<String, dynamic> json) =>
-    ModerationLogResponse(
-      data: (json['data'] as List<dynamic>)
-          .map((e) => ModerationLog.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      meta: ModerationLogMeta.fromJson(json['meta'] as Map<String, dynamic>),
-    );
+  Map<String, dynamic> json,
+) => ModerationLogResponse(
+  data: (json['data'] as List<dynamic>)
+      .map((e) => ModerationLog.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  meta: ModerationLogMeta.fromJson(json['meta'] as Map<String, dynamic>),
+);
 
 Map<String, dynamic> _$ModerationLogResponseToJson(
-        ModerationLogResponse instance) =>
-    <String, dynamic>{
-      'data': instance.data.map((e) => e.toJson()).toList(),
-      'meta': instance.meta.toJson(),
-    };
+  ModerationLogResponse instance,
+) => <String, dynamic>{
+  'data': instance.data.map((e) => e.toJson()).toList(),
+  'meta': instance.meta.toJson(),
+};
 
 ModerationLogMeta _$ModerationLogMetaFromJson(Map<String, dynamic> json) =>
     ModerationLogMeta(
@@ -42,8 +42,9 @@ ModerationLog _$ModerationLogFromJson(Map<String, dynamic> json) =>
     ModerationLog(
       id: (json['id'] as num).toInt(),
       action: json['action'] as String,
-      entity:
-          ModerationLogEntity.fromJson(json['entity'] as Map<String, dynamic>),
+      entity: ModerationLogEntity.fromJson(
+        json['entity'] as Map<String, dynamic>,
+      ),
       previousStatus: json['previous_status'] as String?,
       newStatus: json['new_status'] as String?,
       reason: json['reason'] as String?,
@@ -53,7 +54,8 @@ ModerationLog _$ModerationLogFromJson(Map<String, dynamic> json) =>
       performedBy: json['performed_by'] == null
           ? null
           : ModerationLogUser.fromJson(
-              json['performed_by'] as Map<String, dynamic>),
+              json['performed_by'] as Map<String, dynamic>,
+            ),
       createdAt: DateTime.parse(json['created_at'] as String),
     );
 
@@ -80,12 +82,12 @@ ModerationLogEntity _$ModerationLogEntityFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$ModerationLogEntityToJson(
-        ModerationLogEntity instance) =>
-    <String, dynamic>{
-      'type': instance.type,
-      'internal_id': instance.internalId,
-      'public_id': instance.publicId,
-    };
+  ModerationLogEntity instance,
+) => <String, dynamic>{
+  'type': instance.type,
+  'internal_id': instance.internalId,
+  'public_id': instance.publicId,
+};
 
 ModerationLogUser _$ModerationLogUserFromJson(Map<String, dynamic> json) =>
     ModerationLogUser(

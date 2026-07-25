@@ -3,8 +3,15 @@ import 'package:broker_app/core/providers/app_providers.dart';
 import 'package:broker_app/data/models/lodging.dart';
 import 'package:broker_app/features/lodgings/repositories/lodging_repository.dart';
 
-final lodgingRepositoryProvider = Provider<LodgingRepository>((ref) {
+import 'package:broker_app/features/lodgings/repositories/lodging_api_client.dart';
+
+final lodgingApiClientProvider = Provider<LodgingApiClient>((ref) {
   final client = ref.watch(dioClientProvider);
+  return LodgingApiClient(client.dio);
+});
+
+final lodgingRepositoryProvider = Provider<LodgingRepository>((ref) {
+  final client = ref.watch(lodgingApiClientProvider);
   return LodgingRepository(client);
 });
 
@@ -79,6 +86,12 @@ class LodgingListState {
     double? east,
     double? west,
     String? sortBy,
+    // Explicit clear flags — set to true to force the field to null
+    bool clearSearchQuery = false,
+    bool clearLatLng = false,
+    bool clearBounds = false,
+    bool clearSortBy = false,
+    bool clearTypeFilter = false,
   }) {
     return LodgingListState(
       items: items ?? this.items,
@@ -88,16 +101,16 @@ class LodgingListState {
       currentPage: currentPage ?? this.currentPage,
       totalResults: totalResults ?? this.totalResults,
       error: error,
-      typeFilter: typeFilter ?? this.typeFilter,
-      searchQuery: searchQuery ?? this.searchQuery,
-      latitude: latitude ?? this.latitude,
-      longitude: longitude ?? this.longitude,
-      radius: radius ?? this.radius,
-      north: north ?? this.north,
-      south: south ?? this.south,
-      east: east ?? this.east,
-      west: west ?? this.west,
-      sortBy: sortBy ?? this.sortBy,
+      typeFilter: clearTypeFilter ? null : (typeFilter ?? this.typeFilter),
+      searchQuery: clearSearchQuery ? null : (searchQuery ?? this.searchQuery),
+      latitude: clearLatLng ? null : (latitude ?? this.latitude),
+      longitude: clearLatLng ? null : (longitude ?? this.longitude),
+      radius: clearLatLng ? null : (radius ?? this.radius),
+      north: clearBounds ? null : (north ?? this.north),
+      south: clearBounds ? null : (south ?? this.south),
+      east: clearBounds ? null : (east ?? this.east),
+      west: clearBounds ? null : (west ?? this.west),
+      sortBy: clearSortBy ? null : (sortBy ?? this.sortBy),
     );
   }
 }
@@ -119,6 +132,12 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
     double? east,
     double? west,
     String? sortBy,
+    // Explicit clear flags mirrored from copyWith
+    bool clearSearchQuery = false,
+    bool clearLatLng = false,
+    bool clearBounds = false,
+    bool clearSortBy = false,
+    bool clearTypeFilter = false,
   }) async {
     state = state.copyWith(
       items: const [],
@@ -136,21 +155,28 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
       sortBy: sortBy,
       hasMore: true,
       currentPage: 1,
+      clearSearchQuery: clearSearchQuery,
+      clearLatLng: clearLatLng,
+      clearBounds: clearBounds,
+      clearSortBy: clearSortBy,
+      clearTypeFilter: clearTypeFilter,
     );
+    // Re-read state after copyWith so we use the cleared/updated values
+    final s = state;
     try {
       final response = await _repository.fetchLodgings(
         page: 1,
         perPage: _perPage,
-        type: type,
-        search: search,
-        latitude: latitude,
-        longitude: longitude,
-        radius: radius,
-        north: north,
-        south: south,
-        east: east,
-        west: west,
-        sortBy: sortBy,
+        type: s.typeFilter,
+        search: s.searchQuery,
+        latitude: s.latitude,
+        longitude: s.longitude,
+        radius: s.radius,
+        north: s.north,
+        south: s.south,
+        east: s.east,
+        west: s.west,
+        sortBy: s.sortBy,
       );
       state = state.copyWith(
         items: response.data,
@@ -229,6 +255,7 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
   void updateTypeFilter(String? type) {
     load(
       type: type,
+      clearTypeFilter: type == null,
       search: state.searchQuery,
       latitude: state.latitude,
       longitude: state.longitude,
@@ -242,24 +269,18 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
   }
 
   void updateSearchQuery(String query) {
-    // Clear location filters when searching by text to avoid conflicts
-    // Also reset sort if it was 'nearest' since we lose location context
+    // Clear location filters when searching by text
     String? newSortBy = state.sortBy;
-    if (newSortBy == 'nearest') {
-      newSortBy = null;
-    }
+    if (newSortBy == 'nearest') newSortBy = null;
 
     load(
       type: state.typeFilter,
-      search: query,
-      latitude: null,
-      longitude: null,
-      radius: null,
-      north: null,
-      south: null,
-      east: null,
-      west: null,
+      search: query.isEmpty ? null : query,
+      clearLatLng: true,
+      clearBounds: true,
+      clearSearchQuery: query.isEmpty,
       sortBy: newSortBy,
+      clearSortBy: newSortBy == null,
     );
   }
 
@@ -316,12 +337,17 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
   }
 
   void clearLocationFilter() {
-    // Reset sort if it was 'nearest' since we lose location context
     String? newSortBy = state.sortBy;
-    if (newSortBy == 'nearest') {
-      newSortBy = null;
-    }
-    load(type: state.typeFilter, search: state.searchQuery, sortBy: newSortBy);
+    if (newSortBy == 'nearest') newSortBy = null;
+    load(
+      type: state.typeFilter,
+      search: state.searchQuery,
+      sortBy: newSortBy,
+      clearSortBy: newSortBy == null,
+      // Explicitly clear all location/bounds fields
+      clearLatLng: true,
+      clearBounds: true,
+    );
   }
 
   Future<void> deleteLodging(String id) async {

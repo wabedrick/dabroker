@@ -3,6 +3,7 @@ import 'package:broker_app/features/inquiries/providers/owner_inquiry_provider.d
 import 'package:broker_app/features/inquiries/screens/chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 
 class OwnerInquiryListScreen extends ConsumerStatefulWidget {
@@ -32,20 +33,31 @@ class _OwnerInquiryListScreenState
       body: state.when(
         data: (inquiries) {
           if (inquiries.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+            return RefreshIndicator(
+              onRefresh: () async => ref.read(ownerInquiryListProvider.notifier).loadInquiries(),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  Icon(
-                    Icons.chat_bubble_outline,
-                    size: 64,
-                    color: Theme.of(context).disabledColor,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No inquiries yet',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).disabledColor,
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.chat_bubble_outline,
+                            size: 64,
+                            color: Theme.of(context).disabledColor,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No inquiries yet',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Theme.of(context).disabledColor,
+                                ),
+                          ),
+                        ],
+                      ).animate().fade(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
                     ),
                   ),
                 ],
@@ -53,7 +65,9 @@ class _OwnerInquiryListScreenState
             );
           }
 
-          return ListView.separated(
+          return RefreshIndicator(
+            onRefresh: () async => ref.read(ownerInquiryListProvider.notifier).loadInquiries(),
+            child: ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: inquiries.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
@@ -141,8 +155,12 @@ class _OwnerInquiryListScreenState
                     ],
                   ),
                 ),
-              );
+              )
+                  .animate(delay: (index * 50).ms)
+                  .fade(duration: 400.ms)
+                  .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
             },
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),

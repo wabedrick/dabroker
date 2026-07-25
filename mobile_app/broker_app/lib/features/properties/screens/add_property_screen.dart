@@ -102,7 +102,9 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
   void _removeExistingImage(int index) {
     setState(() {
       final image = _existingImages.removeAt(index);
-      _deletedImageIds.add(image.id);
+      if (image.id != null) {
+        _deletedImageIds.add(image.id!);
+      }
     });
   }
 

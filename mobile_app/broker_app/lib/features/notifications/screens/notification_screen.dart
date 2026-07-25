@@ -6,10 +6,10 @@ import 'package:broker_app/features/auth/providers/auth_provider.dart';
 import 'package:broker_app/features/bookings/screens/booking_detail_screen.dart';
 import 'package:broker_app/features/inquiries/screens/chat_screen.dart';
 import 'package:broker_app/features/notifications/models/notification_item.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:broker_app/features/notifications/providers/notification_counters_provider.dart';
 import 'package:broker_app/features/notifications/providers/notification_list_provider.dart';
 import 'package:broker_app/features/properties/screens/property_detail_screen.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -68,8 +68,6 @@ class _NotificationScreenState extends ConsumerState<NotificationScreen>
 
   @override
   Widget build(BuildContext context) {
-    final countersState = ref.watch(notificationCountersProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notifications'),
@@ -184,84 +182,6 @@ class _NavigationChips extends StatelessWidget {
   }
 }
 
-class _SummaryChips extends StatelessWidget {
-  const _SummaryChips({required this.state});
-
-  final NotificationCountersState state;
-
-  @override
-  Widget build(BuildContext context) {
-    final counters = state.counters;
-    final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _SummaryChip(
-            label: 'Buyer',
-            value: counters?.buyerUnreadInquiries ?? 0,
-            color: colorScheme.primary,
-          ),
-          _SummaryChip(
-            label: 'General',
-            value: counters?.unreadInquiries ?? 0,
-            color: colorScheme.secondary,
-          ),
-          _SummaryChip(
-            label: 'Favorites',
-            value: counters?.unreadFavorites ?? 0,
-            color: colorScheme.error,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SummaryChip extends StatelessWidget {
-  const _SummaryChip({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  final String label;
-  final int value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: color.withAlpha((0.1 * 255).round()),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '$value',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _NotificationListView extends ConsumerWidget {
   const _NotificationListView({required this.category});
 
@@ -298,7 +218,10 @@ class _NotificationListView extends ConsumerWidget {
                 ),
                 physics: const AlwaysScrollableScrollPhysics(),
                 itemBuilder: (_, index) =>
-                    _NotificationTile(item: items[index]),
+                    _NotificationTile(item: items[index])
+                        .animate(delay: (index * 50).ms)
+                        .fade(duration: 400.ms)
+                        .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemCount: items.length,
               );
@@ -375,8 +298,20 @@ class _NotificationTile extends ConsumerWidget {
         item.category == NotificationCategory.reservations &&
         item.metadata?['status'] == 'pending';
 
-    return GestureDetector(
-      onTap: () {
+    return Card(
+      elevation: 0,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: accent.withAlpha((0.15 * 255).round())),
+      ),
+      color: item.isRead
+          ? Theme.of(context).cardColor
+          : Theme.of(
+              context,
+            ).colorScheme.primary.withAlpha((0.05 * 255).round()),
+      child: InkWell(
+        onTap: () {
         if ((item.category == NotificationCategory.bookings ||
                 item.category == NotificationCategory.reservations) &&
             item.metadata != null) {
@@ -421,9 +356,7 @@ class _NotificationTile extends ConsumerWidget {
             Property? initialProperty;
             if (item.metadata != null) {
               try {
-                initialProperty = Property.fromJson(
-                  item.metadata! as Map<String, dynamic>,
-                );
+                initialProperty = Property.fromJson(item.metadata!);
               } catch (e) {
                 // If deserialization fails, we'll fetch it by ID
                 debugPrint('Could not deserialize property from metadata: $e');
@@ -446,17 +379,8 @@ class _NotificationTile extends ConsumerWidget {
           }
         }
       },
-      child: Container(
+      child: Padding(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: item.isRead
-              ? Theme.of(context).cardColor
-              : Theme.of(
-                  context,
-                ).colorScheme.primary.withAlpha((0.05 * 255).round()),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: accent.withAlpha((0.15 * 255).round())),
-        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -597,6 +521,7 @@ class _NotificationTile extends ConsumerWidget {
           ],
         ),
       ),
+      ),
     );
   }
 }
@@ -628,25 +553,30 @@ class _EmptyState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 80),
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
-        Icon(
-          icon,
-          size: 64,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-        const SizedBox(height: 16),
-        Text(
-          message,
-          style: Theme.of(context).textTheme.titleMedium,
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Keep exploring properties and conversations. Updates will show up here.',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          textAlign: TextAlign.center,
-        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 64,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: Theme.of(context).textTheme.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Keep exploring properties and conversations. Updates will show up here.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ).animate().fade(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
       ],
     );
   }

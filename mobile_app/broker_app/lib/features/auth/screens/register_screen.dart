@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
 import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:broker_app/features/auth/widgets/auth_form_skeleton.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'otp_verification_screen.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -34,12 +35,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     super.dispose();
   }
 
-  Future<void> _handleRegister() async {
+  void _handleRegister() {
     if (!_formKey.currentState!.validate()) return;
+    
+    // Unfocus keyboard
+    FocusScope.of(context).unfocus();
 
-    final success = await ref
-        .read(authStateProvider.notifier)
-        .register(
+    ref.read(authStateProvider.notifier).register(
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
           phone: _phoneController.text.trim(),
@@ -48,40 +50,42 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           passwordConfirmation: _confirmPasswordController.text,
           preferredRole: _selectedRole,
         );
-
-    if (!mounted) return;
-
-    if (success) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => OtpVerificationScreen(
-            identifier: _phoneController.text.trim(),
-            purpose: 'registration',
-          ),
-        ),
-      );
-    } else {
-      final error = ref.read(authStateProvider).error;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error ?? 'Registration failed'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authStateProvider, (previous, next) {
+      if (previous?.isLoading == true && !next.isLoading) {
+        if (next.isAuthenticated || next.user != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OtpVerificationScreen(
+                identifier: _phoneController.text.trim(),
+                purpose: 'registration',
+              ),
+            ),
+          );
+        } else if (next.error != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(next.error!),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+        }
+      }
+    });
     final authState = ref.watch(authStateProvider);
     final showSkeleton = authState.isLoading && !authState.isAuthenticated;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.xl),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.xl),
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
             child: showSkeleton
@@ -315,13 +319,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             ],
                           ),
                           const SizedBox(height: 16),
-                        ],
+                        ].animate(interval: 50.ms).fade(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
                       ),
                     ),
                   ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

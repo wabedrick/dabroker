@@ -63,7 +63,7 @@ class LodgingBrowseController extends Controller
                     SELECT COALESCE(SUM(rooms_count), 0)
                     FROM bookings
                     WHERE bookings.lodging_id = lodgings.id
-                    AND bookings.status != 'cancelled'
+                    AND bookings.status = 'confirmed'
                     AND (
                         (check_in BETWEEN ? AND ?)
                         OR (check_out BETWEEN ? AND ?)
@@ -85,9 +85,14 @@ class LodgingBrowseController extends Controller
 
         // Filter by location (radius search)
         if ($request->has('latitude') && $request->has('longitude') && $request->has('radius')) {
-            $lat = $request->latitude;
-            $lng = $request->longitude;
-            $radius = $request->radius; // in km
+            $lat = (float) $request->latitude;
+            $lng = (float) $request->longitude;
+            $radius = (float) $request->radius; // in km
+
+            // Apply bounding box pre-filter for performance
+            $degreeRadius = $radius / 111;
+            $query->whereBetween('latitude', [$lat - $degreeRadius, $lat + $degreeRadius])
+                ->whereBetween('longitude', [$lng - $degreeRadius, $lng + $degreeRadius]);
 
             $haversine = "( 6371 * acos( cos( radians(?) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(?) ) + sin( radians(?) ) * sin( radians( latitude ) ) ) )";
 

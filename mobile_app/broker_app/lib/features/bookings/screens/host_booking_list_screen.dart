@@ -7,6 +7,7 @@ import 'package:broker_app/features/bookings/providers/booking_provider.dart';
 import 'package:broker_app/features/bookings/screens/booking_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 
 class HostBookingListScreen extends ConsumerWidget {
@@ -25,6 +26,11 @@ class HostBookingListScreen extends ConsumerWidget {
           lodgingTitle != null
               ? 'Reservations - $lodgingTitle'
               : 'Reservations',
+          style: const TextStyle(
+            fontFamily: 'DM Serif Display',
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
+          ),
         ),
       ),
       body: bookingsAsync.when(
@@ -40,17 +46,53 @@ class HostBookingListScreen extends ConsumerWidget {
               : bookings;
 
           if (filtered.isEmpty) {
-            return const Center(child: Text('No reservations found'));
+            return RefreshIndicator(
+              onRefresh: () async => ref.invalidate(hostBookingsProvider),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.receipt_long_outlined,
+                            size: 64,
+                            color: Theme.of(context).disabledColor,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No reservations found',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Theme.of(context).disabledColor,
+                                ),
+                          ),
+                        ],
+                      ).animate().fade(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: filtered.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 16),
-            itemBuilder: (context, index) {
-              final booking = filtered[index];
-              return _HostBookingCard(booking: booking);
-            },
+          return RefreshIndicator(
+            onRefresh: () async => ref.invalidate(hostBookingsProvider),
+            child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              itemCount: filtered.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
+              itemBuilder: (context, index) {
+                final booking = filtered[index];
+                return _HostBookingCard(booking: booking)
+                    .animate(delay: (index * 50).ms)
+                    .fade(duration: 400.ms)
+                    .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
+              },
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -94,8 +136,13 @@ class _HostBookingCard extends ConsumerWidget {
     final statusColors = bookingStatusBadgeColors(colorScheme, booking.status);
 
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 8,
+      shadowColor: Colors.black.withAlpha(50),
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: colorScheme.outlineVariant.withAlpha(50)),
+      ),
       child: InkWell(
         onTap: () {
           Navigator.push(

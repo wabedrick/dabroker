@@ -10,18 +10,20 @@ AdminDashboardStats _$AdminDashboardStatsFromJson(Map<String, dynamic> json) =>
     AdminDashboardStats(
       users: AdminUserStats.fromJson(json['users'] as Map<String, dynamic>),
       properties: AdminPropertyStats.fromJson(
-          json['properties'] as Map<String, dynamic>),
-      lodgings:
-          AdminLodgingStats.fromJson(json['lodgings'] as Map<String, dynamic>),
+        json['properties'] as Map<String, dynamic>,
+      ),
+      lodgings: AdminLodgingStats.fromJson(
+        json['lodgings'] as Map<String, dynamic>,
+      ),
     );
 
 Map<String, dynamic> _$AdminDashboardStatsToJson(
-        AdminDashboardStats instance) =>
-    <String, dynamic>{
-      'users': instance.users,
-      'properties': instance.properties,
-      'lodgings': instance.lodgings,
-    };
+  AdminDashboardStats instance,
+) => <String, dynamic>{
+  'users': instance.users,
+  'properties': instance.properties,
+  'lodgings': instance.lodgings,
+};
 
 AdminUserStats _$AdminUserStatsFromJson(Map<String, dynamic> json) =>
     AdminUserStats(

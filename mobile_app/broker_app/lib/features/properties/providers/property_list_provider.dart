@@ -6,9 +6,16 @@ import 'package:broker_app/data/models/property.dart';
 import '../models/property_query_params.dart';
 import '../repositories/property_repository.dart';
 
-final propertyRepositoryProvider = Provider<PropertyRepository>((ref) {
+import 'package:broker_app/features/properties/repositories/property_api_client.dart';
+
+final propertyApiClientProvider = Provider<PropertyApiClient>((ref) {
   final client = ref.watch(dioClientProvider);
-  return PropertyRepository(client);
+  return PropertyApiClient(client.dio);
+});
+
+final propertyRepositoryProvider = Provider<PropertyRepository>((ref) {
+  final apiClient = ref.watch(propertyApiClientProvider);
+  return PropertyRepository(apiClient);
 });
 
 final propertyListProvider =
@@ -115,6 +122,11 @@ class PropertyListNotifier extends StateNotifier<PropertyListState> {
   }
 
   Future<void> updateFilters(PropertyQueryParams params) async {
+    state = state.copyWith(
+      params: params,
+      items: [],
+      error: null,
+    );
     await refresh(params: params);
   }
 

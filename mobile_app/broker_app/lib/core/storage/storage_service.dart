@@ -1,25 +1,38 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 
 class StorageService {
   final SharedPreferences _prefs;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
-  StorageService(this._prefs);
+  StorageService(this._prefs) {
+    _migrateLegacyToken();
+  }
+
+  // Migrate token from SharedPreferences to SecureStorage if it exists
+  Future<void> _migrateLegacyToken() async {
+    final legacyToken = _prefs.getString('auth_token');
+    if (legacyToken != null) {
+      await saveAuthToken(legacyToken);
+      await _prefs.remove('auth_token');
+    }
+  }
 
   // Auth Token
   Future<void> saveAuthToken(String token) async {
-    await _prefs.setString('auth_token', token);
+    await _secureStorage.write(key: 'auth_token', value: token);
   }
 
-  String? getAuthToken() {
-    return _prefs.getString('auth_token');
+  Future<String?> getAuthToken() async {
+    return await _secureStorage.read(key: 'auth_token');
   }
 
   Future<void> clearAuthToken() async {
-    await _prefs.remove('auth_token');
+    await _secureStorage.delete(key: 'auth_token');
   }
 
-  bool get isLoggedIn => getAuthToken() != null;
+  Future<bool> get isLoggedIn async => (await getAuthToken()) != null;
 
   // User Data
   Future<void> saveUser(Map<String, dynamic> user) async {

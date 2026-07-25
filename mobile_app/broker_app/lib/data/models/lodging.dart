@@ -1,185 +1,84 @@
-import 'package:json_annotation/json_annotation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:broker_app/data/models/user.dart';
 
+part 'lodging.freezed.dart';
 part 'lodging.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
-class Lodging {
-  final String id;
-  final int? hostId;
-  final String title;
-  final String? slug;
-  final String? type;
-  final String? status;
-  final bool? isAvailable;
-  @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson)
-  final double? pricePerNight;
-  final String? currency;
-  @JsonKey(fromJson: _intFromJson, toJson: _intToJson)
-  final int? maxGuests;
-  @JsonKey(fromJson: _intFromJson, toJson: _intToJson)
-  final int? totalRooms;
-  final String? description;
-  final String? address;
-  final String? city;
-  final String? state;
-  final String? country;
-  final String? postalCode;
-  @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson)
-  final double? latitude;
-  @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson)
-  final double? longitude;
-  final List<String>? amenities;
-  final List<String>? rules;
-  final DateTime? publishedAt;
-  final DateTime? approvedAt;
-  final User? host;
-  final List<LodgingMedia>? media;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-  @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson)
-  final double? distance;
-  @JsonKey(defaultValue: 0.0, fromJson: _doubleFromJsonNonNull)
-  final double averageRating;
-  @JsonKey(defaultValue: 0)
-  final int ratingsCount;
+String _idFromJson(dynamic json) => json.toString();
 
-  const Lodging({
-    required this.id,
-    this.hostId,
-    required this.title,
-    this.slug,
-    this.type,
-    this.status,
-    this.isAvailable,
-    this.pricePerNight,
-    this.currency,
-    this.maxGuests,
-    this.totalRooms,
-    this.description,
-    this.address,
-    this.city,
-    this.state,
-    this.country,
-    this.postalCode,
-    this.latitude,
-    this.longitude,
-    this.amenities,
-    this.rules,
-    this.publishedAt,
-    this.approvedAt,
-    this.host,
-    this.media,
-    this.createdAt,
-    this.updatedAt,
-    this.distance,
-    this.averageRating = 0.0,
-    this.ratingsCount = 0,
-  });
+List<LodgingMedia>? _mediaFromJson(dynamic json) {
+  if (json is List) {
+    return json.map((m) {
+      if (m is Map<String, dynamic>) {
+        final mm = Map<String, dynamic>.from(m);
+        if (mm['id'] != null && mm['id'] is String) {
+          final parsed = int.tryParse(mm['id']);
+          if (parsed != null) mm['id'] = parsed;
+        }
+        return LodgingMedia.fromJson(mm);
+      }
+      // If it's already a LodgingMedia somehow
+      if (m is LodgingMedia) return m;
+      throw FormatException('Expected Map or LodgingMedia, got $m');
+    }).toList();
+  }
+  return null;
+}
 
-  Lodging copyWith({
-    String? id,
-    String? title,
+@freezed
+abstract class Lodging with _$Lodging {
+  const Lodging._();
+
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+  const factory Lodging({
+    @JsonKey(fromJson: _idFromJson) required String id,
+    int? hostId,
+    required String title,
     String? slug,
     String? type,
     String? status,
     bool? isAvailable,
-    double? pricePerNight,
+    @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson) double? pricePerNight,
     String? currency,
-    int? maxGuests,
+    @JsonKey(fromJson: _intFromJson, toJson: _intToJson) int? maxGuests,
+    @JsonKey(fromJson: _intFromJson, toJson: _intToJson) int? totalRooms,
     String? description,
     String? address,
     String? city,
     String? state,
     String? country,
     String? postalCode,
-    double? latitude,
-    double? longitude,
+    @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson) double? latitude,
+    @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson) double? longitude,
     List<String>? amenities,
     List<String>? rules,
     DateTime? publishedAt,
     DateTime? approvedAt,
     User? host,
-    List<LodgingMedia>? media,
+    @JsonKey(fromJson: _mediaFromJson) List<LodgingMedia>? media,
     DateTime? createdAt,
     DateTime? updatedAt,
-    double? distance,
-  }) {
-    return Lodging(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      slug: slug ?? this.slug,
-      type: type ?? this.type,
-      status: status ?? this.status,
-      isAvailable: isAvailable ?? this.isAvailable,
-      pricePerNight: pricePerNight ?? this.pricePerNight,
-      currency: currency ?? this.currency,
-      maxGuests: maxGuests ?? this.maxGuests,
-      description: description ?? this.description,
-      address: address ?? this.address,
-      city: city ?? this.city,
-      state: state ?? this.state,
-      country: country ?? this.country,
-      postalCode: postalCode ?? this.postalCode,
-      latitude: latitude ?? this.latitude,
-      longitude: longitude ?? this.longitude,
-      amenities: amenities ?? this.amenities,
-      rules: rules ?? this.rules,
-      publishedAt: publishedAt ?? this.publishedAt,
-      approvedAt: approvedAt ?? this.approvedAt,
-      host: host ?? this.host,
-      media: media ?? this.media,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      distance: distance ?? this.distance,
-    );
-  }
+    @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson) double? distance,
+    @JsonKey(defaultValue: 0.0, fromJson: _doubleFromJsonNonNull) @Default(0.0) double averageRating,
+    @JsonKey(defaultValue: 0) @Default(0) int ratingsCount,
+  }) = _Lodging;
 
-  factory Lodging.fromJson(Map<String, dynamic> json) {
-    final Map<String, dynamic> normalized = Map<String, dynamic>.from(json);
-
-    // Normalize id to String (some APIs return numeric ids)
-    if (normalized['id'] != null && normalized['id'] is! String) {
-      normalized['id'] = normalized['id'].toString();
-    }
-
-    // Ensure media ids are numeric when possible (generated code expects num)
-    if (normalized['media'] is List) {
-      normalized['media'] = (normalized['media'] as List).map((m) {
-        if (m is Map<String, dynamic>) {
-          final mm = Map<String, dynamic>.from(m);
-          if (mm['id'] != null && mm['id'] is String) {
-            final parsed = int.tryParse(mm['id']);
-            if (parsed != null) mm['id'] = parsed;
-          }
-          return mm;
-        }
-        return m;
-      }).toList();
-    }
-
-    return _$LodgingFromJson(normalized);
-  }
-  Map<String, dynamic> toJson() => _$LodgingToJson(this);
+  factory Lodging.fromJson(Map<String, dynamic> json) =>
+      _$LodgingFromJson(json);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
-class LodgingMedia {
-  final int id;
-  final String url;
-  final String? thumbUrl;
-  final String? previewUrl;
-
-  const LodgingMedia({
-    required this.id,
-    required this.url,
-    this.thumbUrl,
-    this.previewUrl,
-  });
+@freezed
+abstract class LodgingMedia with _$LodgingMedia {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+  const factory LodgingMedia({
+    int? id,
+    required String url,
+    String? thumbUrl,
+    String? previewUrl,
+  }) = _LodgingMedia;
 
   factory LodgingMedia.fromJson(Map<String, dynamic> json) =>
       _$LodgingMediaFromJson(json);
-  Map<String, dynamic> toJson() => _$LodgingMediaToJson(this);
 }
 
 double? _doubleFromJson(Object? value) {

@@ -1,109 +1,33 @@
-import 'package:json_annotation/json_annotation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'property_price_history.dart';
 
+part 'property.freezed.dart';
 part 'property.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
-class Property {
-  final String id;
-  final String title;
-  final String? slug;
-  final String? type;
-  final String? category;
-  final String? status;
-  @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson)
-  final double? price;
-  final String? currency;
-  @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson)
-  final double? size;
-  final String? sizeUnit;
-  @JsonKey(fromJson: _intFromJson, toJson: _intToJson)
-  final int? houseAge;
-  final String? address;
-  final String? city;
-  final String? state;
-  final String? country;
-  final String? postalCode;
-  @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson)
-  final double? latitude;
-  @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson)
-  final double? longitude;
-  final List<String>? amenities;
-  @JsonKey(fromJson: _metadataFromJson)
-  final Map<String, dynamic>? metadata;
-  final String? description;
-  final DateTime? availableFrom;
-  final PropertyUserSummary? owner;
-  final List<PropertyMedia>? gallery;
-  final bool? isFavorited;
-  final bool? isAvailable;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-  final String? videoUrl;
-  final String? virtualTourUrl;
-  final List<Map<String, dynamic>>? nearbyPlaces;
-  final DateTime? verifiedAt;
-  final List<PropertyPriceHistory>? priceHistory;
-  final List<Property>? similarProperties;
-
-  const Property({
-    required this.id,
-    required this.title,
-    this.slug,
-    this.type,
-    this.category,
-    this.status,
-    this.price,
-    this.currency,
-    this.size,
-    this.sizeUnit,
-    this.houseAge,
-    this.address,
-    this.city,
-    this.state,
-    this.country,
-    this.postalCode,
-    this.latitude,
-    this.longitude,
-    this.amenities,
-    this.metadata,
-    this.description,
-    this.availableFrom,
-    this.owner,
-    this.gallery,
-    this.isFavorited,
-    this.isAvailable,
-    this.createdAt,
-    this.updatedAt,
-    this.videoUrl,
-    this.virtualTourUrl,
-    this.nearbyPlaces,
-    this.verifiedAt,
-    this.priceHistory,
-    this.similarProperties,
-  });
-
-  Property copyWith({
-    String? id,
-    String? title,
+@freezed
+abstract class Property with _$Property {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+  const factory Property({
+    required String id,
+    required String title,
     String? slug,
     String? type,
     String? category,
     String? status,
-    double? price,
+    @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson) double? price,
     String? currency,
-    double? size,
+    @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson) double? size,
     String? sizeUnit,
-    int? houseAge,
+    @JsonKey(fromJson: _intFromJson, toJson: _intToJson) int? houseAge,
     String? address,
     String? city,
     String? state,
     String? country,
     String? postalCode,
-    double? latitude,
-    double? longitude,
+    @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson) double? latitude,
+    @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson) double? longitude,
     List<String>? amenities,
-    Map<String, dynamic>? metadata,
+    @JsonKey(fromJson: _metadataFromJson) Map<String, dynamic>? metadata,
     String? description,
     DateTime? availableFrom,
     PropertyUserSummary? owner,
@@ -118,84 +42,39 @@ class Property {
     DateTime? verifiedAt,
     List<PropertyPriceHistory>? priceHistory,
     List<Property>? similarProperties,
-  }) {
-    return Property(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      slug: slug ?? this.slug,
-      type: type ?? this.type,
-      category: category ?? this.category,
-      status: status ?? this.status,
-      price: price ?? this.price,
-      currency: currency ?? this.currency,
-      size: size ?? this.size,
-      sizeUnit: sizeUnit ?? this.sizeUnit,
-      houseAge: houseAge ?? this.houseAge,
-      address: address ?? this.address,
-      city: city ?? this.city,
-      state: state ?? this.state,
-      country: country ?? this.country,
-      postalCode: postalCode ?? this.postalCode,
-      latitude: latitude ?? this.latitude,
-      longitude: longitude ?? this.longitude,
-      amenities: amenities ?? this.amenities,
-      metadata: metadata ?? this.metadata,
-      description: description ?? this.description,
-      availableFrom: availableFrom ?? this.availableFrom,
-      owner: owner ?? this.owner,
-      gallery: gallery ?? this.gallery,
-      isFavorited: isFavorited ?? this.isFavorited,
-      isAvailable: isAvailable ?? this.isAvailable,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      videoUrl: videoUrl ?? this.videoUrl,
-      virtualTourUrl: virtualTourUrl ?? this.virtualTourUrl,
-      nearbyPlaces: nearbyPlaces ?? this.nearbyPlaces,
-      verifiedAt: verifiedAt ?? this.verifiedAt,
-      priceHistory: priceHistory ?? this.priceHistory,
-      similarProperties: similarProperties ?? this.similarProperties,
-    );
-  }
+    @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson) double? distance,
+  }) = _Property;
 
   factory Property.fromJson(Map<String, dynamic> json) =>
       _$PropertyFromJson(json);
-  Map<String, dynamic> toJson() => _$PropertyToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
-class PropertyMedia {
-  final String id;
-  final String name;
-  final String? caption;
-  final String url;
-  final String? thumbnailUrl;
-  final String? previewUrl;
-
-  const PropertyMedia({
-    required this.id,
-    required this.name,
-    this.caption,
-    required this.url,
-    this.thumbnailUrl,
-    this.previewUrl,
-  });
+@freezed
+abstract class PropertyMedia with _$PropertyMedia {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+  const factory PropertyMedia({
+    String? id,
+    required String name,
+    String? caption,
+    required String url,
+    String? thumbnailUrl,
+    String? previewUrl,
+  }) = _PropertyMedia;
 
   factory PropertyMedia.fromJson(Map<String, dynamic> json) =>
       _$PropertyMediaFromJson(json);
-  Map<String, dynamic> toJson() => _$PropertyMediaToJson(this);
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
-class PropertyUserSummary {
-  final int id;
-  final String name;
-  final String? preferredRole;
+@freezed
+abstract class PropertyUserSummary with _$PropertyUserSummary {
+  const PropertyUserSummary._(); // Allows adding getters/methods
 
-  const PropertyUserSummary({
-    required this.id,
-    required this.name,
-    this.preferredRole,
-  });
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+  const factory PropertyUserSummary({
+    required int id,
+    required String name,
+    String? preferredRole,
+  }) = _PropertyUserSummary;
 
   String get formattedRole {
     if (preferredRole == null) return '';
@@ -210,7 +89,6 @@ class PropertyUserSummary {
 
   factory PropertyUserSummary.fromJson(Map<String, dynamic> json) =>
       _$PropertyUserSummaryFromJson(json);
-  Map<String, dynamic> toJson() => _$PropertyUserSummaryToJson(this);
 }
 
 double? _doubleFromJson(Object? value) {

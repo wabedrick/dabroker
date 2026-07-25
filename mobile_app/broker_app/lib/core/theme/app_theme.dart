@@ -55,72 +55,120 @@ class AppColors {
 }
 
 /// App Theme Configuration
+///
+/// Typography pairing (2026 premium real-estate standard):
+///  • DM Sans   → UI text, body, labels, buttons  (geometric, legible, modern)
+///  • DM Serif Display → display & headline styles  (editorial, luxury, trust)
 class AppTheme {
-  static const String _fontFamily = 'Inter';
-
   static TextTheme _buildTextTheme({required Brightness brightness}) {
     final base = brightness == Brightness.dark
         ? ThemeData.dark().textTheme
         : ThemeData.light().textTheme;
 
-    final inter = GoogleFonts.interTextTheme(
-      base,
-    ).apply(fontFamily: _fontFamily);
+    // Body & UI: DM Sans — clean, geometric, highly readable
+    final dmSans = GoogleFonts.dmSansTextTheme(base);
+    // Display headings: DM Serif Display — editorial, premium
+    final dmSerif = GoogleFonts.dmSerifDisplayTextTheme(base);
 
-    // Keep a small, consistent scale (matches docs/ui_design_system.md intent)
-    return inter.copyWith(
-      displayLarge: inter.displayLarge?.copyWith(
-        fontSize: 40,
-        height: 48 / 40,
-        fontWeight: FontWeight.w700,
+    return dmSans.copyWith(
+      // ── Display styles (hero headlines, property names) ──────────────────
+      displayLarge: dmSerif.displayLarge?.copyWith(
+        fontSize: 42,
+        height: 1.1,
+        fontWeight: FontWeight.w400, // Serif Display is inherently bold-looking
+        letterSpacing: -1.0,
+      ),
+      displayMedium: dmSerif.displayMedium?.copyWith(
+        fontSize: 34,
+        height: 1.15,
+        fontWeight: FontWeight.w400,
+        letterSpacing: -0.8,
+      ),
+      displaySmall: dmSerif.displaySmall?.copyWith(
+        fontSize: 28,
+        height: 1.2,
+        fontWeight: FontWeight.w400,
         letterSpacing: -0.5,
       ),
-      displayMedium: inter.displayMedium?.copyWith(
-        fontSize: 32,
-        height: 40 / 32,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.4,
-      ),
-      displaySmall: inter.displaySmall?.copyWith(
-        fontSize: 28,
-        height: 36 / 28,
-        fontWeight: FontWeight.w700,
+
+      // ── Headline styles (section titles, screen titles) ──────────────────
+      headlineLarge: dmSerif.headlineLarge?.copyWith(
+        fontSize: 26,
+        height: 1.25,
+        fontWeight: FontWeight.w400,
         letterSpacing: -0.3,
       ),
-      headlineMedium: inter.headlineMedium?.copyWith(
+      headlineMedium: dmSerif.headlineMedium?.copyWith(
         fontSize: 22,
-        height: 30 / 22,
-        fontWeight: FontWeight.w600,
+        height: 1.3,
+        fontWeight: FontWeight.w400,
+        letterSpacing: -0.2,
       ),
-      titleLarge: inter.titleLarge?.copyWith(
+      headlineSmall: dmSans.headlineSmall?.copyWith(
         fontSize: 20,
-        height: 28 / 20,
-        fontWeight: FontWeight.w600,
+        height: 1.3,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.2,
       ),
-      titleMedium: inter.titleMedium?.copyWith(
+
+      // ── Title styles (card titles, list headers) ─────────────────────────
+      titleLarge: dmSans.titleLarge?.copyWith(
+        fontSize: 18,
+        height: 1.4,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.2,
+      ),
+      titleMedium: dmSans.titleMedium?.copyWith(
         fontSize: 16,
-        height: 24 / 16,
+        height: 1.4,
         fontWeight: FontWeight.w600,
+        letterSpacing: -0.1,
       ),
-      bodyLarge: inter.bodyLarge?.copyWith(
-        fontSize: 16,
-        height: 24 / 16,
-        fontWeight: FontWeight.w400,
-      ),
-      bodyMedium: inter.bodyMedium?.copyWith(
+      titleSmall: dmSans.titleSmall?.copyWith(
         fontSize: 14,
-        height: 20 / 14,
-        fontWeight: FontWeight.w400,
+        height: 1.4,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0,
       ),
-      bodySmall: inter.bodySmall?.copyWith(
+
+      // ── Body styles (descriptions, notes) ────────────────────────────────
+      bodyLarge: dmSans.bodyLarge?.copyWith(
+        fontSize: 16,
+        height: 1.6,
+        fontWeight: FontWeight.w400,
+        letterSpacing: 0.1,
+      ),
+      bodyMedium: dmSans.bodyMedium?.copyWith(
+        fontSize: 14,
+        height: 1.55,
+        fontWeight: FontWeight.w400,
+        letterSpacing: 0.1,
+      ),
+      bodySmall: dmSans.bodySmall?.copyWith(
         fontSize: 13,
-        height: 18 / 13,
+        height: 1.5,
         fontWeight: FontWeight.w400,
+        letterSpacing: 0.1,
       ),
-      labelLarge: inter.labelLarge?.copyWith(
+
+      // ── Label styles (buttons, chips, badges) ────────────────────────────
+      labelLarge: dmSans.labelLarge?.copyWith(
         fontSize: 14,
-        height: 20 / 14,
+        height: 1.4,
         fontWeight: FontWeight.w600,
+        letterSpacing: 0.1,
+      ),
+      labelMedium: dmSans.labelMedium?.copyWith(
+        fontSize: 12,
+        height: 1.4,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.3,
+      ),
+      labelSmall: dmSans.labelSmall?.copyWith(
+        fontSize: 11,
+        height: 1.4,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.4,
       ),
     );
   }
@@ -158,6 +206,12 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 1,
         centerTitle: false,
+        titleTextStyle: GoogleFonts.dmSans(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.3,
+          color: colorScheme.onSurface,
+        ),
       ),
 
       // Card Theme
@@ -298,6 +352,12 @@ class AppTheme {
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
         elevation: 0,
+        titleTextStyle: GoogleFonts.dmSans(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.3,
+          color: colorScheme.onSurface,
+        ),
       ),
 
       // Card Theme

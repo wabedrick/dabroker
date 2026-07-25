@@ -24,7 +24,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('BROKER'), findsOneWidget);
+    expect(find.text('DaBROKER'), findsOneWidget);
 
     // Let the delayed navigation timer fire to avoid pending timer failures.
     await tester.pump(const Duration(seconds: 3));

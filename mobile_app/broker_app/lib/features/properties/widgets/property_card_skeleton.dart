@@ -1,28 +1,69 @@
-import 'package:broker_app/core/widgets/skeleton_box.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/shimmer_loading.dart';
 
 class PropertyCardSkeleton extends StatelessWidget {
   const PropertyCardSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.hardEdge,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant.withAlpha(128),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          SkeletonBox(width: double.infinity, height: 180, borderRadius: 0),
+        children: [
+          // Image skeleton
+          const ShimmerLoading(
+            height: 220,
+            width: double.infinity,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+          ),
           Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SkeletonBox(width: 180, height: 16),
-                SizedBox(height: 8),
-                SkeletonBox(width: 140, height: 14),
-                SizedBox(height: 16),
-                SkeletonBox(width: 120, height: 18),
+                // Top row (Category + rating)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ShimmerLoading(height: 20, width: 80, borderRadius: BorderRadius.circular(8)),
+                    ShimmerLoading(height: 20, width: 40, borderRadius: BorderRadius.circular(8)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                
+                // Title
+                ShimmerLoading(height: 24, width: 200, borderRadius: BorderRadius.circular(8)),
+                const SizedBox(height: 8),
+                
+                // Location
+                ShimmerLoading(height: 16, width: 140, borderRadius: BorderRadius.circular(8)),
+                const SizedBox(height: 16),
+                
+                // Details row (Beds, Baths, Sqft)
+                Row(
+                  children: [
+                    ShimmerLoading(height: 24, width: 60, borderRadius: BorderRadius.circular(8)),
+                    const SizedBox(width: 12),
+                    ShimmerLoading(height: 24, width: 60, borderRadius: BorderRadius.circular(8)),
+                    const SizedBox(width: 12),
+                    ShimmerLoading(height: 24, width: 60, borderRadius: BorderRadius.circular(8)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                
+                // Bottom row (Price)
+                ShimmerLoading(height: 28, width: 120, borderRadius: BorderRadius.circular(8)),
               ],
             ),
           ),

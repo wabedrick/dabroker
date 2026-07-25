@@ -1,10 +1,10 @@
-import 'package:json_annotation/json_annotation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:broker_app/data/models/lodging.dart';
 import 'package:broker_app/data/models/user.dart';
 
+part 'booking.freezed.dart';
 part 'booking.g.dart';
 
-// Helpers that safely convert JSON values that may be numbers or numeric strings
 int _intFromJson(dynamic json) {
   if (json == null) throw FormatException('Expected int, got null');
   if (json is int) return json;
@@ -36,53 +36,28 @@ double _doubleFromJson(dynamic json) {
   throw FormatException('Cannot parse double from: $json');
 }
 
-@JsonSerializable(fieldRename: FieldRename.snake)
-class Booking {
-  @JsonKey(fromJson: _intFromJson)
-  final int id;
-  final String publicId;
-  @JsonKey(fromJson: _intFromJson)
-  final int userId;
-  @JsonKey(fromJson: _intFromJson)
-  final int lodgingId;
-  final DateTime checkIn;
-  final DateTime checkOut;
-  @JsonKey(fromJson: _intFromJson)
-  final int guestsCount;
-  @JsonKey(fromJson: _nullableIntFromJson)
-  final int? roomsCount;
-  @JsonKey(fromJson: _doubleFromJson)
-  final double totalPrice;
-  @JsonKey(fromJson: _nullableIntFromJson)
-  final int? availableRooms;
-  final String status;
-  final String? notes;
-  final Lodging? lodging;
-  final User? user;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-
-  const Booking({
-    required this.id,
-    required this.publicId,
-    required this.userId,
-    required this.lodgingId,
-    required this.checkIn,
-    required this.checkOut,
-    required this.guestsCount,
-    this.roomsCount,
-    required this.totalPrice,
-    this.availableRooms,
-    required this.status,
-    this.notes,
-    this.lodging,
-    this.user,
-    this.createdAt,
-    this.updatedAt,
-  });
+@freezed
+abstract class Booking with _$Booking {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+  const factory Booking({
+    @JsonKey(fromJson: _intFromJson) required int id,
+    required String publicId,
+    @JsonKey(fromJson: _intFromJson) required int userId,
+    @JsonKey(fromJson: _intFromJson) required int lodgingId,
+    required DateTime checkIn,
+    required DateTime checkOut,
+    @JsonKey(fromJson: _intFromJson) required int guestsCount,
+    @JsonKey(fromJson: _nullableIntFromJson) int? roomsCount,
+    @JsonKey(fromJson: _doubleFromJson) required double totalPrice,
+    @JsonKey(fromJson: _nullableIntFromJson) int? availableRooms,
+    required String status,
+    String? notes,
+    Lodging? lodging,
+    User? user,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) = _Booking;
 
   factory Booking.fromJson(Map<String, dynamic> json) =>
       _$BookingFromJson(json);
-
-  Map<String, dynamic> toJson() => _$BookingToJson(this);
 }

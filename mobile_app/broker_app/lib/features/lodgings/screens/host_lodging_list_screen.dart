@@ -7,6 +7,7 @@ import 'package:broker_app/features/bookings/screens/host_booking_list_screen.da
 import 'package:broker_app/features/lodgings/screens/lodging_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class HostLodgingListScreen extends ConsumerWidget {
   const HostLodgingListScreen({super.key});
@@ -17,7 +18,14 @@ class HostLodgingListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Lodgings'),
+        title: const Text(
+          'My Lodgings',
+          style: TextStyle(
+            fontFamily: 'DM Serif Display',
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -38,7 +46,18 @@ class HostLodgingListScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('You have no lodgings yet'),
+                  Icon(
+                    Icons.hotel_outlined,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'You have no lodgings yet',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () async {
@@ -53,7 +72,7 @@ class HostLodgingListScreen extends ConsumerWidget {
                     child: const Text('Add Lodging'),
                   ),
                 ],
-              ),
+              ).animate().fade(duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
             );
           }
           return ListView.separated(
@@ -62,7 +81,10 @@ class HostLodgingListScreen extends ConsumerWidget {
             separatorBuilder: (_, __) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final lodging = lodgings[index];
-              return _HostLodgingCard(lodging: lodging);
+              return _HostLodgingCard(lodging: lodging)
+                  .animate(delay: (index * 50).ms)
+                  .fade(duration: 400.ms)
+                  .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad);
             },
           );
         },
@@ -85,6 +107,12 @@ class _HostLodgingCard extends ConsumerWidget {
 
     return Card(
       clipBehavior: Clip.antiAlias,
+      elevation: 8,
+      shadowColor: Colors.black.withAlpha(50),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: colorScheme.outlineVariant.withAlpha(50)),
+      ),
       child: InkWell(
         onTap: () async {
           await Navigator.push(

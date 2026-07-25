@@ -106,117 +106,221 @@ class _ScheduleConsultationScreenState
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Schedule Consultation')),
+      appBar: AppBar(
+        title: const Text('Schedule Consultation'),
+        centerTitle: true,
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Book a session with ${widget.professionalName}',
-              style: Theme.of(context).textTheme.titleLarge,
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: colorScheme.shadow.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 32,
+                    backgroundColor: colorScheme.primaryContainer,
+                    child: Text(
+                      widget.professionalName.isNotEmpty
+                          ? widget.professionalName[0].toUpperCase()
+                          : '?',
+                      style: textTheme.headlineSmall?.copyWith(
+                        color: colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Book a session with',
+                    style: textTheme.labelLarge?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.professionalName,
+                    style: textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 32),
             Text(
-              'Select Date',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              'Select Date & Time',
+              style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
-            InkWell(
-              onTap: () => _selectDate(context),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: colorScheme.outlineVariant),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.calendar_today, color: colorScheme.primary),
-                    const SizedBox(width: 12),
-                    Text(
-                      _selectedDate == null
-                          ? 'Choose a date'
-                          : DateFormat(
-                              'EEEE, MMMM d, y',
-                            ).format(_selectedDate!),
-                      style: Theme.of(context).textTheme.bodyLarge,
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () => _selectDate(context),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        border: Border.all(
+                          color: _selectedDate == null
+                              ? colorScheme.outlineVariant
+                              : colorScheme.primary,
+                          width: _selectedDate == null ? 1 : 2,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.calendar_month_rounded,
+                            color: _selectedDate == null
+                                ? colorScheme.onSurfaceVariant
+                                : colorScheme.primary,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Date',
+                            style: textTheme.labelSmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _selectedDate == null
+                                ? 'Choose Date'
+                                : DateFormat('MMM d, yyyy').format(
+                                    _selectedDate!),
+                            style: textTheme.bodyLarge?.copyWith(
+                              fontWeight: _selectedDate == null
+                                  ? FontWeight.normal
+                                  : FontWeight.bold,
+                              color: _selectedDate == null
+                                  ? colorScheme.onSurfaceVariant
+                                  : colorScheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Select Time',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            InkWell(
-              onTap: () => _selectTime(context),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: colorScheme.outlineVariant),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.access_time, color: colorScheme.primary),
-                    const SizedBox(width: 12),
-                    Text(
-                      _selectedTime == null
-                          ? 'Choose a time'
-                          : _selectedTime!.format(context),
-                      style: Theme.of(context).textTheme.bodyLarge,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => _selectTime(context),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        border: Border.all(
+                          color: _selectedTime == null
+                              ? colorScheme.outlineVariant
+                              : colorScheme.primary,
+                          width: _selectedTime == null ? 1 : 2,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.access_time_rounded,
+                            color: _selectedTime == null
+                                ? colorScheme.onSurfaceVariant
+                                : colorScheme.primary,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Time',
+                            style: textTheme.labelSmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _selectedTime == null
+                                ? 'Choose Time'
+                                : _selectedTime!.format(context),
+                            style: textTheme.bodyLarge?.copyWith(
+                              fontWeight: _selectedTime == null
+                                  ? FontWeight.normal
+                                  : FontWeight.bold,
+                              color: _selectedTime == null
+                                  ? colorScheme.onSurfaceVariant
+                                  : colorScheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             Text(
-              'Notes (Optional)',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              'Session Notes',
+              style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: _notesController,
               maxLines: 4,
               decoration: InputDecoration(
-                hintText: 'Briefly describe what you want to discuss...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: colorScheme.outlineVariant),
+                hintText: 'Briefly describe what you would like to discuss...',
+                filled: true,
+                fillColor: colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.3,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: colorScheme.outlineVariant),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
                 ),
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 48),
             SizedBox(
-              width: double.infinity,
               height: 56,
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: _isLoading ? null : _submitBooking,
-                style: ElevatedButton.styleFrom(
+                style: FilledButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: _isLoading
-                    ? CircularProgressIndicator(color: colorScheme.onPrimary)
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
                     : const Text(
                         'Confirm Booking',
                         style: TextStyle(
