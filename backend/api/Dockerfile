@@ -2,7 +2,7 @@ FROM serversideup/php:8.2-fpm-nginx
 
 # Switch to root to install PHP extensions
 USER root
-RUN install-php-extensions pdo_mysql zip bcmath
+RUN install-php-extensions pdo_mysql zip bcmath exif
 
 # Configure the web document root
 ENV WEB_DOCUMENT_ROOT=/var/www/html/public
