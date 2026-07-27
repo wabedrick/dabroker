@@ -22,27 +22,33 @@ class StorageService {
   // Auth Token
   Future<void> saveAuthToken(String token) async {
     try {
-      await _secureStorage.write(key: 'auth_token', value: token);
+      await _secureStorage.write(key: 'auth_token', value: token).timeout(const Duration(seconds: 3));
     } catch (e) {
-      await _secureStorage.deleteAll();
-      await _secureStorage.write(key: 'auth_token', value: token);
+      try {
+        await _secureStorage.deleteAll().timeout(const Duration(seconds: 2));
+        await _secureStorage.write(key: 'auth_token', value: token).timeout(const Duration(seconds: 3));
+      } catch (_) {}
     }
   }
 
   Future<String?> getAuthToken() async {
     try {
-      return await _secureStorage.read(key: 'auth_token');
+      return await _secureStorage.read(key: 'auth_token').timeout(const Duration(seconds: 3));
     } catch (e) {
-      await _secureStorage.deleteAll();
+      try {
+        await _secureStorage.deleteAll().timeout(const Duration(seconds: 2));
+      } catch (_) {}
       return null;
     }
   }
 
   Future<void> clearAuthToken() async {
     try {
-      await _secureStorage.delete(key: 'auth_token');
+      await _secureStorage.delete(key: 'auth_token').timeout(const Duration(seconds: 3));
     } catch (e) {
-      await _secureStorage.deleteAll();
+      try {
+        await _secureStorage.deleteAll().timeout(const Duration(seconds: 2));
+      } catch (_) {}
     }
   }
 

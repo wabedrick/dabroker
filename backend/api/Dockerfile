@@ -17,5 +17,8 @@ COPY --chown=www-data:www-data . /var/www/html
 # Install Composer dependencies for production
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
+# Create the storage symlink so public/storage maps to storage/app/public
+RUN php artisan storage:link
+
 # Optimization should happen at runtime, not build time, since DO injects env variables at runtime.
 # We skip config:cache in the Dockerfile.

@@ -11,11 +11,11 @@ class BiometricService {
 
   Future<bool> isBiometricAvailable() async {
     try {
-      final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics;
+      final bool canAuthenticateWithBiometrics = await auth.canCheckBiometrics.timeout(const Duration(seconds: 3));
       final bool canAuthenticate =
-          canAuthenticateWithBiometrics || await auth.isDeviceSupported();
+          canAuthenticateWithBiometrics || await auth.isDeviceSupported().timeout(const Duration(seconds: 3));
       return canAuthenticate;
-    } on PlatformException {
+    } catch (_) {
       return false;
     }
   }
@@ -24,9 +24,9 @@ class BiometricService {
     try {
       final bool didAuthenticate = await auth.authenticate(
         localizedReason: 'Please authenticate to securely unlock DaBroker',
-      );
+      ).timeout(const Duration(seconds: 60)); // Give user 60 seconds to authenticate
       return didAuthenticate;
-    } on PlatformException {
+    } catch (_) {
       return false;
     }
   }
