@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:broker_app/data/models/property.dart';
 import 'package:broker_app/features/properties/providers/property_list_provider.dart';
 import 'package:broker_app/features/properties/repositories/property_repository.dart';
 

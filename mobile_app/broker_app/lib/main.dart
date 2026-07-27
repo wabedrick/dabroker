@@ -85,7 +85,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   Future<void> _checkAuth() async {
     await Future.delayed(const Duration(seconds: 2));
 
-    if (mounted) {
+    if (!mounted) return;
+
+    try {
       final storage = ref.read(storageServiceProvider);
       final isLoggedIn = await storage.isLoggedIn;
 
@@ -115,6 +117,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           builder: (_) =>
               isLoggedIn ? const MainScreen() : const WelcomeScreen(),
         ),
+      );
+    } catch (e) {
+      // If anything fails during auth check, fallback safely to WelcomeScreen
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const WelcomeScreen()),
       );
     }
   }

@@ -21,15 +21,29 @@ class StorageService {
 
   // Auth Token
   Future<void> saveAuthToken(String token) async {
-    await _secureStorage.write(key: 'auth_token', value: token);
+    try {
+      await _secureStorage.write(key: 'auth_token', value: token);
+    } catch (e) {
+      await _secureStorage.deleteAll();
+      await _secureStorage.write(key: 'auth_token', value: token);
+    }
   }
 
   Future<String?> getAuthToken() async {
-    return await _secureStorage.read(key: 'auth_token');
+    try {
+      return await _secureStorage.read(key: 'auth_token');
+    } catch (e) {
+      await _secureStorage.deleteAll();
+      return null;
+    }
   }
 
   Future<void> clearAuthToken() async {
-    await _secureStorage.delete(key: 'auth_token');
+    try {
+      await _secureStorage.delete(key: 'auth_token');
+    } catch (e) {
+      await _secureStorage.deleteAll();
+    }
   }
 
   Future<bool> get isLoggedIn async => (await getAuthToken()) != null;

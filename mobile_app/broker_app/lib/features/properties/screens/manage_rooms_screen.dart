@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:broker_app/data/models/property.dart';
 import 'package:broker_app/data/models/room.dart';
 import 'package:broker_app/features/properties/providers/property_management_provider.dart';
+import 'package:broker_app/features/properties/providers/property_list_provider.dart';
 import 'package:broker_app/features/properties/repositories/property_repository.dart';
 import 'package:broker_app/core/providers/app_providers.dart';
 

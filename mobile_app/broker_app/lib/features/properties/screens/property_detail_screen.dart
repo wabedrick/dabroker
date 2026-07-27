@@ -2,6 +2,7 @@ import 'package:broker_app/core/utils/image_helper.dart';
 import 'package:broker_app/core/utils/money_format.dart';
 import 'package:broker_app/core/widgets/skeleton_box.dart';
 import 'package:broker_app/data/models/property.dart';
+import 'package:broker_app/data/models/room.dart';
 import 'package:broker_app/data/models/property_price_history.dart';
 import 'package:broker_app/features/properties/providers/property_list_provider.dart';
 import 'package:broker_app/features/inquiries/repositories/inquiry_repository.dart';
