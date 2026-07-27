@@ -39,7 +39,13 @@ class PropertyBrowseController extends Controller
 
     public function show(Request $request, Property $property): PropertyResource
     {
-        abort_if($property->status !== PropertyStatus::Approved || ! $property->is_available, 404);
+        $user = $request->user();
+        
+        $canBypassStatus = $user && ($user->id === $property->owner_id || $user->hasRole('admin'));
+
+        if (!$canBypassStatus) {
+            abort_if($property->status !== PropertyStatus::Approved || ! $property->is_available, 404);
+        }
 
         if ($userId = $request->user()?->id) {
             $property->loadExists([
