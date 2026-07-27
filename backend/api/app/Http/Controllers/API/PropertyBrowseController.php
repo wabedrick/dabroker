@@ -16,7 +16,7 @@ class PropertyBrowseController extends Controller
     {
         $perPage = (int) $request->integer('per_page', 15);
         $perPage = max(1, min($perPage, 50));
-        $userId = $request->user()?->id;
+        $userId = $request->user('sanctum')?->id;
 
         if ($request->filled('q')) {
             $paginator = Property::search((string) $request->query('q'))
@@ -39,7 +39,7 @@ class PropertyBrowseController extends Controller
 
     public function show(Request $request, Property $property): PropertyResource
     {
-        $user = $request->user();
+        $user = $request->user('sanctum');
         
         $canBypassStatus = $user && ($user->id === $property->owner_id || $user->hasRole('admin'));
 
@@ -47,7 +47,7 @@ class PropertyBrowseController extends Controller
             abort_if($property->status !== PropertyStatus::Approved || ! $property->is_available, 404);
         }
 
-        if ($userId = $request->user()?->id) {
+        if ($userId = $user?->id) {
             $property->loadExists([
                 'favoritedBy as is_favorited' => fn($query) => $query->where('user_id', $userId),
             ]);
