@@ -131,6 +131,11 @@ class Property extends Model implements HasMedia
         return $this->hasMany(PropertyPriceHistory::class)->orderByDesc('changed_at');
     }
 
+    public function rooms()
+    {
+        return $this->hasMany(Room::class);
+    }
+
     public function shouldBeSearchable(): bool
     {
         return $this->resolveStatusEnum() === PropertyStatus::Approved;

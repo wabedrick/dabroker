@@ -49,6 +49,7 @@ class PropertyResource extends JsonResource
             'verified_at' => $this->verified_at,
             'is_verified' => !is_null($this->verified_at),
             'price_history' => $this->whenLoaded('priceHistory'),
+            'rooms' => RoomResource::collection($this->whenLoaded('rooms')),
             'owner' => $this->formatUserSummary('owner'),
             'approver' => $this->formatUserSummary('approver'),
             'gallery' => $this->formatGallery(),

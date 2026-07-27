@@ -11,6 +11,7 @@ use App\Http\Controllers\API\NotificationPreferenceController;
 use App\Http\Controllers\API\AiPropertySearchController;
 use App\Http\Controllers\API\OwnerPropertyController;
 use App\Http\Controllers\API\OwnerPropertyMediaController;
+use App\Http\Controllers\API\OwnerPropertyRoomController;
 use App\Http\Controllers\API\OwnerPropertyInquiryController;
 use App\Http\Controllers\API\PropertyApprovalController;
 use App\Http\Controllers\API\PropertyBrowseController;
@@ -101,6 +102,11 @@ Route::prefix('v1')->group(function (): void {
 
             Route::post('properties/{property:public_id}/media', [OwnerPropertyMediaController::class, 'store']);
             Route::delete('properties/{property:public_id}/media/{media}', [OwnerPropertyMediaController::class, 'destroy']);
+
+            Route::get('properties/{property:public_id}/rooms', [OwnerPropertyRoomController::class, 'index']);
+            Route::post('properties/{property:public_id}/rooms', [OwnerPropertyRoomController::class, 'store']);
+            Route::match(['put', 'patch'], 'properties/{property:public_id}/rooms/{room:public_id}', [OwnerPropertyRoomController::class, 'update']);
+            Route::delete('properties/{property:public_id}/rooms/{room:public_id}', [OwnerPropertyRoomController::class, 'destroy']);
 
             Route::get('inquiries', [OwnerPropertyInquiryController::class, 'index']);
             Route::get('inquiries/{inquiry:public_id}', [OwnerPropertyInquiryController::class, 'show']);

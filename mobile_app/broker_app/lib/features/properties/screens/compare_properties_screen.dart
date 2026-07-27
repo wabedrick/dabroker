@@ -118,7 +118,7 @@ class _PropertyHeaderCard extends StatelessWidget {
     final outline = colorScheme.outlineVariant;
     final coverUrl = property.gallery?.isNotEmpty == true
         ? ImageHelper.fixUrl(
-            property.gallery!.first.previewUrl ?? property.gallery!.first.url,
+            property.gallery!.first.previewUrl ?? property.gallery!.first.url ?? '',
           )
         : null;
 

@@ -47,7 +47,7 @@ class PropertyBrowseController extends Controller
             ]);
         }
 
-        $property->load(['priceHistory']);
+        $property->load(['priceHistory', 'rooms']);
 
         $similarProperties = Property::query()
             ->approved()

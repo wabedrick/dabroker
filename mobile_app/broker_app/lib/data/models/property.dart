@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'property_price_history.dart';
+import 'room.dart';
 
 part 'property.freezed.dart';
 part 'property.g.dart';
@@ -8,8 +9,8 @@ part 'property.g.dart';
 abstract class Property with _$Property {
   @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory Property({
-    required String id,
-    required String title,
+    @JsonKey(fromJson: _requiredStringFromJson) required String id,
+    @JsonKey(fromJson: _requiredStringFromJson) required String title,
     String? slug,
     String? type,
     String? category,
@@ -30,6 +31,7 @@ abstract class Property with _$Property {
     @JsonKey(fromJson: _metadataFromJson) Map<String, dynamic>? metadata,
     String? description,
     DateTime? availableFrom,
+    List<Room>? rooms,
     PropertyUserSummary? owner,
     List<PropertyMedia>? gallery,
     bool? isFavorited,
@@ -54,9 +56,9 @@ abstract class PropertyMedia with _$PropertyMedia {
   @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory PropertyMedia({
     String? id,
-    required String name,
+    String? name,
     String? caption,
-    required String url,
+    String? url,
     String? thumbnailUrl,
     String? previewUrl,
   }) = _PropertyMedia;
@@ -72,7 +74,7 @@ abstract class PropertyUserSummary with _$PropertyUserSummary {
   @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory PropertyUserSummary({
     required int id,
-    required String name,
+    String? name,
     String? preferredRole,
   }) = _PropertyUserSummary;
 
@@ -115,4 +117,10 @@ Map<String, dynamic>? _metadataFromJson(Object? value) {
   if (value is Map) return Map<String, dynamic>.from(value);
   if (value is List && value.isEmpty) return {};
   return null;
+}
+
+/// Safely converts a JSON value to String, returning an empty string if null.
+String _requiredStringFromJson(Object? value) {
+  if (value == null) return '';
+  return value.toString();
 }

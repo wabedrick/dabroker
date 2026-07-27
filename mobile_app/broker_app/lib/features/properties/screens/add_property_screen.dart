@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:broker_app/core/utils/image_helper.dart';
 import 'package:broker_app/core/widgets/location_picker_screen.dart';
+import 'package:broker_app/features/properties/screens/manage_rooms_screen.dart';
 import 'package:broker_app/data/models/property.dart';
 import 'package:broker_app/features/properties/providers/property_management_provider.dart';
 import 'package:flutter/material.dart';
@@ -207,7 +208,7 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
       'type': _type,
       'category': _category,
       'currency': _currency,
-      'price': _parsePrice(_priceController.text),
+      'price': _parsePrice(_priceController.text) ?? 0,
       'description': _descriptionController.text,
       'address': _addressController.text,
       'city': _cityController.text,
@@ -218,19 +219,21 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
       'amenities': [],
     };
 
+    final Property? property;
     final notifier = ref.read(propertyManagementProvider.notifier);
-    final bool success;
 
     if (widget.property != null) {
-      success = await notifier.updateProperty(
+      property = await notifier.updateProperty(
         widget.property!.id,
         data,
         newImages: _selectedImages,
         deletedImageIds: _deletedImageIds,
       );
     } else {
-      success = await notifier.createProperty(data, images: _selectedImages);
+      property = await notifier.createProperty(data, images: _selectedImages);
     }
+
+    final success = property != null;
 
     if (mounted && success) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -242,7 +245,16 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
           ),
         ),
       );
-      Navigator.pop(context);
+      if (_type == 'apartment' || _category == 'rent') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ManageRoomsScreen(property: property!),
+          ),
+        );
+      } else {
+        Navigator.pop(context);
+      }
     } else if (mounted) {
       final error = ref.read(propertyManagementProvider).error;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -272,7 +284,7 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              initialValue: _type,
+              value: _type,
               decoration: const InputDecoration(labelText: 'Property Type *'),
               items: const [
                 DropdownMenuItem(value: 'house', child: Text('House')),
@@ -287,7 +299,7 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              initialValue: _category,
+              value: _category,
               decoration: const InputDecoration(labelText: 'Listing Type *'),
               items: const [
                 DropdownMenuItem(value: 'sale', child: Text('For Sale')),
@@ -316,7 +328,7 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                       return Stack(
                         children: [
                           Image.network(
-                            ImageHelper.fixUrl(image.thumbnailUrl ?? image.url),
+                            ImageHelper.fixUrl(image.thumbnailUrl ?? image.url ?? ''),
                             width: 100,
                             height: 100,
                             fit: BoxFit.cover,
@@ -400,7 +412,7 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                 Expanded(
                   flex: 1,
                   child: DropdownButtonFormField<String>(
-                    initialValue: _currency,
+                    value: _currency,
                     decoration: const InputDecoration(labelText: 'Currency *'),
                     items: const [
                       DropdownMenuItem(value: 'USD', child: Text('USD')),
@@ -414,13 +426,18 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                   flex: 2,
                   child: TextFormField(
                     controller: _priceController,
-                    decoration: const InputDecoration(
-                      labelText: 'Price',
-                      hintText: 'e.g. 2M, 500K',
+                    decoration: InputDecoration(
+                      labelText: 'Price ($_currency) ${(_type == 'apartment' || _category == 'rent') ? '(Optional if rooms have individual prices)' : '*'}',
                     ),
                     keyboardType: TextInputType.text,
                     validator: (v) {
-                      if (v == null || v.isEmpty) return null;
+                      if (_type == 'apartment' || _category == 'rent') {
+                        if (v?.isNotEmpty == true && _parsePrice(v!) == null) {
+                          return 'Invalid price format';
+                        }
+                        return null;
+                      }
+                      if (v == null || v.isEmpty) return 'Required';
                       if (_parsePrice(v) == null) {
                         return 'Invalid format (use K, M, B)';
                       }

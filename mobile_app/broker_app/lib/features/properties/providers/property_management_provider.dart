@@ -15,7 +15,7 @@ class PropertyManagementNotifier extends StateNotifier<AsyncValue<void>> {
 
   final PropertyRepository _repository;
 
-  Future<bool> createProperty(
+  Future<Property?> createProperty(
     Map<String, dynamic> data, {
     List<File>? images,
   }) async {
@@ -30,14 +30,14 @@ class PropertyManagementNotifier extends StateNotifier<AsyncValue<void>> {
       }
 
       state = const AsyncValue.data(null);
-      return true;
+      return property;
     } catch (e, st) {
       state = AsyncValue.error(e, st);
-      return false;
+      return null;
     }
   }
 
-  Future<bool> updateProperty(
+  Future<Property?> updateProperty(
     String id,
     Map<String, dynamic> data, {
     List<File>? newImages,
@@ -60,10 +60,11 @@ class PropertyManagementNotifier extends StateNotifier<AsyncValue<void>> {
       }
 
       state = const AsyncValue.data(null);
-      return true;
+      final updatedProperty = await _repository.fetchPropertyDetail(id);
+      return updatedProperty;
     } catch (e, st) {
       state = AsyncValue.error(e, st);
-      return false;
+      return null;
     }
   }
 }

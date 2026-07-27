@@ -221,6 +221,11 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                       const SizedBox(height: 16),
                       _DecisionSnapshotCard(property: property),
 
+                      if (property.rooms?.isNotEmpty ?? false) ...[
+                        const SizedBox(height: 24),
+                        _RoomsSection(rooms: property.rooms!, currency: property.currency ?? 'USD'),
+                      ],
+
                       if (keyFacts.facts.isNotEmpty) ...[
                         const SizedBox(height: 20),
                         Text(
@@ -1079,7 +1084,7 @@ class _GallerySection extends StatelessWidget {
             itemCount: images.length,
             itemBuilder: (_, index) {
               final item = images[index];
-              final url = ImageHelper.fixUrl(item.previewUrl ?? item.url);
+              final url = ImageHelper.fixUrl(item.previewUrl ?? item.url ?? '');
               return CachedNetworkImage(
                 imageUrl: url,
                 fit: BoxFit.cover,
@@ -1467,7 +1472,7 @@ class _OwnerCard extends StatelessWidget {
             radius: 28,
             backgroundColor: colorScheme.primary.withAlpha((0.1 * 255).round()),
             child: Text(
-              owner.name.isNotEmpty ? owner.name[0].toUpperCase() : '?',
+              owner.name?.isNotEmpty == true ? owner.name![0].toUpperCase() : '?',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(color: colorScheme.primary),
@@ -1479,7 +1484,7 @@ class _OwnerCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  owner.name,
+                  owner.name ?? 'Unknown',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -1502,6 +1507,97 @@ class _OwnerCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _RoomsSection extends StatelessWidget {
+  final List<Room> rooms;
+  final String currency;
+
+  const _RoomsSection({required this.rooms, required this.currency});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Rooms Available',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 12),
+        ...rooms.map((room) => Card(
+          elevation: 0,
+          margin: const EdgeInsets.only(bottom: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      room.name,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '$currency ${room.price}',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      room.isAvailable ? Icons.check_circle : Icons.cancel,
+                      size: 16,
+                      color: room.isAvailable ? Colors.green : Colors.red,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      room.isAvailable ? 'Available' : 'Occupied',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: room.isAvailable ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+                if (room.features.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: room.features.map((f) => Chip(
+                      label: Text(f),
+                      visualDensity: VisualDensity.compact,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    )).toList(),
+                  ),
+                ],
+                if (room.description?.isNotEmpty ?? false) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    room.description!,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        )).toList(),
+      ],
     );
   }
 }

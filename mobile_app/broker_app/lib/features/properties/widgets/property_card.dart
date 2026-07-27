@@ -17,7 +17,7 @@ class PropertyCard extends StatelessWidget {
 
     final images =
         property.gallery?.map((e) {
-          final url = e.previewUrl ?? e.url;
+          final url = e.previewUrl ?? e.url ?? '';
           return ImageHelper.fixUrl(url);
         }).toList() ??
         [];

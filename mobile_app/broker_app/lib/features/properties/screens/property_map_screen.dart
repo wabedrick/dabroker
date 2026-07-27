@@ -231,9 +231,9 @@ class _PropertyMapCard extends StatelessWidget {
               child: SizedBox(
                 width: 80,
                 height: 80,
-                child: property.gallery != null && property.gallery!.isNotEmpty
+                child: property.gallery != null && property.gallery!.isNotEmpty && property.gallery!.first.url != null
                     ? CachedNetworkImage(
-                        imageUrl: property.gallery!.first.url,
+                        imageUrl: property.gallery!.first.url!,
                         fit: BoxFit.cover,
                         placeholder: (_, __) => Container(
                           color: colorScheme.surfaceContainerHighest,

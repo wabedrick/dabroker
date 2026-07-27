@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:broker_app/core/utils/api_error_handler.dart';
 import 'package:broker_app/data/models/property.dart';
 import 'package:broker_app/data/models/property_list_response.dart';
+import 'package:broker_app/data/models/room.dart';
 import 'package:broker_app/features/properties/repositories/property_api_client.dart';
 
 import '../models/property_query_params.dart';
@@ -99,6 +100,42 @@ class PropertyRepository {
   Future<void> deleteProperty(String id) async {
     try {
       await _apiClient.deleteProperty(id);
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
+  Future<List<Room>> getRooms(String propertyId) async {
+    try {
+      final response = await _apiClient.getRoomsRaw(propertyId);
+      final List<dynamic> data = response['data'];
+      return data.map((json) => Room.fromJson(json as Map<String, dynamic>)).toList();
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
+  Future<Room> createRoom(String propertyId, Map<String, dynamic> data) async {
+    try {
+      final response = await _apiClient.createRoomRaw(propertyId, data);
+      return Room.fromJson(response['data'] as Map<String, dynamic>);
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
+  Future<Room> updateRoom(String propertyId, String roomId, Map<String, dynamic> data) async {
+    try {
+      final response = await _apiClient.updateRoomRaw(propertyId, roomId, data);
+      return Room.fromJson(response['data'] as Map<String, dynamic>);
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
+  Future<void> deleteRoom(String propertyId, String roomId) async {
+    try {
+      await _apiClient.deleteRoom(propertyId, roomId);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }

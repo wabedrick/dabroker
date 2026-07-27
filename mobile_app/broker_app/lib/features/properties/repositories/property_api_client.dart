@@ -56,4 +56,26 @@ abstract class PropertyApiClient {
 
   @DELETE('/owner/properties/{id}')
   Future<void> deleteProperty(@Path('id') String id);
+
+  @GET('/owner/properties/{id}/rooms')
+  Future<dynamic> getRoomsRaw(@Path('id') String propertyId);
+
+  @POST('/owner/properties/{id}/rooms')
+  Future<dynamic> createRoomRaw(
+    @Path('id') String propertyId,
+    @Body() Map<String, dynamic> body,
+  );
+
+  @PUT('/owner/properties/{id}/rooms/{roomId}')
+  Future<dynamic> updateRoomRaw(
+    @Path('id') String propertyId,
+    @Path('roomId') String roomId,
+    @Body() Map<String, dynamic> body,
+  );
+
+  @DELETE('/owner/properties/{id}/rooms/{roomId}')
+  Future<void> deleteRoom(
+    @Path('id') String propertyId,
+    @Path('roomId') String roomId,
+  );
 }
