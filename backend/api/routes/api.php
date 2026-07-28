@@ -20,6 +20,15 @@ use App\Http\Controllers\API\PropertyInquiryController;
 use App\Http\Controllers\API\LodgingBrowseController;
 use App\Models\Property;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/debug-aws', function () {
+    return response()->json([
+        'AWS_ENDPOINT' => env('AWS_ENDPOINT'),
+        'AWS_URL' => env('AWS_URL'),
+        'AWS_DEFAULT_REGION' => env('AWS_DEFAULT_REGION'),
+        'AWS_BUCKET' => env('AWS_BUCKET'),
+    ]);
+});
 use Illuminate\Support\Facades\Artisan;
 use App\Models\User;
 
