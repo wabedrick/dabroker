@@ -180,19 +180,21 @@ class Property extends Model implements HasMedia
             return;
         }
 
-        $this
-            ->addMediaConversion('thumb')
-            ->width(320)
-            ->height(240)
-            ->format('webp')
-            ->performOnCollections('gallery');
+        // Conversions disabled to prevent synchronous processing timeouts
+        // $this
+        //     ->addMediaConversion('thumb')
+        //     ->width(320)
+        //     ->height(240)
+        //     ->format('webp')
+        //     ->performOnCollections('gallery');
 
-        $this
-            ->addMediaConversion('preview')
-            ->width(1280)
-            ->height(720)
-            ->format('webp')
-            ->performOnCollections('gallery');
+        // Conversions disabled to prevent synchronous processing timeouts
+        // $this
+        //     ->addMediaConversion('preview')
+        //     ->width(1280)
+        //     ->height(720)
+        //     ->format('webp')
+        //     ->performOnCollections('gallery');
     }
 
     public function getRouteKeyName(): string

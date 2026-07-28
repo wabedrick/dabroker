@@ -130,19 +130,20 @@ class Lodging extends Model implements HasMedia
 
     public function registerMediaConversions(?Media $media = null): void
     {
-        $this
-            ->addMediaConversion('thumb')
-            ->width(400)
-            ->height(300)
-            ->sharpen(10)
-            ->format('webp')
-            ->performOnCollections('gallery');
+        // Conversions disabled to prevent synchronous processing timeouts
+        // $this
+        //     ->addMediaConversion('thumb')
+        //     ->width(400)
+        //     ->height(300)
+        //     ->sharpen(10)
+        //     ->format('webp')
+        //     ->performOnCollections('gallery');
 
-        $this
-            ->addMediaConversion('preview')
-            ->width(1280)
-            ->height(720)
-            ->format('webp')
-            ->performOnCollections('gallery');
+        // $this
+        //     ->addMediaConversion('preview')
+        //     ->width(1280)
+        //     ->height(720)
+        //     ->format('webp')
+        //     ->performOnCollections('gallery');
     }
 }

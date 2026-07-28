@@ -39,6 +39,7 @@ Route::get('/debug-upload', function () {
         return response()->json([
             'status' => 'error',
             'message' => $e->getMessage(),
+            'previous' => $e->getPrevious() ? $e->getPrevious()->getMessage() : null,
             'trace' => $e->getTraceAsString(),
         ], 500);
     }
