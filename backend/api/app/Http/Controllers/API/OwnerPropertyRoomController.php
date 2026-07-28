@@ -29,6 +29,10 @@ class OwnerPropertyRoomController extends Controller
             'features' => 'nullable|array',
             'is_available' => 'boolean',
             'description' => 'nullable|string',
+            'capacity' => 'nullable|integer|min:1',
+            'quantity' => 'nullable|integer|min:1',
+            'room_type' => 'nullable|string|max:255',
+            'bed_type' => 'nullable|string|max:255',
         ]);
 
         $room = $property->rooms()->create([
@@ -55,6 +59,10 @@ class OwnerPropertyRoomController extends Controller
             'features' => 'nullable|array',
             'is_available' => 'boolean',
             'description' => 'nullable|string',
+            'capacity' => 'nullable|integer|min:1',
+            'quantity' => 'nullable|integer|min:1',
+            'room_type' => 'nullable|string|max:255',
+            'bed_type' => 'nullable|string|max:255',
         ]);
 
         $room->update($validated);

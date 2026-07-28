@@ -165,6 +165,9 @@ Route::prefix('v1')->group(function (): void {
             Route::match(['put', 'patch'], 'properties/{property:public_id}/rooms/{room:public_id}', [OwnerPropertyRoomController::class, 'update']);
             Route::delete('properties/{property:public_id}/rooms/{room:public_id}', [OwnerPropertyRoomController::class, 'destroy']);
 
+            Route::post('properties/{property:public_id}/rooms/{room:public_id}/media', [\App\Http\Controllers\API\OwnerPropertyRoomMediaController::class, 'store']);
+            Route::delete('properties/{property:public_id}/rooms/{room:public_id}/media/{media:uuid}', [\App\Http\Controllers\API\OwnerPropertyRoomMediaController::class, 'destroy']);
+
             Route::get('inquiries', [OwnerPropertyInquiryController::class, 'index']);
             Route::get('inquiries/{inquiry:public_id}', [OwnerPropertyInquiryController::class, 'show']);
             Route::post('inquiries/{inquiry:public_id}/read', [PropertyInquiryMessageController::class, 'markRead']);
