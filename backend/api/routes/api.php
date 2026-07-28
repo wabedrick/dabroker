@@ -23,6 +23,24 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+Route::get('/debug-env', function () {
+    $allKeys = array_keys($_SERVER);
+    $awsKeys = array_filter($allKeys, fn($key) => str_contains(strtoupper($key), 'AWS') || str_contains(strtoupper($key), 'R2') || str_contains(strtoupper($key), 'SECRET') || str_contains(strtoupper($key), 'KEY'));
+    
+    $result = [];
+    foreach ($awsKeys as $key) {
+        $result[$key] = empty($_SERVER[$key]) ? 'EMPTY' : 'SET (hidden)';
+    }
+
+    return response()->json([
+        'AWS_ENDPOINT' => env('AWS_ENDPOINT'),
+        'AWS_URL' => env('AWS_URL'),
+        'AWS_DEFAULT_REGION' => env('AWS_DEFAULT_REGION'),
+        'AWS_BUCKET' => env('AWS_BUCKET'),
+        'detected_keys' => $result,
+    ]);
+});
+
 Route::get('/debug-upload', function () {
     try {
         $disk = Storage::disk('s3');
