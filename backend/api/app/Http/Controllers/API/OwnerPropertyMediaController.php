@@ -15,18 +15,25 @@ class OwnerPropertyMediaController extends Controller
     {
         $this->authorize('update', $property);
 
-        $media = $property
-            ->addMediaFromRequest('file')
-            ->usingFileName(Str::uuid() . '.' . $request->file('file')->getClientOriginalExtension())
-            ->withCustomProperties([
-                'caption' => $request->input('caption'),
-            ])
-            ->toMediaCollection('gallery');
+        try {
+            $media = $property
+                ->addMediaFromRequest('file')
+                ->usingFileName(Str::uuid() . '.' . $request->file('file')->getClientOriginalExtension())
+                ->withCustomProperties([
+                    'caption' => $request->input('caption'),
+                ])
+                ->toMediaCollection('gallery');
 
-        return response()->json([
-            'message' => 'Media uploaded successfully. Conversions queued.',
-            'data' => $this->formatMedia($media),
-        ], 201);
+            return response()->json([
+                'message' => 'Media uploaded successfully. Conversions queued.',
+                'data' => $this->formatMedia($media),
+            ], 201);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Upload failed: ' . $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500);
+        }
     }
 
     public function destroy(Property $property, string $media): JsonResponse
