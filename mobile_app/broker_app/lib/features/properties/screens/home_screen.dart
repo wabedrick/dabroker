@@ -326,7 +326,7 @@ class _HomeHeaderTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final titleText = userName != null ? 'Hello, $userName 👋' : 'Discover 🌟';
+    final titleText = 'DaBroker';
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -606,6 +606,9 @@ class _NotificationAction extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+    if (authState.user == null) return const SizedBox.shrink();
+
     final state = ref.watch(notificationCountersProvider);
     final tooltip = _NotificationBadge.buildTooltip(state);
 
@@ -677,7 +680,18 @@ class _UserProfileButton extends ConsumerWidget {
     final authState = ref.watch(authStateProvider);
     final user = authState.user;
 
-    if (user == null) return const SizedBox.shrink();
+    if (user == null) {
+      return IconButton(
+        icon: const Icon(Icons.account_circle_outlined, size: 28),
+        tooltip: 'Login',
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+          );
+        },
+      );
+    }
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -843,7 +857,7 @@ class _UserProfileButton extends ConsumerWidget {
           value: 'logout',
           child: Row(
             children: [
-              Icon(Icons.logout, color: colorScheme.error, size: 20),
+              Icon(Icons.power_settings_new_rounded, color: colorScheme.error, size: 20),
               SizedBox(width: 12),
               Text(
                 'Logout',

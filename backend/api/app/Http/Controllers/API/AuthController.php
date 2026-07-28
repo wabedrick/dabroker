@@ -146,7 +146,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login successful.',
             'data' => [
-                'user' => new UserResource($user->load('professionalProfile')),
+                'user' => new UserResource($user),
                 'token' => $token,
             ],
         ]);
@@ -206,7 +206,7 @@ class AuthController extends Controller
 
     public function me(Request $request): UserResource
     {
-        return new UserResource($request->user()->load('professionalProfile'));
+        return new UserResource($request->user());
     }
 
     private function otpEnabled(): bool

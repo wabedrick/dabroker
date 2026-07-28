@@ -222,8 +222,17 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
     }
   }
 
+  int _currentStep = 0;
+  final List<GlobalKey<FormState>> _formKeys = [
+    GlobalKey<FormState>(),
+    GlobalKey<FormState>(),
+    GlobalKey<FormState>(),
+    GlobalKey<FormState>(),
+  ];
+
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    // Validate final step before submission just in case
+    if (!_formKeys[_currentStep].currentState!.validate()) return;
 
     final data = {
       'title': _titleController.text,
@@ -237,16 +246,15 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
       'country': _countryController.text,
       'latitude': double.tryParse(_latitudeController.text),
       'longitude': double.tryParse(_longitudeController.text),
-      // Defaults or empty for now
       'amenities': [],
       'metadata': {
-        if (_bedroomsController.text.isNotEmpty) 'bedrooms': int.tryParse(_bedroomsController.text),
-        if (_bathroomsController.text.isNotEmpty) 'bathrooms': int.tryParse(_bathroomsController.text),
+        if (_type != 'land' && _bedroomsController.text.isNotEmpty) 'bedrooms': int.tryParse(_bedroomsController.text),
+        if (_type != 'land' && _bathroomsController.text.isNotEmpty) 'bathrooms': int.tryParse(_bathroomsController.text),
         if (_category == 'rent' && _minLeaseController.text.isNotEmpty) 'min_lease_months': int.tryParse(_minLeaseController.text),
       },
-      if (_category == 'sale') 'size': double.tryParse(_sizeController.text),
-      if (_category == 'sale') 'size_unit': _sizeUnit,
-      if (_category == 'sale') 'house_age': int.tryParse(_houseAgeController.text),
+      'size': double.tryParse(_sizeController.text),
+      'size_unit': _sizeUnit,
+      if (_type != 'land' && _houseAgeController.text.isNotEmpty) 'house_age': int.tryParse(_houseAgeController.text),
       if (_category == 'rent' && _availableFrom != null) 'available_from': _availableFrom!.toIso8601String(),
     };
 
@@ -303,391 +311,428 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
       appBar: AppBar(
         title: Text(widget.property != null ? 'Edit Property' : 'Add Property'),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(labelText: 'Title *'),
-              validator: (v) => v?.isEmpty == true ? 'Required' : null,
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _type,
-              decoration: const InputDecoration(labelText: 'Property Type *'),
-              items: const [
-                DropdownMenuItem(value: 'house', child: Text('House')),
-                DropdownMenuItem(value: 'land', child: Text('Land')),
-                DropdownMenuItem(value: 'apartment', child: Text('Apartment')),
-                DropdownMenuItem(
-                  value: 'commercial',
-                  child: Text('Commercial'),
-                ),
-                DropdownMenuItem(value: 'rental', child: Text('Rental')),
-                DropdownMenuItem(value: 'hostel', child: Text('Hostel')),
-                DropdownMenuItem(
-                  value: 'bank_property',
-                  child: Text('Bank Property'),
-                ),
-              ],
-              onChanged: (v) => setState(() => _type = v!),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _category,
-              decoration: const InputDecoration(labelText: 'Listing Type *'),
-              items: const [
-                DropdownMenuItem(value: 'sale', child: Text('For Sale')),
-                DropdownMenuItem(value: 'rent', child: Text('For Rent')),
-              ],
-              onChanged: (v) => setState(() => _category = v!),
-            ),
-            const SizedBox(height: 16),
-
-            // Image Picker Section
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stepper(
+        type: StepperType.vertical,
+        currentStep: _currentStep,
+        onStepCancel: () {
+          if (_currentStep > 0) {
+            setState(() => _currentStep -= 1);
+          } else {
+            Navigator.pop(context);
+          }
+        },
+        onStepContinue: () {
+          final isLastStep = _currentStep == _getSteps().length - 1;
+          if (_formKeys[_currentStep].currentState!.validate()) {
+            if (isLastStep) {
+              _submit();
+            } else {
+              setState(() => _currentStep += 1);
+            }
+          }
+        },
+        onStepTapped: (step) {
+          if (_formKeys[_currentStep].currentState!.validate()) {
+            setState(() => _currentStep = step);
+          }
+        },
+        controlsBuilder: (context, details) {
+          final isLastStep = _currentStep == _getSteps().length - 1;
+          return Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: Row(
               children: [
-                const Text(
-                  'Images',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: isLoading ? null : details.onStepContinue,
+                    child: isLoading && isLastStep
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : Text(isLastStep ? (widget.property != null ? 'Update' : 'Submit') : 'Next'),
+                  ),
                 ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                if (_currentStep > 0) ...[
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: isLoading ? null : details.onStepCancel,
+                      child: const Text('Back'),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
+        steps: _getSteps(),
+      ),
+    );
+  }
+
+  List<Step> _getSteps() {
+    return [
+      Step(
+        title: const Text('Basic Details'),
+        isActive: _currentStep >= 0,
+        state: _currentStep > 0 ? StepState.complete : StepState.indexed,
+        content: Form(
+          key: _formKeys[0],
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _titleController,
+                decoration: const InputDecoration(labelText: 'Title *'),
+                validator: (v) => v?.isEmpty == true ? 'Required' : null,
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _type,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Property Type *'),
+                items: const [
+                  DropdownMenuItem(value: 'house', child: Text('House')),
+                  DropdownMenuItem(value: 'land', child: Text('Land')),
+                  DropdownMenuItem(value: 'apartment', child: Text('Apartment')),
+                  DropdownMenuItem(value: 'commercial', child: Text('Commercial')),
+                  DropdownMenuItem(value: 'rental', child: Text('Rental')),
+                  DropdownMenuItem(value: 'hostel', child: Text('Hostel')),
+                  DropdownMenuItem(value: 'bank_property', child: Text('Bank Property')),
+                ],
+                onChanged: (v) => setState(() => _type = v!),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _category,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Listing Type *'),
+                items: const [
+                  DropdownMenuItem(value: 'sale', child: Text('For Sale')),
+                  DropdownMenuItem(value: 'rent', child: Text('For Rent')),
+                ],
+                onChanged: (v) => setState(() => _category = v!),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: DropdownButtonFormField<String>(
+                      value: _currency,
+                      isExpanded: true,
+                      decoration: const InputDecoration(labelText: 'Currency *', contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12)),
+                      iconSize: 20,
+                      items: const [
+                        DropdownMenuItem(value: 'USD', child: Text('USD')),
+                        DropdownMenuItem(value: 'UGX', child: Text('UGX')),
+                      ],
+                      onChanged: (v) => setState(() => _currency = v!),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 3,
+                    child: TextFormField(
+                      controller: _priceController,
+                      decoration: InputDecoration(
+                        labelText: 'Price ($_currency) ${(_type == 'apartment' || _category == 'rent') ? '(Optional if rooms have individual prices)' : '*'}',
+                      ),
+                      keyboardType: TextInputType.text,
+                      validator: (v) {
+                        if (_type == 'apartment' || _category == 'rent') {
+                          if (v?.isNotEmpty == true && _parsePrice(v!) == null) {
+                            return 'Invalid format';
+                          }
+                          return null;
+                        }
+                        if (v == null || v.isEmpty) return 'Required';
+                        if (_parsePrice(v) == null) return 'Use format 500K, 1M';
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(labelText: 'Description'),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+      ),
+      Step(
+        title: const Text('Features & Amenities'),
+        isActive: _currentStep >= 1,
+        state: _currentStep > 1 ? StepState.complete : StepState.indexed,
+        content: Form(
+          key: _formKeys[1],
+          child: Column(
+            children: [
+              if (_type != 'land') ...[
+                Row(
                   children: [
-                    ..._existingImages.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final image = entry.value;
-                      return Stack(
-                        children: [
-                          Image.network(
-                            ImageHelper.fixUrl(image.thumbnailUrl ?? image.url ?? ''),
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              width: 100,
-                              height: 100,
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.broken_image),
-                            ),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _bedroomsController,
+                        decoration: const InputDecoration(labelText: 'Bedrooms'),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _bathroomsController,
+                        decoration: const InputDecoration(labelText: 'Bathrooms'),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+              ],
+              Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: TextFormField(
+                      controller: _sizeController,
+                      decoration: const InputDecoration(labelText: 'Size'),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 1,
+                    child: DropdownButtonFormField<String>(
+                      value: _sizeUnit,
+                      isExpanded: true,
+                      decoration: const InputDecoration(labelText: 'Unit', contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 12)),
+                      iconSize: 20,
+                      items: const [
+                        DropdownMenuItem(value: 'sqft', child: Text('sqft')),
+                        DropdownMenuItem(value: 'sqm', child: Text('sqm')),
+                        DropdownMenuItem(value: 'acres', child: Text('acres')),
+                      ],
+                      onChanged: (v) => setState(() => _sizeUnit = v!),
+                    ),
+                  ),
+                ],
+              ),
+              if (_type != 'land') ...[
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _houseAgeController,
+                  decoration: const InputDecoration(labelText: 'House Age (Years)'),
+                  keyboardType: TextInputType.number,
+                ),
+              ],
+              if (_category == 'rent') ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 8),
+                const Text('Rental Specifics', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _minLeaseController,
+                        decoration: const InputDecoration(labelText: 'Min Lease (Months)'),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: _availableFrom ?? DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+                          );
+                          if (date != null) {
+                            setState(() => _availableFrom = date);
+                          }
+                        },
+                        child: InputDecorator(
+                          decoration: const InputDecoration(labelText: 'Available From'),
+                          child: Text(
+                            _availableFrom != null
+                                ? '${_availableFrom!.year}-${_availableFrom!.month.toString().padLeft(2, '0')}-${_availableFrom!.day.toString().padLeft(2, '0')}'
+                                : 'Select Date',
                           ),
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            child: GestureDetector(
-                              onTap: () => _removeExistingImage(index),
-                              child: Container(
-                                color: Colors.black54,
-                                child: const Icon(
-                                  Icons.close,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    }),
-                    ..._selectedImages.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final file = entry.value;
-                      return Stack(
-                        children: [
-                          Image.file(
-                            file,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            child: GestureDetector(
-                              onTap: () => _removeImage(index),
-                              child: Container(
-                                color: Colors.black54,
-                                child: const Icon(
-                                  Icons.close,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    }),
-                    InkWell(
-                      onTap: _pickImages,
-                      child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Icon(
-                          Icons.add_a_photo,
-                          color: Colors.grey,
                         ),
                       ),
                     ),
                   ],
                 ),
               ],
-            ),
-            const SizedBox(height: 16),
-
-            Row(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: DropdownButtonFormField<String>(
-                    value: _currency,
-                    decoration: const InputDecoration(labelText: 'Currency *'),
-                    items: const [
-                      DropdownMenuItem(value: 'USD', child: Text('USD')),
-                      DropdownMenuItem(value: 'UGX', child: Text('UGX')),
-                    ],
-                    onChanged: (v) => setState(() => _currency = v!),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 2,
-                  child: TextFormField(
-                    controller: _priceController,
-                    decoration: InputDecoration(
-                      labelText: 'Price ($_currency) ${(_type == 'apartment' || _category == 'rent') ? '(Optional if rooms have individual prices)' : '*'}',
-                    ),
-                    keyboardType: TextInputType.text,
-                    validator: (v) {
-                      if (_type == 'apartment' || _category == 'rent') {
-                        if (v?.isNotEmpty == true && _parsePrice(v!) == null) {
-                          return 'Invalid price format';
-                        }
-                        return null;
-                      }
-                      if (v == null || v.isEmpty) return 'Required';
-                      if (_parsePrice(v) == null) {
-                        return 'Invalid format (use K, M, B)';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _cityController,
-              decoration: const InputDecoration(labelText: 'City *'),
-              validator: (v) => v?.isEmpty == true ? 'Required' : null,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _countryController,
-              decoration: const InputDecoration(labelText: 'Country *'),
-              validator: (v) => v?.isEmpty == true ? 'Required' : null,
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _addressController,
-              decoration: const InputDecoration(labelText: 'Address'),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _latitudeController,
-                    decoration: const InputDecoration(labelText: 'Latitude'),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextFormField(
-                    controller: _longitudeController,
-                    decoration: const InputDecoration(labelText: 'Longitude'),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.my_location),
-                  onPressed: _getCurrentLocation,
-                  tooltip: 'Use Current Location',
-                ),
-                IconButton(
-                  icon: const Icon(Icons.map),
-                  onPressed: _pickLocationOnMap,
-                  tooltip: 'Pick on Map',
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            _buildDynamicFields(),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(labelText: 'Description'),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: isLoading ? null : _submit,
-              child: isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(
-                      widget.property != null
-                          ? 'Update Property'
-                          : 'Create Property',
-                    ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDynamicFields() {
-    if (_category == 'rent') {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Rental Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Row(
+      Step(
+        title: const Text('Location'),
+        isActive: _currentStep >= 2,
+        state: _currentStep > 2 ? StepState.complete : StepState.indexed,
+        content: Form(
+          key: _formKeys[2],
+          child: Column(
             children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _bedroomsController,
-                  decoration: const InputDecoration(labelText: 'Bedrooms'),
-                  keyboardType: TextInputType.number,
-                ),
+              TextFormField(
+                controller: _cityController,
+                decoration: const InputDecoration(labelText: 'City *'),
+                validator: (v) => v?.isEmpty == true ? 'Required' : null,
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextFormField(
-                  controller: _bathroomsController,
-                  decoration: const InputDecoration(labelText: 'Bathrooms'),
-                  keyboardType: TextInputType.number,
-                ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _countryController,
+                decoration: const InputDecoration(labelText: 'Country *'),
+                validator: (v) => v?.isEmpty == true ? 'Required' : null,
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _minLeaseController,
-                  decoration: const InputDecoration(labelText: 'Min Lease (Months)'),
-                  keyboardType: TextInputType.number,
-                ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _addressController,
+                decoration: const InputDecoration(labelText: 'Address'),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: InkWell(
-                  onTap: () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      initialDate: _availableFrom ?? DateTime.now(),
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
-                    );
-                    if (date != null) {
-                      setState(() => _availableFrom = date);
-                    }
-                  },
-                  child: InputDecorator(
-                    decoration: const InputDecoration(labelText: 'Available From'),
-                    child: Text(
-                      _availableFrom != null
-                          ? '${_availableFrom!.year}-${_availableFrom!.month.toString().padLeft(2, '0')}-${_availableFrom!.day.toString().padLeft(2, '0')}'
-                          : 'Select Date',
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _latitudeController,
+                      decoration: const InputDecoration(labelText: 'Latitude'),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     ),
                   ),
-                ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _longitudeController,
+                      decoration: const InputDecoration(labelText: 'Longitude'),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.my_location),
+                    onPressed: _getCurrentLocation,
+                    label: const Text('Current Location'),
+                  ),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.map),
+                    onPressed: _pickLocationOnMap,
+                    label: const Text('Pick on Map'),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      );
-    } else {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Property Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Row(
+        ),
+      ),
+      Step(
+        title: const Text('Media Gallery'),
+        isActive: _currentStep >= 3,
+        state: _currentStep == 3 ? StepState.indexed : StepState.complete,
+        content: Form(
+          key: _formKeys[3],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _bedroomsController,
-                  decoration: const InputDecoration(labelText: 'Bedrooms'),
-                  keyboardType: TextInputType.number,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextFormField(
-                  controller: _bathroomsController,
-                  decoration: const InputDecoration(labelText: 'Bathrooms'),
-                  keyboardType: TextInputType.number,
-                ),
+              const Text('Upload photos of the property. The first photo will be the cover image.', style: TextStyle(color: Colors.grey)),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  ..._existingImages.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final image = entry.value;
+                    return Stack(
+                      children: [
+                        Image.network(
+                          ImageHelper.fixUrl(image.thumbnailUrl ?? image.url ?? ''),
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 100,
+                            height: 100,
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.broken_image),
+                          ),
+                        ),
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: GestureDetector(
+                            onTap: () => _removeExistingImage(index),
+                            child: Container(
+                              color: Colors.black54,
+                              child: const Icon(Icons.close, color: Colors.white, size: 20),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+                  ..._selectedImages.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final file = entry.value;
+                    return Stack(
+                      children: [
+                        Image.file(
+                          file,
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                        ),
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: GestureDetector(
+                            onTap: () => _removeImage(index),
+                            child: Container(
+                              color: Colors.black54,
+                              child: const Icon(Icons.close, color: Colors.white, size: 20),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+                  InkWell(
+                    onTap: _pickImages,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add_a_photo, color: Colors.grey, size: 32),
+                          SizedBox(height: 8),
+                          Text('Add Photo', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: TextFormField(
-                  controller: _sizeController,
-                  decoration: const InputDecoration(labelText: 'Size'),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 1,
-                child: DropdownButtonFormField<String>(
-                  value: _sizeUnit,
-                  decoration: const InputDecoration(labelText: 'Unit'),
-                  items: const [
-                    DropdownMenuItem(value: 'sqft', child: Text('sqft')),
-                    DropdownMenuItem(value: 'sqm', child: Text('sqm')),
-                    DropdownMenuItem(value: 'acres', child: Text('acres')),
-                  ],
-                  onChanged: (v) => setState(() => _sizeUnit = v!),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _houseAgeController,
-            decoration: const InputDecoration(labelText: 'House Age (Years)'),
-            keyboardType: TextInputType.number,
-          ),
-        ],
-      );
-    }
+        ),
+      ),
+    ];
   }
 }

@@ -501,8 +501,12 @@ class _PropertyImageState extends State<_PropertyImage> {
                       ),
                     ),
                   ),
-                  // Dark gradient overlay for a premium immersive look
-                  Positioned.fill(
+                  // Subtle shadow for the pagination dots
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 40,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -510,8 +514,7 @@ class _PropertyImageState extends State<_PropertyImage> {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            Colors.black.withValues(alpha: 0.1),
-                            Colors.black.withValues(alpha: 0.4),
+                            Colors.black.withValues(alpha: 0.3),
                           ],
                         ),
                       ),
