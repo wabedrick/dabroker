@@ -9,7 +9,7 @@ part of 'property_price_history.dart';
 _PropertyPriceHistory _$PropertyPriceHistoryFromJson(
   Map<String, dynamic> json,
 ) => _PropertyPriceHistory(
-  id: (json['id'] as num?)?.toInt(),
+  id: _intFromJson(json['id']),
   oldPrice: _doubleFromJson(json['old_price']),
   newPrice: _doubleFromJson(json['new_price']),
   changedAt: json['changed_at'] == null

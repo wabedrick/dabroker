@@ -424,7 +424,7 @@ $UserCopyWith<$Res>? get host {
 /// @nodoc
 mixin _$LodgingMedia {
 
- int? get id; String get url; String? get thumbUrl; String? get previewUrl;
+ String? get id; String get url; String? get thumbUrl; String? get previewUrl;
 /// Create a copy of LodgingMedia
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -457,7 +457,7 @@ abstract mixin class $LodgingMediaCopyWith<$Res>  {
   factory $LodgingMediaCopyWith(LodgingMedia value, $Res Function(LodgingMedia) _then) = _$LodgingMediaCopyWithImpl;
 @useResult
 $Res call({
- int? id, String url, String? thumbUrl, String? previewUrl
+ String? id, String url, String? thumbUrl, String? previewUrl
 });
 
 
@@ -477,7 +477,7 @@ class _$LodgingMediaCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? url = null,Object? thumbUrl = freezed,Object? previewUrl = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int?,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String?,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
 as String,thumbUrl: freezed == thumbUrl ? _self.thumbUrl : thumbUrl // ignore: cast_nullable_to_non_nullable
 as String?,previewUrl: freezed == previewUrl ? _self.previewUrl : previewUrl // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -565,7 +565,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  String url,  String? thumbUrl,  String? previewUrl)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? id,  String url,  String? thumbUrl,  String? previewUrl)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _LodgingMedia() when $default != null:
 return $default(_that.id,_that.url,_that.thumbUrl,_that.previewUrl);case _:
@@ -586,7 +586,7 @@ return $default(_that.id,_that.url,_that.thumbUrl,_that.previewUrl);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  String url,  String? thumbUrl,  String? previewUrl)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? id,  String url,  String? thumbUrl,  String? previewUrl)  $default,) {final _that = this;
 switch (_that) {
 case _LodgingMedia():
 return $default(_that.id,_that.url,_that.thumbUrl,_that.previewUrl);case _:
@@ -606,7 +606,7 @@ return $default(_that.id,_that.url,_that.thumbUrl,_that.previewUrl);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  String url,  String? thumbUrl,  String? previewUrl)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? id,  String url,  String? thumbUrl,  String? previewUrl)?  $default,) {final _that = this;
 switch (_that) {
 case _LodgingMedia() when $default != null:
 return $default(_that.id,_that.url,_that.thumbUrl,_that.previewUrl);case _:
@@ -624,7 +624,7 @@ class _LodgingMedia implements LodgingMedia {
   const _LodgingMedia({this.id, required this.url, this.thumbUrl, this.previewUrl});
   factory _LodgingMedia.fromJson(Map<String, dynamic> json) => _$LodgingMediaFromJson(json);
 
-@override final  int? id;
+@override final  String? id;
 @override final  String url;
 @override final  String? thumbUrl;
 @override final  String? previewUrl;
@@ -662,7 +662,7 @@ abstract mixin class _$LodgingMediaCopyWith<$Res> implements $LodgingMediaCopyWi
   factory _$LodgingMediaCopyWith(_LodgingMedia value, $Res Function(_LodgingMedia) _then) = __$LodgingMediaCopyWithImpl;
 @override @useResult
 $Res call({
- int? id, String url, String? thumbUrl, String? previewUrl
+ String? id, String url, String? thumbUrl, String? previewUrl
 });
 
 
@@ -682,7 +682,7 @@ class __$LodgingMediaCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? url = null,Object? thumbUrl = freezed,Object? previewUrl = freezed,}) {
   return _then(_LodgingMedia(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
-as int?,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
+as String?,url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
 as String,thumbUrl: freezed == thumbUrl ? _self.thumbUrl : thumbUrl // ignore: cast_nullable_to_non_nullable
 as String?,previewUrl: freezed == previewUrl ? _self.previewUrl : previewUrl // ignore: cast_nullable_to_non_nullable
 as String?,

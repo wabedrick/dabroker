@@ -108,6 +108,14 @@ class LodgingRepository {
     }
   }
 
+  Future<void> deleteLodgingMedia(String lodgingId, String mediaId) async {
+    try {
+      await _apiClient.deleteLodgingMedia(lodgingId, mediaId);
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
   Future<void> deleteLodging(String id) async {
     try {
       await _apiClient.deleteLodging(id);

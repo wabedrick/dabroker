@@ -41,10 +41,17 @@ class LodgingManagementNotifier extends StateNotifier<AsyncValue<void>> {
     String id,
     Map<String, dynamic> data, {
     List<File>? newImages,
+    List<String>? deletedImageIds,
   }) async {
     state = const AsyncValue.loading();
     try {
       await _repository.updateLodging(id, data);
+
+      if (deletedImageIds != null && deletedImageIds.isNotEmpty) {
+        for (final mediaId in deletedImageIds) {
+          await _repository.deleteLodgingMedia(id, mediaId);
+        }
+      }
 
       if (newImages != null && newImages.isNotEmpty) {
         for (final image in newImages) {

@@ -30,6 +30,23 @@ class PropertyRepository {
     }
   }
 
+  Future<PropertyListResponse> fetchOwnerProperties({
+    required int page,
+    required int perPage,
+    String? status,
+  }) async {
+    try {
+      final queries = {
+        'page': page,
+        'per_page': perPage,
+        if (status != null && status.isNotEmpty) 'status': status,
+      };
+      return await _apiClient.fetchOwnerProperties(queries);
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
   Future<Property> fetchPropertyDetail(String id) async {
     try {
       final response = await _apiClient.fetchPropertyDetailRaw(id);

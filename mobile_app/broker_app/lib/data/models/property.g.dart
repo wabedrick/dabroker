@@ -130,7 +130,7 @@ Map<String, dynamic> _$PropertyMediaToJson(_PropertyMedia instance) =>
 
 _PropertyUserSummary _$PropertyUserSummaryFromJson(Map<String, dynamic> json) =>
     _PropertyUserSummary(
-      id: (json['id'] as num).toInt(),
+      id: _requiredIntFromJson(json['id']),
       name: json['name'] as String?,
       preferredRole: json['preferred_role'] as String?,
     );
@@ -138,7 +138,7 @@ _PropertyUserSummary _$PropertyUserSummaryFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$PropertyUserSummaryToJson(
   _PropertyUserSummary instance,
 ) => <String, dynamic>{
-  'id': instance.id,
+  'id': _intToJson(instance.id),
   'name': instance.name,
   'preferred_role': instance.preferredRole,
 };

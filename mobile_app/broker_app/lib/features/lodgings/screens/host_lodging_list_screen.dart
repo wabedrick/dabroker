@@ -6,6 +6,7 @@ import 'package:broker_app/features/lodgings/screens/add_lodging_screen.dart';
 import 'package:broker_app/features/lodgings/screens/host_lodging_room_list_screen.dart';
 import 'package:broker_app/features/bookings/screens/host_booking_list_screen.dart';
 import 'package:broker_app/features/lodgings/screens/lodging_detail_screen.dart';
+import 'package:broker_app/features/lodgings/widgets/lodging_image_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -131,12 +132,9 @@ class _HostLodgingCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (lodging.media?.isNotEmpty == true)
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Image.network(
-                  ImageHelper.fixUrl(lodging.media!.first.url),
-                  fit: BoxFit.cover,
-                ),
+              LodgingImageCarousel(
+                images: lodging.media!.map((e) => ImageHelper.fixUrl(e.previewUrl ?? e.url ?? '')).toList(),
+                lodgingId: lodging.id,
               ),
             Padding(
               padding: const EdgeInsets.all(16),

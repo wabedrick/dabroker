@@ -33,10 +33,18 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
   final _latitudeController = TextEditingController();
   final _longitudeController = TextEditingController();
 
+  final _bedroomsController = TextEditingController();
+  final _bathroomsController = TextEditingController();
+  final _sizeController = TextEditingController();
+  final _houseAgeController = TextEditingController();
+  final _minLeaseController = TextEditingController();
+
   // State
   String _type = 'house';
   String _category = 'sale';
   String _currency = 'USD';
+  String _sizeUnit = 'sqft';
+  DateTime? _availableFrom;
   final List<File> _selectedImages = [];
   final List<PropertyMedia> _existingImages = [];
   final List<String> _deletedImageIds = [];
@@ -58,6 +66,15 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
       _type = p.type ?? 'house';
       _category = p.category ?? 'sale';
       _currency = p.currency ?? 'USD';
+      
+      _bedroomsController.text = p.metadata?['bedrooms']?.toString() ?? '';
+      _bathroomsController.text = p.metadata?['bathrooms']?.toString() ?? '';
+      _sizeController.text = p.size?.toString() ?? '';
+      _sizeUnit = p.sizeUnit ?? 'sqft';
+      _houseAgeController.text = p.houseAge?.toString() ?? '';
+      _minLeaseController.text = p.metadata?['min_lease_months']?.toString() ?? '';
+      _availableFrom = p.availableFrom;
+
       if (p.gallery != null) {
         _existingImages.addAll(p.gallery!);
       }
@@ -119,6 +136,11 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
     _countryController.dispose();
     _latitudeController.dispose();
     _longitudeController.dispose();
+    _bedroomsController.dispose();
+    _bathroomsController.dispose();
+    _sizeController.dispose();
+    _houseAgeController.dispose();
+    _minLeaseController.dispose();
     super.dispose();
   }
 
@@ -217,6 +239,15 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
       'longitude': double.tryParse(_longitudeController.text),
       // Defaults or empty for now
       'amenities': [],
+      'metadata': {
+        if (_bedroomsController.text.isNotEmpty) 'bedrooms': int.tryParse(_bedroomsController.text),
+        if (_bathroomsController.text.isNotEmpty) 'bathrooms': int.tryParse(_bathroomsController.text),
+        if (_category == 'rent' && _minLeaseController.text.isNotEmpty) 'min_lease_months': int.tryParse(_minLeaseController.text),
+      },
+      if (_category == 'sale') 'size': double.tryParse(_sizeController.text),
+      if (_category == 'sale') 'size_unit': _sizeUnit,
+      if (_category == 'sale') 'house_age': int.tryParse(_houseAgeController.text),
+      if (_category == 'rent' && _availableFrom != null) 'available_from': _availableFrom!.toIso8601String(),
     };
 
     final Property? property;
@@ -504,6 +535,8 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 24),
+            _buildDynamicFields(),
             const SizedBox(height: 16),
             TextFormField(
               controller: _descriptionController,
@@ -529,5 +562,132 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildDynamicFields() {
+    if (_category == 'rent') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Rental Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _bedroomsController,
+                  decoration: const InputDecoration(labelText: 'Bedrooms'),
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextFormField(
+                  controller: _bathroomsController,
+                  decoration: const InputDecoration(labelText: 'Bathrooms'),
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _minLeaseController,
+                  decoration: const InputDecoration(labelText: 'Min Lease (Months)'),
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: InkWell(
+                  onTap: () async {
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: _availableFrom ?? DateTime.now(),
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+                    );
+                    if (date != null) {
+                      setState(() => _availableFrom = date);
+                    }
+                  },
+                  child: InputDecorator(
+                    decoration: const InputDecoration(labelText: 'Available From'),
+                    child: Text(
+                      _availableFrom != null
+                          ? '${_availableFrom!.year}-${_availableFrom!.month.toString().padLeft(2, '0')}-${_availableFrom!.day.toString().padLeft(2, '0')}'
+                          : 'Select Date',
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Property Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _bedroomsController,
+                  decoration: const InputDecoration(labelText: 'Bedrooms'),
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextFormField(
+                  controller: _bathroomsController,
+                  decoration: const InputDecoration(labelText: 'Bathrooms'),
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: TextFormField(
+                  controller: _sizeController,
+                  decoration: const InputDecoration(labelText: 'Size'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 1,
+                child: DropdownButtonFormField<String>(
+                  value: _sizeUnit,
+                  decoration: const InputDecoration(labelText: 'Unit'),
+                  items: const [
+                    DropdownMenuItem(value: 'sqft', child: Text('sqft')),
+                    DropdownMenuItem(value: 'sqm', child: Text('sqm')),
+                    DropdownMenuItem(value: 'acres', child: Text('acres')),
+                  ],
+                  onChanged: (v) => setState(() => _sizeUnit = v!),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _houseAgeController,
+            decoration: const InputDecoration(labelText: 'House Age (Years)'),
+            keyboardType: TextInputType.number,
+          ),
+        ],
+      );
+    }
   }
 }

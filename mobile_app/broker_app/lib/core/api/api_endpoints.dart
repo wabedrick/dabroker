@@ -24,6 +24,7 @@ class ApiEndpoints {
   static const String ownerInquiries = '/owner/inquiries';
   static const String inquiries = '/inquiries';
   static const String ownerInterestedBuyers = '/owner/interested-buyers';
+  static const String consultations = '/consultations';
 
   // Lodging Endpoints
   static const String lodgings = '/lodgings';
@@ -43,15 +44,6 @@ class ApiEndpoints {
   static String bookingInquiry(String id) => '/bookings/$id/inquiry';
   static String inquiryDetail(String id) => '/inquiries/$id';
   static String inquiryMessages(String id) => '/inquiries/$id/messages';
-
-  // Professional Endpoints
-  static const String professionals = '/professionals';
-  static String professionalDetail(String id) => '/professionals/$id';
-  static const String applyProfessional = '/professionals/apply';
-
-  // Consultation Endpoints
-  static const String consultations = '/consultations';
-  static String consultationDetail(String id) => '/consultations/$id';
 
   // Notification Endpoints
   static const String notificationsCounters = '/notifications/counters';

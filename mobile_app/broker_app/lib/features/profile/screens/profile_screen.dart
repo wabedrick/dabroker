@@ -3,10 +3,10 @@ import 'package:broker_app/features/auth/providers/auth_provider.dart';
 import 'package:broker_app/features/auth/screens/login_screen.dart';
 import 'package:broker_app/features/bookings/screens/booking_list_screen.dart';
 import 'package:broker_app/features/bookings/screens/host_booking_list_screen.dart';
-import 'package:broker_app/features/consultations/screens/consultation_list_screen.dart';
+
 import 'package:broker_app/features/inquiries/screens/owner_inquiry_list_screen.dart';
 import 'package:broker_app/features/lodgings/screens/host_lodging_list_screen.dart';
-import 'package:broker_app/features/professionals/screens/professional_profile_screen.dart';
+import 'package:broker_app/features/properties/screens/owner_property_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -45,11 +45,6 @@ class ProfileScreen extends ConsumerWidget {
         user.roles.contains('admin') ||
         user.roles.contains('super_admin');
 
-    final isProfessional =
-        user.roles.contains('broker') ||
-        user.roles.contains('surveyor') ||
-        user.roles.contains('lawyer') ||
-        user.roles.contains('real_estate_agent');
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
@@ -65,29 +60,7 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
           ),
-          if (isProfessional)
-            ListTile(
-              leading: const Icon(Icons.work),
-              title: const Text('Professional Profile'),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const ProfessionalProfileScreen(),
-                  ),
-                );
-              },
-            ),
-          ListTile(
-            leading: const Icon(Icons.calendar_month),
-            title: const Text('My Consultations'),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const ConsultationListScreen(),
-                ),
-              );
-            },
-          ),
+
           if (isHost) ...[
             ListTile(
               leading: const Icon(Icons.hotel),
@@ -112,7 +85,18 @@ class ProfileScreen extends ConsumerWidget {
               },
             ),
           ],
-          if (isOwner || isProfessional) ...[
+          if (isOwner) ...[
+            ListTile(
+              leading: const Icon(Icons.home_work),
+              title: const Text('My Properties'),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const OwnerPropertyListScreen(),
+                  ),
+                );
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.question_answer),
               title: const Text('Inquiries & Messages'),

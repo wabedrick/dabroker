@@ -92,7 +92,7 @@ Map<String, dynamic> _$LodgingToJson(_Lodging instance) => <String, dynamic>{
 
 _LodgingMedia _$LodgingMediaFromJson(Map<String, dynamic> json) =>
     _LodgingMedia(
-      id: (json['id'] as num?)?.toInt(),
+      id: json['id'] as String?,
       url: json['url'] as String,
       thumbUrl: json['thumb_url'] as String?,
       previewUrl: json['preview_url'] as String?,

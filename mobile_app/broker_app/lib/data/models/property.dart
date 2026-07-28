@@ -73,7 +73,7 @@ abstract class PropertyUserSummary with _$PropertyUserSummary {
 
   @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory PropertyUserSummary({
-    required int id,
+    @JsonKey(fromJson: _requiredIntFromJson, toJson: _intToJson) required int id,
     String? name,
     String? preferredRole,
   }) = _PropertyUserSummary;
@@ -111,6 +111,14 @@ int? _intFromJson(Object? value) {
 }
 
 Object? _intToJson(int? value) => value;
+
+int _requiredIntFromJson(Object? value) {
+  if (value == null) return 0;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? 0;
+  return 0;
+}
 
 Map<String, dynamic>? _metadataFromJson(Object? value) {
   if (value == null) return null;

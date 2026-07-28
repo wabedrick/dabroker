@@ -7,7 +7,7 @@ part 'property_price_history.g.dart';
 abstract class PropertyPriceHistory with _$PropertyPriceHistory {
   @JsonSerializable(fieldRename: FieldRename.snake)
   const factory PropertyPriceHistory({
-    int? id,
+    @JsonKey(fromJson: _intFromJson) int? id,
     @JsonKey(fromJson: _doubleFromJson) double? oldPrice,
     @JsonKey(fromJson: _doubleFromJson) double? newPrice,
     DateTime? changedAt,
@@ -21,5 +21,13 @@ double? _doubleFromJson(dynamic value) {
   if (value == null) return null;
   if (value is num) return value.toDouble();
   if (value is String) return double.tryParse(value);
+  return null;
+}
+
+int? _intFromJson(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value);
   return null;
 }

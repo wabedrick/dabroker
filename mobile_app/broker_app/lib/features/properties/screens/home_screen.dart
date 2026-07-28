@@ -148,13 +148,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         children: [
-                          _QuickFilterPill(
-                            label: 'All listings',
-                            icon: Icons.list,
-                            isSelected: state.params.category == null,
-                            onTap: () => _applyFilters(state.params.copyWith(category: null)),
-                          ),
-                          const SizedBox(width: 8),
+
                           _QuickFilterPill(
                             label: 'For rent',
                             icon: Icons.key,
@@ -298,7 +292,7 @@ class _HomeHeaderModel {
     final filterLabel = switch (category) {
       'rent' => 'For rent',
       'sale' => 'For sale',
-      _ => 'All listings',
+      _ => 'Properties',
     };
 
     final countLabel = state.items.length == 1

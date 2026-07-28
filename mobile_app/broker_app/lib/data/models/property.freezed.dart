@@ -741,7 +741,7 @@ as String?,
 /// @nodoc
 mixin _$PropertyUserSummary {
 
- int get id; String? get name; String? get preferredRole;
+@JsonKey(fromJson: _requiredIntFromJson, toJson: _intToJson) int get id; String? get name; String? get preferredRole;
 /// Create a copy of PropertyUserSummary
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -774,7 +774,7 @@ abstract mixin class $PropertyUserSummaryCopyWith<$Res>  {
   factory $PropertyUserSummaryCopyWith(PropertyUserSummary value, $Res Function(PropertyUserSummary) _then) = _$PropertyUserSummaryCopyWithImpl;
 @useResult
 $Res call({
- int id, String? name, String? preferredRole
+@JsonKey(fromJson: _requiredIntFromJson, toJson: _intToJson) int id, String? name, String? preferredRole
 });
 
 
@@ -881,7 +881,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String? name,  String? preferredRole)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(fromJson: _requiredIntFromJson, toJson: _intToJson)  int id,  String? name,  String? preferredRole)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PropertyUserSummary() when $default != null:
 return $default(_that.id,_that.name,_that.preferredRole);case _:
@@ -902,7 +902,7 @@ return $default(_that.id,_that.name,_that.preferredRole);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String? name,  String? preferredRole)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(fromJson: _requiredIntFromJson, toJson: _intToJson)  int id,  String? name,  String? preferredRole)  $default,) {final _that = this;
 switch (_that) {
 case _PropertyUserSummary():
 return $default(_that.id,_that.name,_that.preferredRole);case _:
@@ -922,7 +922,7 @@ return $default(_that.id,_that.name,_that.preferredRole);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String? name,  String? preferredRole)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(fromJson: _requiredIntFromJson, toJson: _intToJson)  int id,  String? name,  String? preferredRole)?  $default,) {final _that = this;
 switch (_that) {
 case _PropertyUserSummary() when $default != null:
 return $default(_that.id,_that.name,_that.preferredRole);case _:
@@ -937,10 +937,10 @@ return $default(_that.id,_that.name,_that.preferredRole);case _:
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _PropertyUserSummary extends PropertyUserSummary {
-  const _PropertyUserSummary({required this.id, this.name, this.preferredRole}): super._();
+  const _PropertyUserSummary({@JsonKey(fromJson: _requiredIntFromJson, toJson: _intToJson) required this.id, this.name, this.preferredRole}): super._();
   factory _PropertyUserSummary.fromJson(Map<String, dynamic> json) => _$PropertyUserSummaryFromJson(json);
 
-@override final  int id;
+@override@JsonKey(fromJson: _requiredIntFromJson, toJson: _intToJson) final  int id;
 @override final  String? name;
 @override final  String? preferredRole;
 
@@ -977,7 +977,7 @@ abstract mixin class _$PropertyUserSummaryCopyWith<$Res> implements $PropertyUse
   factory _$PropertyUserSummaryCopyWith(_PropertyUserSummary value, $Res Function(_PropertyUserSummary) _then) = __$PropertyUserSummaryCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String? name, String? preferredRole
+@JsonKey(fromJson: _requiredIntFromJson, toJson: _intToJson) int id, String? name, String? preferredRole
 });
 
 

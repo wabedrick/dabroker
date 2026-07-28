@@ -38,11 +38,7 @@ class BasePermissionsSeeder extends Seeder
             'bookings.cancel',
             'bookings.review',
 
-            // Professionals & consultations
-            'professionals.view',
-            'professionals.manage',
-            'consultations.schedule',
-            'consultations.manage',
+
 
             // Messaging & notifications
             'messaging.initiate',
@@ -94,46 +90,7 @@ class BasePermissionsSeeder extends Seeder
                     'messaging.respond',
                     'notifications.manage',
                 ],
-                'professional' => [
-                    'professionals.view',
-                    'professionals.manage',
-                    'consultations.schedule',
-                    'consultations.manage',
-                    'messaging.respond',
-                    'notifications.manage',
-                ],
-                'broker' => [
-                    'professionals.view',
-                    'professionals.manage',
-                    'consultations.schedule',
-                    'consultations.manage',
-                    'messaging.respond',
-                    'notifications.manage',
-                ],
-                'surveyor' => [
-                    'professionals.view',
-                    'professionals.manage',
-                    'consultations.schedule',
-                    'consultations.manage',
-                    'messaging.respond',
-                    'notifications.manage',
-                ],
-                'lawyer' => [
-                    'professionals.view',
-                    'professionals.manage',
-                    'consultations.schedule',
-                    'consultations.manage',
-                    'messaging.respond',
-                    'notifications.manage',
-                ],
-                'real_estate_agent' => [
-                    'professionals.view',
-                    'professionals.manage',
-                    'consultations.schedule',
-                    'consultations.manage',
-                    'messaging.respond',
-                    'notifications.manage',
-                ],
+
                 'admin' => array_diff($permissions, ['admin.manage_admins']),
                 'super_admin' => $permissions,
             ];

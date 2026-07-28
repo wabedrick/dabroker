@@ -12,13 +12,12 @@ List<LodgingMedia>? _mediaFromJson(dynamic json) {
     return json.map((m) {
       if (m is Map<String, dynamic>) {
         final mm = Map<String, dynamic>.from(m);
-        if (mm['id'] != null && mm['id'] is String) {
-          final parsed = int.tryParse(mm['id']);
-          if (parsed != null) mm['id'] = parsed;
+        // Ensure id is a string if it exists
+        if (mm['id'] != null) {
+          mm['id'] = mm['id'].toString();
         }
         return LodgingMedia.fromJson(mm);
       }
-      // If it's already a LodgingMedia somehow
       if (m is LodgingMedia) return m;
       throw FormatException('Expected Map or LodgingMedia, got $m');
     }).toList();
@@ -73,7 +72,7 @@ abstract class Lodging with _$Lodging {
 abstract class LodgingMedia with _$LodgingMedia {
   @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory LodgingMedia({
-    int? id,
+    String? id,
     required String url,
     String? thumbUrl,
     String? previewUrl,

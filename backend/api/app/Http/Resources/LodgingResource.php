@@ -39,7 +39,7 @@ class LodgingResource extends JsonResource
             'media' => $this->whenLoaded('media', function () {
                 return $this->getMedia('gallery')->map(function ($media) {
                     return [
-                        'id' => $media->id,
+                        'id' => $media->uuid,
                         'url' => $media->getFullUrl(),
                         'thumb_url' => $media->getFullUrl(),
                         'preview_url' => $media->getFullUrl(),

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PropertyPriceHistory {
 
- int? get id;@JsonKey(fromJson: _doubleFromJson) double? get oldPrice;@JsonKey(fromJson: _doubleFromJson) double? get newPrice; DateTime? get changedAt;
+@JsonKey(fromJson: _intFromJson) int? get id;@JsonKey(fromJson: _doubleFromJson) double? get oldPrice;@JsonKey(fromJson: _doubleFromJson) double? get newPrice; DateTime? get changedAt;
 /// Create a copy of PropertyPriceHistory
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $PropertyPriceHistoryCopyWith<$Res>  {
   factory $PropertyPriceHistoryCopyWith(PropertyPriceHistory value, $Res Function(PropertyPriceHistory) _then) = _$PropertyPriceHistoryCopyWithImpl;
 @useResult
 $Res call({
- int? id,@JsonKey(fromJson: _doubleFromJson) double? oldPrice,@JsonKey(fromJson: _doubleFromJson) double? newPrice, DateTime? changedAt
+@JsonKey(fromJson: _intFromJson) int? id,@JsonKey(fromJson: _doubleFromJson) double? oldPrice,@JsonKey(fromJson: _doubleFromJson) double? newPrice, DateTime? changedAt
 });
 
 
@@ -156,7 +156,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id, @JsonKey(fromJson: _doubleFromJson)  double? oldPrice, @JsonKey(fromJson: _doubleFromJson)  double? newPrice,  DateTime? changedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(fromJson: _intFromJson)  int? id, @JsonKey(fromJson: _doubleFromJson)  double? oldPrice, @JsonKey(fromJson: _doubleFromJson)  double? newPrice,  DateTime? changedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PropertyPriceHistory() when $default != null:
 return $default(_that.id,_that.oldPrice,_that.newPrice,_that.changedAt);case _:
@@ -177,7 +177,7 @@ return $default(_that.id,_that.oldPrice,_that.newPrice,_that.changedAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id, @JsonKey(fromJson: _doubleFromJson)  double? oldPrice, @JsonKey(fromJson: _doubleFromJson)  double? newPrice,  DateTime? changedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(fromJson: _intFromJson)  int? id, @JsonKey(fromJson: _doubleFromJson)  double? oldPrice, @JsonKey(fromJson: _doubleFromJson)  double? newPrice,  DateTime? changedAt)  $default,) {final _that = this;
 switch (_that) {
 case _PropertyPriceHistory():
 return $default(_that.id,_that.oldPrice,_that.newPrice,_that.changedAt);case _:
@@ -197,7 +197,7 @@ return $default(_that.id,_that.oldPrice,_that.newPrice,_that.changedAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id, @JsonKey(fromJson: _doubleFromJson)  double? oldPrice, @JsonKey(fromJson: _doubleFromJson)  double? newPrice,  DateTime? changedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(fromJson: _intFromJson)  int? id, @JsonKey(fromJson: _doubleFromJson)  double? oldPrice, @JsonKey(fromJson: _doubleFromJson)  double? newPrice,  DateTime? changedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _PropertyPriceHistory() when $default != null:
 return $default(_that.id,_that.oldPrice,_that.newPrice,_that.changedAt);case _:
@@ -212,10 +212,10 @@ return $default(_that.id,_that.oldPrice,_that.newPrice,_that.changedAt);case _:
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class _PropertyPriceHistory implements PropertyPriceHistory {
-  const _PropertyPriceHistory({this.id, @JsonKey(fromJson: _doubleFromJson) this.oldPrice, @JsonKey(fromJson: _doubleFromJson) this.newPrice, this.changedAt});
+  const _PropertyPriceHistory({@JsonKey(fromJson: _intFromJson) this.id, @JsonKey(fromJson: _doubleFromJson) this.oldPrice, @JsonKey(fromJson: _doubleFromJson) this.newPrice, this.changedAt});
   factory _PropertyPriceHistory.fromJson(Map<String, dynamic> json) => _$PropertyPriceHistoryFromJson(json);
 
-@override final  int? id;
+@override@JsonKey(fromJson: _intFromJson) final  int? id;
 @override@JsonKey(fromJson: _doubleFromJson) final  double? oldPrice;
 @override@JsonKey(fromJson: _doubleFromJson) final  double? newPrice;
 @override final  DateTime? changedAt;
@@ -253,7 +253,7 @@ abstract mixin class _$PropertyPriceHistoryCopyWith<$Res> implements $PropertyPr
   factory _$PropertyPriceHistoryCopyWith(_PropertyPriceHistory value, $Res Function(_PropertyPriceHistory) _then) = __$PropertyPriceHistoryCopyWithImpl;
 @override @useResult
 $Res call({
- int? id,@JsonKey(fromJson: _doubleFromJson) double? oldPrice,@JsonKey(fromJson: _doubleFromJson) double? newPrice, DateTime? changedAt
+@JsonKey(fromJson: _intFromJson) int? id,@JsonKey(fromJson: _doubleFromJson) double? oldPrice,@JsonKey(fromJson: _doubleFromJson) double? newPrice, DateTime? changedAt
 });
 
 

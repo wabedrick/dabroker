@@ -82,8 +82,6 @@ Route::prefix('v1')->group(function (): void {
     Route::get('lodgings/{lodging:public_id}', [LodgingBrowseController::class, 'show']);
     Route::get('lodgings/{lodging:public_id}/availability', [App\Http\Controllers\API\LodgingAvailabilityController::class, 'index']);
 
-    // Public professionals routes
-    Route::get('professionals', [App\Http\Controllers\API\ProfessionalController::class, 'index']);
     
     Route::get('/fix-images', function () {
         // Delete old demo properties so the seeder will regenerate them.
@@ -97,7 +95,7 @@ Route::prefix('v1')->group(function (): void {
         return response()->json(['message' => 'Properties re-seeded to S3 successfully!']);
     });
 
-    Route::get('professionals/{user}', [App\Http\Controllers\API\ProfessionalController::class, 'show']);
+
 
     Route::get('ratings', [App\Http\Controllers\API\RatingController::class, 'index']);
 
@@ -106,8 +104,7 @@ Route::prefix('v1')->group(function (): void {
     Route::get('auctions/{auction:public_id}', [App\Http\Controllers\AuctionController::class, 'show']);
 
     Route::middleware('auth:sanctum')->group(function (): void {
-        Route::post('professionals/{user}/contact', [App\Http\Controllers\API\ProfessionalController::class, 'contact'])
-            ->middleware('throttle:5,1');
+
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::get('profile', [AuthController::class, 'me']);
 
@@ -122,22 +119,14 @@ Route::prefix('v1')->group(function (): void {
             ->middleware('throttle:5,1');
 
         Route::post('ratings', [App\Http\Controllers\API\RatingController::class, 'store']);
-        Route::apiResource('consultations', App\Http\Controllers\API\ConsultationController::class);
+
 
         Route::get('inquiries', [PropertyInquiryController::class, 'index']);
         Route::get('inquiries/{inquiry:public_id}', [PropertyInquiryController::class, 'show']);
         Route::post('inquiries/{inquiry:public_id}/messages', [PropertyInquiryMessageController::class, 'store']);
         Route::post('inquiries/{inquiry:public_id}/read', [PropertyInquiryMessageController::class, 'markRead']);
 
-        Route::prefix('professional')->group(function (): void {
-            Route::post('profile', [App\Http\Controllers\API\ProfessionalController::class, 'store']);
-            Route::match(['put', 'patch'], 'profile', [App\Http\Controllers\API\ProfessionalController::class, 'update']);
 
-            Route::get('portfolio', [App\Http\Controllers\API\ProfessionalPortfolioController::class, 'index']);
-            Route::post('portfolio', [App\Http\Controllers\API\ProfessionalPortfolioController::class, 'store']);
-            Route::match(['put', 'patch'], 'portfolio/{id}', [App\Http\Controllers\API\ProfessionalPortfolioController::class, 'update']);
-            Route::delete('portfolio/{id}', [App\Http\Controllers\API\ProfessionalPortfolioController::class, 'destroy']);
-        });
 
         Route::prefix('host')->group(function (): void {
             Route::get('lodgings', [App\Http\Controllers\API\HostLodgingController::class, 'index']);
@@ -213,13 +202,7 @@ Route::prefix('v1')->group(function (): void {
                 Route::delete('properties/{property:public_id}', [FavoritePropertyController::class, 'destroy']);
             });
 
-        // Professional application (authenticated)
-        Route::post('professionals/apply', [App\Http\Controllers\API\ProfessionalController::class, 'store']);
-        Route::match(['put', 'patch'], 'professionals/profile', [App\Http\Controllers\API\ProfessionalController::class, 'update']);
 
-        Route::get('consultations', [App\Http\Controllers\API\ConsultationController::class, 'index']);
-        Route::post('consultations', [App\Http\Controllers\API\ConsultationController::class, 'store']);
-        Route::patch('consultations/{consultation:public_id}', [App\Http\Controllers\API\ConsultationController::class, 'update']);
 
         // Lodging routes (authenticated)
         Route::prefix('host')->group(function (): void {

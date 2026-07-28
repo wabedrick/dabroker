@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$User {
 
- int get id; String get name; String get email; String? get phone; String? get countryCode; String get preferredRole; String get status; String? get bio; DateTime? get emailVerifiedAt; DateTime? get phoneVerifiedAt; DateTime? get lastLoginAt; DateTime get createdAt; DateTime get updatedAt; List<String> get roles; List<String> get permissions; ProfessionalProfile? get professionalProfile; String? get avatar; double get averageRating; int get ratingsCount;
+ int get id; String get name; String get email; String? get phone; String? get countryCode; String get preferredRole; String get status; String? get bio; DateTime? get emailVerifiedAt; DateTime? get phoneVerifiedAt; DateTime? get lastLoginAt; DateTime get createdAt; DateTime get updatedAt; List<String> get roles; List<String> get permissions; String? get avatar; double get averageRating; int get ratingsCount;
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $UserCopyWith<User> get copyWith => _$UserCopyWithImpl<User>(this as User, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.countryCode, countryCode) || other.countryCode == countryCode)&&(identical(other.preferredRole, preferredRole) || other.preferredRole == preferredRole)&&(identical(other.status, status) || other.status == status)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.emailVerifiedAt, emailVerifiedAt) || other.emailVerifiedAt == emailVerifiedAt)&&(identical(other.phoneVerifiedAt, phoneVerifiedAt) || other.phoneVerifiedAt == phoneVerifiedAt)&&(identical(other.lastLoginAt, lastLoginAt) || other.lastLoginAt == lastLoginAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&const DeepCollectionEquality().equals(other.roles, roles)&&const DeepCollectionEquality().equals(other.permissions, permissions)&&(identical(other.professionalProfile, professionalProfile) || other.professionalProfile == professionalProfile)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.averageRating, averageRating) || other.averageRating == averageRating)&&(identical(other.ratingsCount, ratingsCount) || other.ratingsCount == ratingsCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.countryCode, countryCode) || other.countryCode == countryCode)&&(identical(other.preferredRole, preferredRole) || other.preferredRole == preferredRole)&&(identical(other.status, status) || other.status == status)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.emailVerifiedAt, emailVerifiedAt) || other.emailVerifiedAt == emailVerifiedAt)&&(identical(other.phoneVerifiedAt, phoneVerifiedAt) || other.phoneVerifiedAt == phoneVerifiedAt)&&(identical(other.lastLoginAt, lastLoginAt) || other.lastLoginAt == lastLoginAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&const DeepCollectionEquality().equals(other.roles, roles)&&const DeepCollectionEquality().equals(other.permissions, permissions)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.averageRating, averageRating) || other.averageRating == averageRating)&&(identical(other.ratingsCount, ratingsCount) || other.ratingsCount == ratingsCount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,name,email,phone,countryCode,preferredRole,status,bio,emailVerifiedAt,phoneVerifiedAt,lastLoginAt,createdAt,updatedAt,const DeepCollectionEquality().hash(roles),const DeepCollectionEquality().hash(permissions),professionalProfile,avatar,averageRating,ratingsCount]);
+int get hashCode => Object.hash(runtimeType,id,name,email,phone,countryCode,preferredRole,status,bio,emailVerifiedAt,phoneVerifiedAt,lastLoginAt,createdAt,updatedAt,const DeepCollectionEquality().hash(roles),const DeepCollectionEquality().hash(permissions),avatar,averageRating,ratingsCount);
 
 @override
 String toString() {
-  return 'User(id: $id, name: $name, email: $email, phone: $phone, countryCode: $countryCode, preferredRole: $preferredRole, status: $status, bio: $bio, emailVerifiedAt: $emailVerifiedAt, phoneVerifiedAt: $phoneVerifiedAt, lastLoginAt: $lastLoginAt, createdAt: $createdAt, updatedAt: $updatedAt, roles: $roles, permissions: $permissions, professionalProfile: $professionalProfile, avatar: $avatar, averageRating: $averageRating, ratingsCount: $ratingsCount)';
+  return 'User(id: $id, name: $name, email: $email, phone: $phone, countryCode: $countryCode, preferredRole: $preferredRole, status: $status, bio: $bio, emailVerifiedAt: $emailVerifiedAt, phoneVerifiedAt: $phoneVerifiedAt, lastLoginAt: $lastLoginAt, createdAt: $createdAt, updatedAt: $updatedAt, roles: $roles, permissions: $permissions, avatar: $avatar, averageRating: $averageRating, ratingsCount: $ratingsCount)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $UserCopyWith<$Res>  {
   factory $UserCopyWith(User value, $Res Function(User) _then) = _$UserCopyWithImpl;
 @useResult
 $Res call({
- int id, String name, String email, String? phone, String? countryCode, String preferredRole, String status, String? bio, DateTime? emailVerifiedAt, DateTime? phoneVerifiedAt, DateTime? lastLoginAt, DateTime createdAt, DateTime updatedAt, List<String> roles, List<String> permissions, ProfessionalProfile? professionalProfile, String? avatar, double averageRating, int ratingsCount
+ int id, String name, String email, String? phone, String? countryCode, String preferredRole, String status, String? bio, DateTime? emailVerifiedAt, DateTime? phoneVerifiedAt, DateTime? lastLoginAt, DateTime createdAt, DateTime updatedAt, List<String> roles, List<String> permissions, String? avatar, double averageRating, int ratingsCount
 });
 
 
@@ -65,7 +65,7 @@ class _$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? email = null,Object? phone = freezed,Object? countryCode = freezed,Object? preferredRole = null,Object? status = null,Object? bio = freezed,Object? emailVerifiedAt = freezed,Object? phoneVerifiedAt = freezed,Object? lastLoginAt = freezed,Object? createdAt = null,Object? updatedAt = null,Object? roles = null,Object? permissions = null,Object? professionalProfile = freezed,Object? avatar = freezed,Object? averageRating = null,Object? ratingsCount = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? email = null,Object? phone = freezed,Object? countryCode = freezed,Object? preferredRole = null,Object? status = null,Object? bio = freezed,Object? emailVerifiedAt = freezed,Object? phoneVerifiedAt = freezed,Object? lastLoginAt = freezed,Object? createdAt = null,Object? updatedAt = null,Object? roles = null,Object? permissions = null,Object? avatar = freezed,Object? averageRating = null,Object? ratingsCount = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -82,8 +82,7 @@ as DateTime?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignor
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,roles: null == roles ? _self.roles : roles // ignore: cast_nullable_to_non_nullable
 as List<String>,permissions: null == permissions ? _self.permissions : permissions // ignore: cast_nullable_to_non_nullable
-as List<String>,professionalProfile: freezed == professionalProfile ? _self.professionalProfile : professionalProfile // ignore: cast_nullable_to_non_nullable
-as ProfessionalProfile?,avatar: freezed == avatar ? _self.avatar : avatar // ignore: cast_nullable_to_non_nullable
+as List<String>,avatar: freezed == avatar ? _self.avatar : avatar // ignore: cast_nullable_to_non_nullable
 as String?,averageRating: null == averageRating ? _self.averageRating : averageRating // ignore: cast_nullable_to_non_nullable
 as double,ratingsCount: null == ratingsCount ? _self.ratingsCount : ratingsCount // ignore: cast_nullable_to_non_nullable
 as int,
@@ -171,10 +170,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String email,  String? phone,  String? countryCode,  String preferredRole,  String status,  String? bio,  DateTime? emailVerifiedAt,  DateTime? phoneVerifiedAt,  DateTime? lastLoginAt,  DateTime createdAt,  DateTime updatedAt,  List<String> roles,  List<String> permissions,  ProfessionalProfile? professionalProfile,  String? avatar,  double averageRating,  int ratingsCount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name,  String email,  String? phone,  String? countryCode,  String preferredRole,  String status,  String? bio,  DateTime? emailVerifiedAt,  DateTime? phoneVerifiedAt,  DateTime? lastLoginAt,  DateTime createdAt,  DateTime updatedAt,  List<String> roles,  List<String> permissions,  String? avatar,  double averageRating,  int ratingsCount)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
-return $default(_that.id,_that.name,_that.email,_that.phone,_that.countryCode,_that.preferredRole,_that.status,_that.bio,_that.emailVerifiedAt,_that.phoneVerifiedAt,_that.lastLoginAt,_that.createdAt,_that.updatedAt,_that.roles,_that.permissions,_that.professionalProfile,_that.avatar,_that.averageRating,_that.ratingsCount);case _:
+return $default(_that.id,_that.name,_that.email,_that.phone,_that.countryCode,_that.preferredRole,_that.status,_that.bio,_that.emailVerifiedAt,_that.phoneVerifiedAt,_that.lastLoginAt,_that.createdAt,_that.updatedAt,_that.roles,_that.permissions,_that.avatar,_that.averageRating,_that.ratingsCount);case _:
   return orElse();
 
 }
@@ -192,10 +191,10 @@ return $default(_that.id,_that.name,_that.email,_that.phone,_that.countryCode,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String email,  String? phone,  String? countryCode,  String preferredRole,  String status,  String? bio,  DateTime? emailVerifiedAt,  DateTime? phoneVerifiedAt,  DateTime? lastLoginAt,  DateTime createdAt,  DateTime updatedAt,  List<String> roles,  List<String> permissions,  ProfessionalProfile? professionalProfile,  String? avatar,  double averageRating,  int ratingsCount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name,  String email,  String? phone,  String? countryCode,  String preferredRole,  String status,  String? bio,  DateTime? emailVerifiedAt,  DateTime? phoneVerifiedAt,  DateTime? lastLoginAt,  DateTime createdAt,  DateTime updatedAt,  List<String> roles,  List<String> permissions,  String? avatar,  double averageRating,  int ratingsCount)  $default,) {final _that = this;
 switch (_that) {
 case _User():
-return $default(_that.id,_that.name,_that.email,_that.phone,_that.countryCode,_that.preferredRole,_that.status,_that.bio,_that.emailVerifiedAt,_that.phoneVerifiedAt,_that.lastLoginAt,_that.createdAt,_that.updatedAt,_that.roles,_that.permissions,_that.professionalProfile,_that.avatar,_that.averageRating,_that.ratingsCount);case _:
+return $default(_that.id,_that.name,_that.email,_that.phone,_that.countryCode,_that.preferredRole,_that.status,_that.bio,_that.emailVerifiedAt,_that.phoneVerifiedAt,_that.lastLoginAt,_that.createdAt,_that.updatedAt,_that.roles,_that.permissions,_that.avatar,_that.averageRating,_that.ratingsCount);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -212,10 +211,10 @@ return $default(_that.id,_that.name,_that.email,_that.phone,_that.countryCode,_t
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String email,  String? phone,  String? countryCode,  String preferredRole,  String status,  String? bio,  DateTime? emailVerifiedAt,  DateTime? phoneVerifiedAt,  DateTime? lastLoginAt,  DateTime createdAt,  DateTime updatedAt,  List<String> roles,  List<String> permissions,  ProfessionalProfile? professionalProfile,  String? avatar,  double averageRating,  int ratingsCount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name,  String email,  String? phone,  String? countryCode,  String preferredRole,  String status,  String? bio,  DateTime? emailVerifiedAt,  DateTime? phoneVerifiedAt,  DateTime? lastLoginAt,  DateTime createdAt,  DateTime updatedAt,  List<String> roles,  List<String> permissions,  String? avatar,  double averageRating,  int ratingsCount)?  $default,) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
-return $default(_that.id,_that.name,_that.email,_that.phone,_that.countryCode,_that.preferredRole,_that.status,_that.bio,_that.emailVerifiedAt,_that.phoneVerifiedAt,_that.lastLoginAt,_that.createdAt,_that.updatedAt,_that.roles,_that.permissions,_that.professionalProfile,_that.avatar,_that.averageRating,_that.ratingsCount);case _:
+return $default(_that.id,_that.name,_that.email,_that.phone,_that.countryCode,_that.preferredRole,_that.status,_that.bio,_that.emailVerifiedAt,_that.phoneVerifiedAt,_that.lastLoginAt,_that.createdAt,_that.updatedAt,_that.roles,_that.permissions,_that.avatar,_that.averageRating,_that.ratingsCount);case _:
   return null;
 
 }
@@ -227,7 +226,7 @@ return $default(_that.id,_that.name,_that.email,_that.phone,_that.countryCode,_t
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _User extends User {
-  const _User({required this.id, required this.name, required this.email, this.phone, this.countryCode, required this.preferredRole, required this.status, this.bio, this.emailVerifiedAt, this.phoneVerifiedAt, this.lastLoginAt, required this.createdAt, required this.updatedAt, final  List<String> roles = const [], final  List<String> permissions = const [], this.professionalProfile, this.avatar, this.averageRating = 0.0, this.ratingsCount = 0}): _roles = roles,_permissions = permissions,super._();
+  const _User({required this.id, required this.name, required this.email, this.phone, this.countryCode, required this.preferredRole, required this.status, this.bio, this.emailVerifiedAt, this.phoneVerifiedAt, this.lastLoginAt, required this.createdAt, required this.updatedAt, final  List<String> roles = const [], final  List<String> permissions = const [], this.avatar, this.averageRating = 0.0, this.ratingsCount = 0}): _roles = roles,_permissions = permissions,super._();
   factory _User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
 @override final  int id;
@@ -257,7 +256,6 @@ class _User extends User {
   return EqualUnmodifiableListView(_permissions);
 }
 
-@override final  ProfessionalProfile? professionalProfile;
 @override final  String? avatar;
 @override@JsonKey() final  double averageRating;
 @override@JsonKey() final  int ratingsCount;
@@ -275,16 +273,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.countryCode, countryCode) || other.countryCode == countryCode)&&(identical(other.preferredRole, preferredRole) || other.preferredRole == preferredRole)&&(identical(other.status, status) || other.status == status)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.emailVerifiedAt, emailVerifiedAt) || other.emailVerifiedAt == emailVerifiedAt)&&(identical(other.phoneVerifiedAt, phoneVerifiedAt) || other.phoneVerifiedAt == phoneVerifiedAt)&&(identical(other.lastLoginAt, lastLoginAt) || other.lastLoginAt == lastLoginAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&const DeepCollectionEquality().equals(other._roles, _roles)&&const DeepCollectionEquality().equals(other._permissions, _permissions)&&(identical(other.professionalProfile, professionalProfile) || other.professionalProfile == professionalProfile)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.averageRating, averageRating) || other.averageRating == averageRating)&&(identical(other.ratingsCount, ratingsCount) || other.ratingsCount == ratingsCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.countryCode, countryCode) || other.countryCode == countryCode)&&(identical(other.preferredRole, preferredRole) || other.preferredRole == preferredRole)&&(identical(other.status, status) || other.status == status)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.emailVerifiedAt, emailVerifiedAt) || other.emailVerifiedAt == emailVerifiedAt)&&(identical(other.phoneVerifiedAt, phoneVerifiedAt) || other.phoneVerifiedAt == phoneVerifiedAt)&&(identical(other.lastLoginAt, lastLoginAt) || other.lastLoginAt == lastLoginAt)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&const DeepCollectionEquality().equals(other._roles, _roles)&&const DeepCollectionEquality().equals(other._permissions, _permissions)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.averageRating, averageRating) || other.averageRating == averageRating)&&(identical(other.ratingsCount, ratingsCount) || other.ratingsCount == ratingsCount));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,name,email,phone,countryCode,preferredRole,status,bio,emailVerifiedAt,phoneVerifiedAt,lastLoginAt,createdAt,updatedAt,const DeepCollectionEquality().hash(_roles),const DeepCollectionEquality().hash(_permissions),professionalProfile,avatar,averageRating,ratingsCount]);
+int get hashCode => Object.hash(runtimeType,id,name,email,phone,countryCode,preferredRole,status,bio,emailVerifiedAt,phoneVerifiedAt,lastLoginAt,createdAt,updatedAt,const DeepCollectionEquality().hash(_roles),const DeepCollectionEquality().hash(_permissions),avatar,averageRating,ratingsCount);
 
 @override
 String toString() {
-  return 'User(id: $id, name: $name, email: $email, phone: $phone, countryCode: $countryCode, preferredRole: $preferredRole, status: $status, bio: $bio, emailVerifiedAt: $emailVerifiedAt, phoneVerifiedAt: $phoneVerifiedAt, lastLoginAt: $lastLoginAt, createdAt: $createdAt, updatedAt: $updatedAt, roles: $roles, permissions: $permissions, professionalProfile: $professionalProfile, avatar: $avatar, averageRating: $averageRating, ratingsCount: $ratingsCount)';
+  return 'User(id: $id, name: $name, email: $email, phone: $phone, countryCode: $countryCode, preferredRole: $preferredRole, status: $status, bio: $bio, emailVerifiedAt: $emailVerifiedAt, phoneVerifiedAt: $phoneVerifiedAt, lastLoginAt: $lastLoginAt, createdAt: $createdAt, updatedAt: $updatedAt, roles: $roles, permissions: $permissions, avatar: $avatar, averageRating: $averageRating, ratingsCount: $ratingsCount)';
 }
 
 
@@ -295,7 +293,7 @@ abstract mixin class _$UserCopyWith<$Res> implements $UserCopyWith<$Res> {
   factory _$UserCopyWith(_User value, $Res Function(_User) _then) = __$UserCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String name, String email, String? phone, String? countryCode, String preferredRole, String status, String? bio, DateTime? emailVerifiedAt, DateTime? phoneVerifiedAt, DateTime? lastLoginAt, DateTime createdAt, DateTime updatedAt, List<String> roles, List<String> permissions, ProfessionalProfile? professionalProfile, String? avatar, double averageRating, int ratingsCount
+ int id, String name, String email, String? phone, String? countryCode, String preferredRole, String status, String? bio, DateTime? emailVerifiedAt, DateTime? phoneVerifiedAt, DateTime? lastLoginAt, DateTime createdAt, DateTime updatedAt, List<String> roles, List<String> permissions, String? avatar, double averageRating, int ratingsCount
 });
 
 
@@ -312,7 +310,7 @@ class __$UserCopyWithImpl<$Res>
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? email = null,Object? phone = freezed,Object? countryCode = freezed,Object? preferredRole = null,Object? status = null,Object? bio = freezed,Object? emailVerifiedAt = freezed,Object? phoneVerifiedAt = freezed,Object? lastLoginAt = freezed,Object? createdAt = null,Object? updatedAt = null,Object? roles = null,Object? permissions = null,Object? professionalProfile = freezed,Object? avatar = freezed,Object? averageRating = null,Object? ratingsCount = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? email = null,Object? phone = freezed,Object? countryCode = freezed,Object? preferredRole = null,Object? status = null,Object? bio = freezed,Object? emailVerifiedAt = freezed,Object? phoneVerifiedAt = freezed,Object? lastLoginAt = freezed,Object? createdAt = null,Object? updatedAt = null,Object? roles = null,Object? permissions = null,Object? avatar = freezed,Object? averageRating = null,Object? ratingsCount = null,}) {
   return _then(_User(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -329,8 +327,7 @@ as DateTime?,createdAt: null == createdAt ? _self.createdAt : createdAt // ignor
 as DateTime,updatedAt: null == updatedAt ? _self.updatedAt : updatedAt // ignore: cast_nullable_to_non_nullable
 as DateTime,roles: null == roles ? _self._roles : roles // ignore: cast_nullable_to_non_nullable
 as List<String>,permissions: null == permissions ? _self._permissions : permissions // ignore: cast_nullable_to_non_nullable
-as List<String>,professionalProfile: freezed == professionalProfile ? _self.professionalProfile : professionalProfile // ignore: cast_nullable_to_non_nullable
-as ProfessionalProfile?,avatar: freezed == avatar ? _self.avatar : avatar // ignore: cast_nullable_to_non_nullable
+as List<String>,avatar: freezed == avatar ? _self.avatar : avatar // ignore: cast_nullable_to_non_nullable
 as String?,averageRating: null == averageRating ? _self.averageRating : averageRating // ignore: cast_nullable_to_non_nullable
 as double,ratingsCount: null == ratingsCount ? _self.ratingsCount : ratingsCount // ignore: cast_nullable_to_non_nullable
 as int,

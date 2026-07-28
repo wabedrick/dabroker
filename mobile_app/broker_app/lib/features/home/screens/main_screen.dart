@@ -1,5 +1,5 @@
 import 'package:broker_app/features/lodgings/screens/lodging_list_screen.dart';
-import 'package:broker_app/features/professionals/screens/professional_list_screen.dart';
+
 import 'package:broker_app/features/profile/screens/profile_screen.dart';
 import 'package:broker_app/features/properties/screens/home_screen.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +17,6 @@ class _MainScreenState extends State<MainScreen> {
   final _screens = const [
     HomeScreen(),
     LodgingListScreen(),
-    ProfessionalListScreen(),
     ProfileScreen(),
   ];
 
@@ -39,11 +38,7 @@ class _MainScreenState extends State<MainScreen> {
             selectedIcon: Icon(Icons.hotel),
             label: 'Lodgings',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.work_outline),
-            selectedIcon: Icon(Icons.work),
-            label: 'Pros',
-          ),
+
           NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),

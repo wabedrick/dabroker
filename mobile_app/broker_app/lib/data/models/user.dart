@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:broker_app/data/models/professional_profile.dart';
+
 
 part 'user.freezed.dart';
 part 'user.g.dart';
@@ -25,7 +25,7 @@ abstract class User with _$User {
     required DateTime updatedAt,
     @Default([]) List<String> roles,
     @Default([]) List<String> permissions,
-    ProfessionalProfile? professionalProfile,
+
     String? avatar,
     @Default(0.0) double averageRating,
     @Default(0) int ratingsCount,

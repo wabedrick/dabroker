@@ -147,10 +147,6 @@ class User extends Authenticatable implements HasMedia
         return $this->hasMany(PropertyInquiry::class, 'sender_id');
     }
 
-    public function professionalProfile()
-    {
-        return $this->hasOne(ProfessionalProfile::class);
-    }
 
     public function registerMediaCollections(): void
     {

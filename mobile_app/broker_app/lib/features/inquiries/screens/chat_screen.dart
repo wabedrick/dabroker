@@ -1,6 +1,6 @@
 import 'package:broker_app/data/models/inquiry.dart';
 import 'package:broker_app/features/auth/providers/auth_provider.dart';
-import 'package:broker_app/features/inquiries/repositories/consultation_repository.dart';
+
 import 'package:broker_app/features/inquiries/repositories/inquiry_repository.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -238,28 +238,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Add "Make Program" button for professionals
-                  if (_inquiry != null &&
-                      ref.read(authStateProvider).user?.professionalProfile !=
-                          null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            // Navigate to create consultation screen
-                            // For now, show a dialog or placeholder
-                            _showScheduleConsultationDialog(context);
-                          },
-                          icon: const Icon(Icons.calendar_today, size: 16),
-                          label: const Text('Schedule Consultation'),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                          ),
-                        ),
-                      ),
-                    ),
+
                   Row(
                     children: [
                       Expanded(
@@ -298,126 +277,5 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     );
   }
 
-  void _showScheduleConsultationDialog(BuildContext context) {
-    final dateController = TextEditingController();
-    final timeController = TextEditingController();
-    final notesController = TextEditingController();
-    DateTime? selectedDate;
-    TimeOfDay? selectedTime;
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Schedule Consultation'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: dateController,
-              decoration: const InputDecoration(
-                labelText: 'Date',
-                suffixIcon: Icon(Icons.calendar_today),
-              ),
-              readOnly: true,
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now().add(const Duration(days: 1)),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
-                );
-                if (date != null && context.mounted) {
-                  selectedDate = date;
-                  dateController.text = DateFormat('yyyy-MM-dd').format(date);
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: timeController,
-              decoration: const InputDecoration(
-                labelText: 'Time',
-                suffixIcon: Icon(Icons.access_time),
-              ),
-              readOnly: true,
-              onTap: () async {
-                final time = await showTimePicker(
-                  context: context,
-                  initialTime: const TimeOfDay(hour: 9, minute: 0),
-                );
-                if (time != null && context.mounted) {
-                  selectedTime = time;
-                  timeController.text = time.format(context);
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: notesController,
-              decoration: const InputDecoration(labelText: 'Notes (Optional)'),
-              maxLines: 2,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (selectedDate == null || selectedTime == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please select date and time')),
-                );
-                return;
-              }
-
-              final scheduledAt = DateTime(
-                selectedDate!.year,
-                selectedDate!.month,
-                selectedDate!.day,
-                selectedTime!.hour,
-                selectedTime!.minute,
-              );
-
-              try {
-                // Call repository to create consultation
-                final currentUser = ref.read(authStateProvider).user;
-                final otherUserId = _inquiry!.sender?.id == currentUser?.id
-                    ? _inquiry!.owner?.id
-                    : _inquiry!.sender?.id;
-
-                if (otherUserId == null) {
-                  throw 'Could not determine client ID';
-                }
-
-                await ref
-                    .read(consultationRepositoryProvider)
-                    .createConsultation(
-                      userId: otherUserId,
-                      scheduledAt: scheduledAt,
-                      notes: notesController.text.trim(),
-                    );
-
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Consultation scheduled!')),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('Error: $e')));
-                }
-              }
-            },
-            child: const Text('Schedule'),
-          ),
-        ],
-      ),
-    );
-  }
 }

@@ -44,6 +44,12 @@ abstract class LodgingApiClient {
     @Part(name: "file") File file,
   );
 
+  @DELETE('/host/lodgings/{id}/media/{mediaId}')
+  Future<void> deleteLodgingMedia(
+    @Path('id') String id,
+    @Path('mediaId') String mediaId,
+  );
+
   @DELETE('/host/lodgings/{id}')
   Future<void> deleteLodging(@Path('id') String id);
 

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:broker_app/core/utils/image_helper.dart';
 import 'package:broker_app/core/widgets/location_picker_screen.dart';
 import 'package:broker_app/data/models/lodging.dart';
 import 'package:broker_app/features/lodgings/providers/lodging_management_provider.dart';
@@ -37,6 +38,8 @@ class _AddLodgingScreenState extends ConsumerState<AddLodgingScreen> {
   String _type = 'hotel';
   String _currency = 'USD';
   final List<File> _selectedImages = [];
+  final List<LodgingMedia> _existingImages = [];
+  final List<String> _deletedImageIds = [];
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -56,6 +59,9 @@ class _AddLodgingScreenState extends ConsumerState<AddLodgingScreen> {
       _longitudeController.text = l.longitude?.toString() ?? '';
       _type = l.type ?? 'hotel';
       _currency = l.currency ?? 'USD';
+      if (l.media != null) {
+        _existingImages.addAll(l.media!);
+      }
     } else {
       _totalRoomsController.text = '1';
     }
@@ -73,6 +79,15 @@ class _AddLodgingScreenState extends ConsumerState<AddLodgingScreen> {
   void _removeImage(int index) {
     setState(() {
       _selectedImages.removeAt(index);
+    });
+  }
+
+  void _removeExistingImage(int index) {
+    setState(() {
+      final image = _existingImages.removeAt(index);
+      if (image.id != null) {
+        _deletedImageIds.add(image.id!.toString());
+      }
     });
   }
 
@@ -196,6 +211,7 @@ class _AddLodgingScreenState extends ConsumerState<AddLodgingScreen> {
         widget.lodging!.id,
         data,
         newImages: _selectedImages,
+        deletedImageIds: _deletedImageIds,
       );
     } else {
       success = await notifier.createLodging(data, images: _selectedImages);
@@ -270,6 +286,43 @@ class _AddLodgingScreenState extends ConsumerState<AddLodgingScreen> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
+                    ..._existingImages.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final image = entry.value;
+                      return Stack(
+                        children: [
+                          Image.network(
+                            ImageHelper.fixUrl(image.thumbUrl ?? image.url ?? ''),
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 100,
+                                height: 100,
+                                color: Colors.grey[300],
+                                child: const Icon(Icons.broken_image),
+                              );
+                            },
+                          ),
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: GestureDetector(
+                              onTap: () => _removeExistingImage(index),
+                              child: Container(
+                                color: Colors.black54,
+                                child: const Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
                     ..._selectedImages.asMap().entries.map((entry) {
                       final index = entry.key;
                       final file = entry.value;

@@ -49,11 +49,6 @@ _User _$UserFromJson(Map<String, dynamic> json) => _User(
           ?.map((e) => e as String)
           .toList() ??
       const [],
-  professionalProfile: json['professional_profile'] == null
-      ? null
-      : ProfessionalProfile.fromJson(
-          json['professional_profile'] as Map<String, dynamic>,
-        ),
   avatar: json['avatar'] as String?,
   averageRating: (json['average_rating'] as num?)?.toDouble() ?? 0.0,
   ratingsCount: (json['ratings_count'] as num?)?.toInt() ?? 0,
@@ -75,7 +70,6 @@ Map<String, dynamic> _$UserToJson(_User instance) => <String, dynamic>{
   'updated_at': instance.updatedAt.toIso8601String(),
   'roles': instance.roles,
   'permissions': instance.permissions,
-  'professional_profile': instance.professionalProfile?.toJson(),
   'avatar': instance.avatar,
   'average_rating': instance.averageRating,
   'ratings_count': instance.ratingsCount,

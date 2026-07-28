@@ -32,6 +32,11 @@ abstract class PropertyApiClient {
   @DELETE('/favorites/properties/{id}')
   Future<void> unfavoriteProperty(@Path('id') String propertyId);
 
+  @GET('/owner/properties')
+  Future<PropertyListResponse> fetchOwnerProperties(
+    @Queries() Map<String, dynamic> queries,
+  );
+
   @POST('/owner/properties')
   Future<dynamic> createPropertyRaw(@Body() Map<String, dynamic> body);
 

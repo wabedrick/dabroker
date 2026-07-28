@@ -40,7 +40,7 @@ class PropertyListState {
     this.hasMore = true,
     this.currentPage = 1,
     this.error,
-    this.params = const PropertyQueryParams(),
+    this.params = const PropertyQueryParams(category: 'rent'),
   });
 
   PropertyListState copyWith({
