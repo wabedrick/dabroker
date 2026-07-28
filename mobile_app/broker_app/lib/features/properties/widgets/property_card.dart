@@ -61,6 +61,28 @@ class PropertyCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                if (property.type != null)
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        _formatType(property.type!),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ),
+                  ),
               ],
             ),
             Padding(
@@ -163,6 +185,11 @@ class PropertyCard extends StatelessWidget {
     if ((city?.isEmpty ?? true) && (state?.isEmpty ?? true)) return null;
     if (city != null && state != null) return '$city, $state';
     return city ?? state;
+  }
+
+  String _formatType(String type) {
+    if (type == 'bank_property') return 'BANK PROPERTY';
+    return type.toUpperCase();
   }
 }
 

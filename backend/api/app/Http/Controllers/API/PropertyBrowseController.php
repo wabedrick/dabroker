@@ -136,7 +136,11 @@ class PropertyBrowseController extends Controller
         $builder->whereBetween('latitude', [$lat - $degreeRadius, $lat + $degreeRadius])
             ->whereBetween('longitude', [$lng - $degreeRadius, $lng + $degreeRadius]);
 
-        $haversine = "( 6371 * acos( cos( radians(?) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(?) ) + sin( radians(?) ) * sin( radians( latitude ) ) ) )";
+        $driver = $builder->getConnection()->getDriverName();
+        $least = $driver === 'sqlite' ? 'min' : 'least';
+        $greatest = $driver === 'sqlite' ? 'max' : 'greatest';
+
+        $haversine = "( 6371 * acos( {$least}(1.0, {$greatest}(-1.0, cos( radians(?) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(?) ) + sin( radians(?) ) * sin( radians( latitude ) ) )) ) )";
 
         if (empty($builder->getQuery()->columns)) {
             $builder->select('properties.*');

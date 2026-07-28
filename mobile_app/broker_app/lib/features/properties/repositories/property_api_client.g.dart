@@ -48,12 +48,12 @@ class _PropertyApiClient implements PropertyApiClient {
   }
 
   @override
-  Future<Property> fetchPropertyDetail(String id) async {
+  Future<dynamic> fetchPropertyDetailRaw(String id) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<Property>(
+    final _options = _setStreamType<dynamic>(
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
@@ -63,14 +63,8 @@ class _PropertyApiClient implements PropertyApiClient {
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
-    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late Property _value;
-    try {
-      _value = Property.fromJson(_result.data!);
-    } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options);
-      rethrow;
-    }
+    final _result = await _dio.fetch(_options);
+    final _value = _result.data;
     return _value;
   }
 
@@ -136,13 +130,13 @@ class _PropertyApiClient implements PropertyApiClient {
   }
 
   @override
-  Future<Property> createProperty(Map<String, dynamic> body) async {
+  Future<dynamic> createPropertyRaw(Map<String, dynamic> body) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(body);
-    final _options = _setStreamType<Property>(
+    final _options = _setStreamType<dynamic>(
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
@@ -152,14 +146,8 @@ class _PropertyApiClient implements PropertyApiClient {
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
-    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late Property _value;
-    try {
-      _value = Property.fromJson(_result.data!);
-    } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options);
-      rethrow;
-    }
+    final _result = await _dio.fetch(_options);
+    final _value = _result.data;
     return _value;
   }
 
@@ -216,13 +204,16 @@ class _PropertyApiClient implements PropertyApiClient {
   }
 
   @override
-  Future<Property> updateProperty(String id, Map<String, dynamic> body) async {
+  Future<dynamic> updatePropertyRaw(
+    String id,
+    Map<String, dynamic> body,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(body);
-    final _options = _setStreamType<Property>(
+    final _options = _setStreamType<dynamic>(
       Options(method: 'PUT', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
@@ -232,14 +223,8 @@ class _PropertyApiClient implements PropertyApiClient {
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
-    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late Property _value;
-    try {
-      _value = Property.fromJson(_result.data!);
-    } on Object catch (e, s) {
-      errorLogger?.logError(e, s, _options);
-      rethrow;
-    }
+    final _result = await _dio.fetch(_options);
+    final _value = _result.data;
     return _value;
   }
 

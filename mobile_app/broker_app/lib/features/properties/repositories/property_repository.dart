@@ -32,7 +32,8 @@ class PropertyRepository {
 
   Future<Property> fetchPropertyDetail(String id) async {
     try {
-      return await _apiClient.fetchPropertyDetail(id);
+      final response = await _apiClient.fetchPropertyDetailRaw(id);
+      return Property.fromJson(response['data'] as Map<String, dynamic>);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }
@@ -67,7 +68,8 @@ class PropertyRepository {
 
   Future<Property> createProperty(Map<String, dynamic> data) async {
     try {
-      return await _apiClient.createProperty(data);
+      final response = await _apiClient.createPropertyRaw(data);
+      return Property.fromJson(response['data'] as Map<String, dynamic>);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }
@@ -91,7 +93,8 @@ class PropertyRepository {
 
   Future<Property> updateProperty(String id, Map<String, dynamic> data) async {
     try {
-      return await _apiClient.updateProperty(id, data);
+      final response = await _apiClient.updatePropertyRaw(id, data);
+      return Property.fromJson(response['data'] as Map<String, dynamic>);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }

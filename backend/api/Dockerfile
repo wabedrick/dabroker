@@ -22,3 +22,7 @@ RUN php artisan storage:link
 
 # Optimization should happen at runtime, not build time, since DO injects env variables at runtime.
 # We skip config:cache in the Dockerfile.
+
+# Run migrations automatically on every deployment before the server starts.
+# --force skips the "are you sure?" prompt in production environments.
+CMD php artisan migrate --force && php artisan config:cache && /start.sh

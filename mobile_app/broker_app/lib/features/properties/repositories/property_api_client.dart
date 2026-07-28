@@ -18,7 +18,7 @@ abstract class PropertyApiClient {
   );
 
   @GET('/properties/{id}')
-  Future<Property> fetchPropertyDetail(@Path('id') String id);
+  Future<dynamic> fetchPropertyDetailRaw(@Path('id') String id);
 
   @POST('/properties/{id}/contact')
   Future<void> contactOwner(
@@ -33,7 +33,7 @@ abstract class PropertyApiClient {
   Future<void> unfavoriteProperty(@Path('id') String propertyId);
 
   @POST('/owner/properties')
-  Future<Property> createProperty(@Body() Map<String, dynamic> body);
+  Future<dynamic> createPropertyRaw(@Body() Map<String, dynamic> body);
 
   @POST('/owner/properties/{id}/media')
   @MultiPart()
@@ -49,7 +49,7 @@ abstract class PropertyApiClient {
   );
 
   @PUT('/owner/properties/{id}')
-  Future<Property> updateProperty(
+  Future<dynamic> updatePropertyRaw(
     @Path('id') String id,
     @Body() Map<String, dynamic> body,
   );

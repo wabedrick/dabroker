@@ -1,0 +1,415 @@
+﻿{
+    "data":  [
+                 {
+                     "id":  "5be2b514-82b7-4396-9a2a-8db97ea483ec",
+                     "title":  "High Hill Apartments",
+                     "slug":  "high-hill-apartments-7f8ot4",
+                     "type":  "apartment",
+                     "category":  "rent",
+                     "status":  "approved",
+                     "is_available":  true,
+                     "price":  "300000.00",
+                     "currency":  "UGX",
+                     "size":  null,
+                     "size_unit":  null,
+                     "house_age":  null,
+                     "address":  null,
+                     "city":  "Kayunga, Wakiso",
+                     "state":  null,
+                     "country":  "Uganda",
+                     "postal_code":  null,
+                     "latitude":  "0.3958121",
+                     "longitude":  "32.4904170",
+                     "amenities":  [
+
+                                   ],
+                     "metadata":  [
+
+                                  ],
+                     "description":  "Wonderful place for your living",
+                     "published_at":  "2026-07-27T12:44:43.000000Z",
+                     "approved_at":  "2026-07-27T12:44:43.000000Z",
+                     "approved_by":  1,
+                     "rejection_reason":  null,
+                     "available_from":  null,
+                     "video_url":  null,
+                     "virtual_tour_url":  null,
+                     "nearby_places":  [
+
+                                       ],
+                     "verified_at":  null,
+                     "is_verified":  false,
+                     "owner":  {
+                                   "id":  1,
+                                   "name":  "Demo Admin",
+                                   "preferred_role":  "admin"
+                               },
+                     "approver":  null,
+                     "gallery":  [
+                                     {
+                                         "id":  "c5e31292-e147-4368-ba59-853021051b19",
+                                         "name":  "IMG-20260718-WA0024",
+                                         "caption":  null,
+                                         "url":  "https://daborker-jacei.ondigitalocean.app/storage/10/f577effe-9a1b-453f-aee7-24f8a95447bb.jpg",
+                                         "thumbnail_url":  "https://daborker-jacei.ondigitalocean.app/storage/10/f577effe-9a1b-453f-aee7-24f8a95447bb.jpg",
+                                         "preview_url":  "https://daborker-jacei.ondigitalocean.app/storage/10/f577effe-9a1b-453f-aee7-24f8a95447bb.jpg",
+                                         "responsive_images":  [
+
+                                                               ],
+                                         "created_at":  "2026-07-27T12:51:53.000000Z"
+                                     },
+                                     {
+                                         "id":  "bd5d6e4a-b0e4-48ff-bfbd-fcc275254ae1",
+                                         "name":  "IMG-20260718-WA0013",
+                                         "caption":  null,
+                                         "url":  "https://daborker-jacei.ondigitalocean.app/storage/11/d738372b-4390-462c-845b-30908f99b794.jpg",
+                                         "thumbnail_url":  "https://daborker-jacei.ondigitalocean.app/storage/11/d738372b-4390-462c-845b-30908f99b794.jpg",
+                                         "preview_url":  "https://daborker-jacei.ondigitalocean.app/storage/11/d738372b-4390-462c-845b-30908f99b794.jpg",
+                                         "responsive_images":  [
+
+                                                               ],
+                                         "created_at":  "2026-07-27T12:51:57.000000Z"
+                                     }
+                                 ],
+                     "is_favorited":  false,
+                     "created_at":  "2026-07-27T12:17:40.000000Z",
+                     "updated_at":  "2026-07-27T12:49:31.000000Z",
+                     "deleted_at":  null
+                 },
+                 {
+                     "id":  "c42e91f7-e700-4798-a73a-725366bcd4b5",
+                     "title":  "Flat top",
+                     "slug":  "flat-top-pel3hq",
+                     "type":  "apartment",
+                     "category":  "rent",
+                     "status":  "approved",
+                     "is_available":  true,
+                     "price":  "500000.00",
+                     "currency":  "UGX",
+                     "size":  null,
+                     "size_unit":  null,
+                     "house_age":  null,
+                     "address":  "Kayunga",
+                     "city":  "Wakiso",
+                     "state":  null,
+                     "country":  "Uganda",
+                     "postal_code":  null,
+                     "latitude":  "0.3958121",
+                     "longitude":  "32.4904170",
+                     "amenities":  [
+
+                                   ],
+                     "metadata":  [
+
+                                  ],
+                     "description":  "That amount is the monthly subscription",
+                     "published_at":  "2026-07-27T10:20:02.000000Z",
+                     "approved_at":  "2026-07-27T10:20:02.000000Z",
+                     "approved_by":  1,
+                     "rejection_reason":  null,
+                     "available_from":  null,
+                     "video_url":  null,
+                     "virtual_tour_url":  null,
+                     "nearby_places":  [
+
+                                       ],
+                     "verified_at":  null,
+                     "is_verified":  false,
+                     "owner":  {
+                                   "id":  1,
+                                   "name":  "Demo Admin",
+                                   "preferred_role":  "admin"
+                               },
+                     "approver":  null,
+                     "gallery":  [
+                                     {
+                                         "id":  "c1d08c4d-52cf-4be5-a435-7be512fa7026",
+                                         "name":  "IMG-20260726-WA0000",
+                                         "caption":  null,
+                                         "url":  "https://daborker-jacei.ondigitalocean.app/storage/12/c3482817-11ac-4a3d-a92b-ea7e359ca264.jpg",
+                                         "thumbnail_url":  "https://daborker-jacei.ondigitalocean.app/storage/12/c3482817-11ac-4a3d-a92b-ea7e359ca264.jpg",
+                                         "preview_url":  "https://daborker-jacei.ondigitalocean.app/storage/12/c3482817-11ac-4a3d-a92b-ea7e359ca264.jpg",
+                                         "responsive_images":  [
+
+                                                               ],
+                                         "created_at":  "2026-07-27T12:55:39.000000Z"
+                                     },
+                                     {
+                                         "id":  "a9853e1e-00ea-42b3-9339-b7b86bb2ad14",
+                                         "name":  "IMG-20260727-WA0001",
+                                         "caption":  null,
+                                         "url":  "https://daborker-jacei.ondigitalocean.app/storage/13/d7ddfc8a-09dc-4e76-8e40-fa015b48c56c.jpg",
+                                         "thumbnail_url":  "https://daborker-jacei.ondigitalocean.app/storage/13/d7ddfc8a-09dc-4e76-8e40-fa015b48c56c.jpg",
+                                         "preview_url":  "https://daborker-jacei.ondigitalocean.app/storage/13/d7ddfc8a-09dc-4e76-8e40-fa015b48c56c.jpg",
+                                         "responsive_images":  [
+
+                                                               ],
+                                         "created_at":  "2026-07-27T12:55:45.000000Z"
+                                     }
+                                 ],
+                     "is_favorited":  false,
+                     "created_at":  "2026-07-27T09:53:23.000000Z",
+                     "updated_at":  "2026-07-27T10:20:02.000000Z",
+                     "deleted_at":  null
+                 },
+                 {
+                     "id":  "935a7dba-d05b-4754-9a2f-9cf6163b01cd",
+                     "title":  "Hilltop Serviced Plot",
+                     "slug":  "veniam-quia-q5fyt0",
+                     "type":  "land",
+                     "category":  "bungalow",
+                     "status":  "approved",
+                     "is_available":  true,
+                     "price":  "120000.00",
+                     "currency":  "UGX",
+                     "size":  "507.00",
+                     "size_unit":  "sqm",
+                     "house_age":  4,
+                     "address":  "649 Luettgen Hills",
+                     "city":  "Jinja",
+                     "state":  "Eastern Region",
+                     "country":  "Uganda",
+                     "postal_code":  "37999-4643",
+                     "latitude":  "-36.7216350",
+                     "longitude":  "-141.6565440",
+                     "amenities":  [
+                                       "water",
+                                       "power",
+                                       "road_access"
+                                   ],
+                     "metadata":  {
+                                      "listing_source":  "factory"
+                                  },
+                     "description":  "Serviced plot with panoramic views ideal for quick development projects.",
+                     "published_at":  "2026-07-24T20:39:42.000000Z",
+                     "approved_at":  "2026-07-24T20:39:42.000000Z",
+                     "approved_by":  null,
+                     "rejection_reason":  null,
+                     "available_from":  null,
+                     "video_url":  null,
+                     "virtual_tour_url":  null,
+                     "nearby_places":  [
+
+                                       ],
+                     "verified_at":  null,
+                     "is_verified":  false,
+                     "owner":  {
+                                   "id":  2,
+                                   "name":  "Demo Host",
+                                   "preferred_role":  "host"
+                               },
+                     "approver":  null,
+                     "gallery":  [
+                                     {
+                                         "id":  null,
+                                         "name":  "photo-1500382017468-9049fed747ef",
+                                         "caption":  null,
+                                         "url":  "https://daborker-jacei.ondigitalocean.app/storage/5/photo-1500382017468-9049fed747ef.jpeg",
+                                         "thumbnail_url":  "https://daborker-jacei.ondigitalocean.app/storage/5/photo-1500382017468-9049fed747ef.jpeg",
+                                         "preview_url":  "https://daborker-jacei.ondigitalocean.app/storage/5/photo-1500382017468-9049fed747ef.jpeg",
+                                         "responsive_images":  [
+
+                                                               ],
+                                         "created_at":  "2026-07-24T20:39:58.000000Z"
+                                     }
+                                 ],
+                     "is_favorited":  false,
+                     "created_at":  "2026-07-24T20:39:45.000000Z",
+                     "updated_at":  "2026-07-24T20:39:45.000000Z",
+                     "deleted_at":  null
+                 },
+                 {
+                     "id":  "99f51066-4c40-48a0-856b-f20bf8be42e9",
+                     "title":  "Lakeside Executive Apartment",
+                     "slug":  "accusamus-tenetur-suscipit-h1v5g8",
+                     "type":  "house",
+                     "category":  "apartment",
+                     "status":  "approved",
+                     "is_available":  true,
+                     "price":  "450000.00",
+                     "currency":  "UGX",
+                     "size":  "107.00",
+                     "size_unit":  "sqm",
+                     "house_age":  14,
+                     "address":  "583 Boehm Views",
+                     "city":  "Kampala",
+                     "state":  "Central Region",
+                     "country":  "Uganda",
+                     "postal_code":  "27666-6011",
+                     "latitude":  "-22.2692010",
+                     "longitude":  "-148.6967000",
+                     "amenities":  [
+                                       "wifi",
+                                       "parking",
+                                       "pool",
+                                       "security"
+                                   ],
+                     "metadata":  {
+                                      "listing_source":  "factory"
+                                  },
+                     "description":  "Fully furnished three bedroom apartment overlooking Lake Victoria with premium amenities.",
+                     "published_at":  "2026-07-24T20:39:42.000000Z",
+                     "approved_at":  "2026-07-24T20:39:42.000000Z",
+                     "approved_by":  null,
+                     "rejection_reason":  null,
+                     "available_from":  null,
+                     "video_url":  null,
+                     "virtual_tour_url":  null,
+                     "nearby_places":  [
+
+                                       ],
+                     "verified_at":  null,
+                     "is_verified":  false,
+                     "owner":  {
+                                   "id":  2,
+                                   "name":  "Demo Host",
+                                   "preferred_role":  "host"
+                               },
+                     "approver":  null,
+                     "gallery":  [
+                                     {
+                                         "id":  null,
+                                         "name":  "photo-1568605114967-8130f3a36994",
+                                         "caption":  null,
+                                         "url":  "https://daborker-jacei.ondigitalocean.app/storage/1/photo-1568605114967-8130f3a36994.jpeg",
+                                         "thumbnail_url":  "https://daborker-jacei.ondigitalocean.app/storage/1/photo-1568605114967-8130f3a36994.jpeg",
+                                         "preview_url":  "https://daborker-jacei.ondigitalocean.app/storage/1/photo-1568605114967-8130f3a36994.jpeg",
+                                         "responsive_images":  [
+
+                                                               ],
+                                         "created_at":  "2026-07-24T20:39:48.000000Z"
+                                     },
+                                     {
+                                         "id":  null,
+                                         "name":  "photo-1522708323590-d24dbb6b0267",
+                                         "caption":  null,
+                                         "url":  "https://daborker-jacei.ondigitalocean.app/storage/2/photo-1522708323590-d24dbb6b0267.jpeg",
+                                         "thumbnail_url":  "https://daborker-jacei.ondigitalocean.app/storage/2/photo-1522708323590-d24dbb6b0267.jpeg",
+                                         "preview_url":  "https://daborker-jacei.ondigitalocean.app/storage/2/photo-1522708323590-d24dbb6b0267.jpeg",
+                                         "responsive_images":  [
+
+                                                               ],
+                                         "created_at":  "2026-07-24T20:39:52.000000Z"
+                                     }
+                                 ],
+                     "is_favorited":  false,
+                     "created_at":  "2026-07-24T20:39:44.000000Z",
+                     "updated_at":  "2026-07-24T20:39:44.000000Z",
+                     "deleted_at":  null
+                 },
+                 {
+                     "id":  "2abe2f84-61aa-4484-b1aa-e65136274b30",
+                     "title":  "Garden Estate Family Home",
+                     "slug":  "eum-quod-omnis-a5lnqw",
+                     "type":  "house",
+                     "category":  "estate",
+                     "status":  "approved",
+                     "is_available":  true,
+                     "price":  "380000.00",
+                     "currency":  "UGX",
+                     "size":  "468.00",
+                     "size_unit":  "sqm",
+                     "house_age":  19,
+                     "address":  "267 Adams Glen",
+                     "city":  "Entebbe",
+                     "state":  "Central Region",
+                     "country":  "Uganda",
+                     "postal_code":  "52056",
+                     "latitude":  "19.8216130",
+                     "longitude":  "171.6278460",
+                     "amenities":  [
+                                       "wifi",
+                                       "parking",
+                                       "water",
+                                       "solar"
+                                   ],
+                     "metadata":  {
+                                      "listing_source":  "factory"
+                                  },
+                     "description":  "Spacious standalone home with mature gardens, perfect for families and long stays.",
+                     "published_at":  "2026-07-24T20:39:42.000000Z",
+                     "approved_at":  "2026-07-24T20:39:42.000000Z",
+                     "approved_by":  null,
+                     "rejection_reason":  null,
+                     "available_from":  null,
+                     "video_url":  null,
+                     "virtual_tour_url":  null,
+                     "nearby_places":  [
+
+                                       ],
+                     "verified_at":  null,
+                     "is_verified":  false,
+                     "owner":  {
+                                   "id":  2,
+                                   "name":  "Demo Host",
+                                   "preferred_role":  "host"
+                               },
+                     "approver":  null,
+                     "gallery":  [
+                                     {
+                                         "id":  null,
+                                         "name":  "photo-1522708323590-d24dbb6b0267",
+                                         "caption":  null,
+                                         "url":  "https://daborker-jacei.ondigitalocean.app/storage/3/photo-1522708323590-d24dbb6b0267.jpeg",
+                                         "thumbnail_url":  "https://daborker-jacei.ondigitalocean.app/storage/3/photo-1522708323590-d24dbb6b0267.jpeg",
+                                         "preview_url":  "https://daborker-jacei.ondigitalocean.app/storage/3/photo-1522708323590-d24dbb6b0267.jpeg",
+                                         "responsive_images":  [
+
+                                                               ],
+                                         "created_at":  "2026-07-24T20:39:54.000000Z"
+                                     },
+                                     {
+                                         "id":  null,
+                                         "name":  "photo-1500382017468-9049fed747ef",
+                                         "caption":  null,
+                                         "url":  "https://daborker-jacei.ondigitalocean.app/storage/4/photo-1500382017468-9049fed747ef.jpeg",
+                                         "thumbnail_url":  "https://daborker-jacei.ondigitalocean.app/storage/4/photo-1500382017468-9049fed747ef.jpeg",
+                                         "preview_url":  "https://daborker-jacei.ondigitalocean.app/storage/4/photo-1500382017468-9049fed747ef.jpeg",
+                                         "responsive_images":  [
+
+                                                               ],
+                                         "created_at":  "2026-07-24T20:39:56.000000Z"
+                                     }
+                                 ],
+                     "is_favorited":  false,
+                     "created_at":  "2026-07-24T20:39:44.000000Z",
+                     "updated_at":  "2026-07-24T20:39:44.000000Z",
+                     "deleted_at":  null
+                 }
+             ],
+    "links":  {
+                  "first":  "http://daborker-jacei.ondigitalocean.app/api/v1/properties?page=1",
+                  "last":  "http://daborker-jacei.ondigitalocean.app/api/v1/properties?page=1",
+                  "prev":  null,
+                  "next":  null
+              },
+    "meta":  {
+                 "current_page":  1,
+                 "from":  1,
+                 "last_page":  1,
+                 "links":  [
+                               {
+                                   "url":  null,
+                                   "label":  "\u0026laquo; Previous",
+                                   "page":  null,
+                                   "active":  false
+                               },
+                               {
+                                   "url":  "http://daborker-jacei.ondigitalocean.app/api/v1/properties?page=1",
+                                   "label":  "1",
+                                   "page":  1,
+                                   "active":  true
+                               },
+                               {
+                                   "url":  null,
+                                   "label":  "Next \u0026raquo;",
+                                   "page":  null,
+                                   "active":  false
+                               }
+                           ],
+                 "path":  "http://daborker-jacei.ondigitalocean.app/api/v1/properties",
+                 "per_page":  15,
+                 "to":  5,
+                 "total":  5
+             }
+}

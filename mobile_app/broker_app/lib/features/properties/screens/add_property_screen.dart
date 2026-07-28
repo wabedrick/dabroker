@@ -294,6 +294,12 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                   value: 'commercial',
                   child: Text('Commercial'),
                 ),
+                DropdownMenuItem(value: 'rental', child: Text('Rental')),
+                DropdownMenuItem(value: 'hostel', child: Text('Hostel')),
+                DropdownMenuItem(
+                  value: 'bank_property',
+                  child: Text('Bank Property'),
+                ),
               ],
               onChanged: (v) => setState(() => _type = v!),
             ),

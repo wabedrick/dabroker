@@ -251,7 +251,13 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                         runSpacing: 12,
                         children: [
                           if (property.type != null)
-                            _InfoChip(label: 'Type', value: property.type!),
+                            _InfoChip(
+                              label: 'Type',
+                              value: property.type == 'bank_property'
+                                  ? 'Bank Property'
+                                  : property.type![0].toUpperCase() +
+                                      property.type!.substring(1),
+                            ),
                           if (property.category != null)
                             _InfoChip(
                               label: 'Listing Type',
