@@ -35,7 +35,9 @@ class PropertyBrowseController extends Controller
 
             $paginator->getCollection()->loadMissing(['owner:id,name,preferred_role', 'media']);
 
-            return PropertyResource::collection($paginator);
+            $response = PropertyResource::collection($paginator)->response()->getData(true);
+
+            return response()->json($response);
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => $e->getMessage(),
