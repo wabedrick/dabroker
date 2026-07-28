@@ -22,9 +22,6 @@ USER www-data
 # Install Composer dependencies for production
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
-# Create the storage symlink so public/storage maps to storage/app/public
-RUN php artisan storage:link
-
 # Use our entrypoint script which runs migrations and starts the server.
 # Optimization (config:cache, route:cache) happens at runtime so that
 # DigitalOcean's runtime environment variables are picked up correctly.
