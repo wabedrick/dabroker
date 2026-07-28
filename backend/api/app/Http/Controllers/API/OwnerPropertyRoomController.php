@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\RoomResource;
 use App\Models\Property;
 use App\Models\Room;
 use Illuminate\Http\JsonResponse;
@@ -14,12 +15,10 @@ class OwnerPropertyRoomController extends Controller
     {
         $this->authorize('view', $property);
         // Only return rooms for this property
-        return response()->json([
-            'data' => $property->rooms()->latest()->get()
-        ]);
+        return RoomResource::collection($property->rooms()->latest()->get());
     }
 
-    public function store(Request $request, Property $property): JsonResponse
+    public function store(Request $request, Property $property): RoomResource
     {
         $this->authorize('update', $property);
 
@@ -38,12 +37,10 @@ class OwnerPropertyRoomController extends Controller
             'is_available' => $validated['is_available'] ?? true,
         ]);
 
-        return response()->json([
-            'data' => $room
-        ], 201);
+        return new RoomResource($room);
     }
 
-    public function update(Request $request, Property $property, Room $room): JsonResponse
+    public function update(Request $request, Property $property, Room $room): RoomResource
     {
         $this->authorize('update', $property);
 
@@ -62,9 +59,7 @@ class OwnerPropertyRoomController extends Controller
 
         $room->update($validated);
 
-        return response()->json([
-            'data' => $room->fresh()
-        ]);
+        return new RoomResource($room->fresh());
     }
 
     public function destroy(Request $request, Property $property, Room $room): JsonResponse
