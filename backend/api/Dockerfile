@@ -1,6 +1,6 @@
 FROM serversideup/php:8.2-fpm-nginx
 
-# Switch to root to install PHP extensions
+# Switch to root to install PHP extensions and set permissions
 USER root
 RUN install-php-extensions pdo_mysql zip bcmath exif
 
@@ -8,11 +8,16 @@ RUN install-php-extensions pdo_mysql zip bcmath exif
 ENV WEB_DOCUMENT_ROOT=/var/www/html/public
 ENV PHP_OPCACHE_ENABLE=1
 
+# Copy application files (as root so we can chmod next)
+COPY --chown=www-data:www-data . /var/www/html
+
+# Explicitly set the entrypoint script executable INSIDE the image.
+# This is required because Git on Windows strips the executable bit,
+# which causes DigitalOcean App Platform to throw "run command not executable".
+RUN chmod +x /var/www/html/docker-entrypoint.sh
+
 # Switch back to www-data for security
 USER www-data
-
-# Copy application files
-COPY --chown=www-data:www-data . /var/www/html
 
 # Install Composer dependencies for production
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
@@ -20,9 +25,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progre
 # Create the storage symlink so public/storage maps to storage/app/public
 RUN php artisan storage:link
 
-# Optimization should happen at runtime, not build time, since DO injects env variables at runtime.
-# We skip config:cache in the Dockerfile.
-
-# Run migrations automatically on every deployment before the server starts.
-# --force skips the "are you sure?" prompt in production environments.
-CMD php artisan migrate --force && php artisan config:cache && /start.sh
+# Use our entrypoint script which runs migrations and starts the server.
+# Optimization (config:cache, route:cache) happens at runtime so that
+# DigitalOcean's runtime environment variables are picked up correctly.
+CMD ["/var/www/html/docker-entrypoint.sh"]
