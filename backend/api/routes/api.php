@@ -20,6 +20,7 @@ use App\Http\Controllers\API\PropertyInquiryController;
 use App\Http\Controllers\API\LodgingBrowseController;
 use App\Models\Property;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 Route::prefix('v1')->group(function (): void {
     Route::get('properties', [PropertyBrowseController::class, 'index']);
@@ -41,6 +42,16 @@ Route::prefix('v1')->group(function (): void {
     // Public professionals routes
     Route::get('professionals', [App\Http\Controllers\API\ProfessionalController::class, 'index']);
     Route::get('professionals/{user}', [App\Http\Controllers\API\ProfessionalController::class, 'show']);
+
+    Route::get('/debug-env', function () {
+        return response()->json([
+            'FILESYSTEM_DISK' => env('FILESYSTEM_DISK'),
+            'MEDIA_DISK' => env('MEDIA_DISK'),
+            'AWS_URL' => env('AWS_URL'),
+            'AWS_BUCKET' => env('AWS_BUCKET'),
+            'media_disks' => DB::table('media')->select('id', 'disk')->get(),
+        ]);
+    });
 
     Route::get('ratings', [App\Http\Controllers\API\RatingController::class, 'index']);
 
