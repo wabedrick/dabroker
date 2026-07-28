@@ -58,7 +58,7 @@ class OwnerPropertyMediaController extends Controller
             'name' => $media->name,
             'caption' => $media->getCustomProperty('caption'),
             'url' => $media->getFullUrl(),
-            'thumbnail_url' => $media->hasGeneratedConversion('thumb') ? $media->getFullUrl('thumb') : $media->getFullUrl(),
+            'thumbnail_url' => $media->getFullUrl(),
         ];
     }
 }

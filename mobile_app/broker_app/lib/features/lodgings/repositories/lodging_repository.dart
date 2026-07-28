@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:broker_app/core/utils/api_error_handler.dart';
 import 'package:broker_app/data/models/lodging.dart';
 import 'package:broker_app/data/models/lodging_list_response.dart';
+import 'package:broker_app/data/models/lodging_room.dart';
 import 'package:broker_app/features/lodgings/repositories/lodging_api_client.dart';
 
 class LodgingRepository {
@@ -142,6 +143,58 @@ class LodgingRepository {
       }
 
       return null;
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
+  Future<List<LodgingRoom>> fetchHostLodgingRooms(String lodgingId) async {
+    try {
+      final response = await _apiClient.fetchHostLodgingRoomsRaw(lodgingId);
+      final data = response['data'] as List<dynamic>;
+      return data.map((e) => LodgingRoom.fromJson(e as Map<String, dynamic>)).toList();
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
+  Future<dynamic> createLodgingRoom(String lodgingId, Map<String, dynamic> data) async {
+    try {
+      final response = await _apiClient.createLodgingRoomRaw(lodgingId, data);
+      return response['data'];
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
+  Future<dynamic> updateLodgingRoom(String lodgingId, String roomId, Map<String, dynamic> data) async {
+    try {
+      final response = await _apiClient.updateLodgingRoomRaw(lodgingId, roomId, data);
+      return response['data'];
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
+  Future<void> deleteLodgingRoom(String lodgingId, String roomId) async {
+    try {
+      await _apiClient.deleteLodgingRoom(lodgingId, roomId);
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
+  Future<void> uploadLodgingRoomMedia(String lodgingId, String roomId, File file) async {
+    try {
+      await _apiClient.uploadLodgingRoomMedia(lodgingId, roomId, file);
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
+  Future<void> deleteLodgingRoomMedia(String lodgingId, String roomId, String mediaId) async {
+    try {
+      await _apiClient.deleteLodgingRoomMedia(lodgingId, roomId, mediaId);
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }

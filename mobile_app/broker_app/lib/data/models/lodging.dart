@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:broker_app/data/models/user.dart';
+import 'package:broker_app/data/models/lodging_room.dart';
 
 part 'lodging.freezed.dart';
 part 'lodging.g.dart';
@@ -56,6 +57,7 @@ abstract class Lodging with _$Lodging {
     DateTime? approvedAt,
     User? host,
     @JsonKey(fromJson: _mediaFromJson) List<LodgingMedia>? media,
+    List<LodgingRoom>? rooms,
     DateTime? createdAt,
     DateTime? updatedAt,
     @JsonKey(fromJson: _doubleFromJson, toJson: _doubleToJson) double? distance,

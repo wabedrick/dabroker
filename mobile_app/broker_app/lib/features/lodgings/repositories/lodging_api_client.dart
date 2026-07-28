@@ -52,4 +52,41 @@ abstract class LodgingApiClient {
     @Path('id') String id,
     @Queries() Map<String, dynamic> queries,
   );
+
+  @GET('/host/lodgings/{lodgingId}/rooms')
+  Future<dynamic> fetchHostLodgingRoomsRaw(@Path('lodgingId') String lodgingId);
+
+  @POST('/host/lodgings/{lodgingId}/rooms')
+  Future<dynamic> createLodgingRoomRaw(
+    @Path('lodgingId') String lodgingId,
+    @Body() Map<String, dynamic> body,
+  );
+
+  @PUT('/host/lodgings/{lodgingId}/rooms/{roomId}')
+  Future<dynamic> updateLodgingRoomRaw(
+    @Path('lodgingId') String lodgingId,
+    @Path('roomId') String roomId,
+    @Body() Map<String, dynamic> body,
+  );
+
+  @DELETE('/host/lodgings/{lodgingId}/rooms/{roomId}')
+  Future<void> deleteLodgingRoom(
+    @Path('lodgingId') String lodgingId,
+    @Path('roomId') String roomId,
+  );
+
+  @POST('/host/lodgings/{lodgingId}/rooms/{roomId}/media')
+  @MultiPart()
+  Future<void> uploadLodgingRoomMedia(
+    @Path('lodgingId') String lodgingId,
+    @Path('roomId') String roomId,
+    @Part(name: "file") File file,
+  );
+
+  @DELETE('/host/lodgings/{lodgingId}/rooms/{roomId}/media/{mediaId}')
+  Future<void> deleteLodgingRoomMedia(
+    @Path('lodgingId') String lodgingId,
+    @Path('roomId') String roomId,
+    @Path('mediaId') String mediaId,
+  );
 }

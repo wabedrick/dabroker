@@ -48,8 +48,8 @@ class LodgingRoomResource extends JsonResource
                 'name' => $media->name,
                 'caption' => $media->getCustomProperty('caption'),
                 'url' => $media->getFullUrl(),
-                'thumbnail_url' => $media->hasGeneratedConversion('thumb') ? $media->getFullUrl('thumb') : $media->getFullUrl(),
-                'preview_url' => $media->hasGeneratedConversion('preview') ? $media->getFullUrl('preview') : $media->getFullUrl(),
+                'thumbnail_url' => $media->getFullUrl(),
+                'preview_url' => $media->getFullUrl(),
                 'responsive_images' => $media->responsive_images,
                 'created_at' => $media->created_at,
             ])

@@ -59,4 +59,63 @@ class LodgingManagementNotifier extends StateNotifier<AsyncValue<void>> {
       return false;
     }
   }
+
+  Future<bool> createLodgingRoom(
+    String lodgingId,
+    Map<String, dynamic> data, {
+    List<File>? images,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      final room = await _repository.createLodgingRoom(lodgingId, data);
+
+      if (images != null && images.isNotEmpty) {
+        for (final image in images) {
+          await _repository.uploadLodgingRoomMedia(lodgingId, room['id'].toString(), image);
+        }
+      }
+
+      state = const AsyncValue.data(null);
+      return true;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return false;
+    }
+  }
+
+  Future<bool> updateLodgingRoom(
+    String lodgingId,
+    String roomId,
+    Map<String, dynamic> data, {
+    List<File>? newImages,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      await _repository.updateLodgingRoom(lodgingId, roomId, data);
+
+      if (newImages != null && newImages.isNotEmpty) {
+        for (final image in newImages) {
+          await _repository.uploadLodgingRoomMedia(lodgingId, roomId, image);
+        }
+      }
+
+      state = const AsyncValue.data(null);
+      return true;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return false;
+    }
+  }
+
+  Future<bool> deleteLodgingRoom(String lodgingId, String roomId) async {
+    state = const AsyncValue.loading();
+    try {
+      await _repository.deleteLodgingRoom(lodgingId, roomId);
+      state = const AsyncValue.data(null);
+      return true;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return false;
+    }
+  }
 }

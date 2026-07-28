@@ -40,6 +40,9 @@ _Lodging _$LodgingFromJson(Map<String, dynamic> json) => _Lodging(
       ? null
       : User.fromJson(json['host'] as Map<String, dynamic>),
   media: _mediaFromJson(json['media']),
+  rooms: (json['rooms'] as List<dynamic>?)
+      ?.map((e) => LodgingRoom.fromJson(e as Map<String, dynamic>))
+      .toList(),
   createdAt: json['created_at'] == null
       ? null
       : DateTime.parse(json['created_at'] as String),
@@ -79,6 +82,7 @@ Map<String, dynamic> _$LodgingToJson(_Lodging instance) => <String, dynamic>{
   'approved_at': instance.approvedAt?.toIso8601String(),
   'host': instance.host?.toJson(),
   'media': instance.media?.map((e) => e.toJson()).toList(),
+  'rooms': instance.rooms?.map((e) => e.toJson()).toList(),
   'created_at': instance.createdAt?.toIso8601String(),
   'updated_at': instance.updatedAt?.toIso8601String(),
   'distance': _doubleToJson(instance.distance),

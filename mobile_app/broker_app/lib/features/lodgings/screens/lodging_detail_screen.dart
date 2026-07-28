@@ -6,6 +6,7 @@ import 'package:broker_app/core/utils/money_format.dart';
 import 'package:broker_app/features/bookings/providers/booking_provider.dart';
 import 'package:broker_app/features/lodgings/providers/lodging_list_provider.dart';
 import 'package:broker_app/features/lodgings/screens/add_lodging_screen.dart';
+import 'package:broker_app/features/lodgings/screens/host_lodging_room_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -603,6 +604,19 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                       _toggleAvailability(!(lodging.isAvailable ?? true)),
                 ),
                 IconButton(
+                  icon: const Icon(Icons.meeting_room),
+                  tooltip: 'Manage Rooms',
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HostLodgingRoomListScreen(lodging: lodging),
+                      ),
+                    );
+                    _fetchLodging();
+                  },
+                ),
+                IconButton(
                   icon: const Icon(Icons.edit),
                   onPressed: () async {
                     await Navigator.push(
@@ -809,6 +823,69 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                             Text(
                               amenity,
                               style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 24),
+                  ],
+                  if (lodging.rooms?.isNotEmpty == true) ...[
+                    _SectionTitle(title: 'Available Rooms'),
+                    const SizedBox(height: 16),
+                    ...lodging.rooms!.map((room) {
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        clipBehavior: Clip.antiAlias,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (room.media != null && room.media!.isNotEmpty)
+                              AspectRatio(
+                                aspectRatio: 16 / 9,
+                                child: Image.network(
+                                  ImageHelper.fixUrl(room.media!.first.url),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    room.name,
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '${formatMoney(room.price, room.currency)} / night',
+                                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                      color: colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  if (room.capacity != null) ...[
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.person, size: 16, color: Colors.grey),
+                                        const SizedBox(width: 4),
+                                        Text('Sleeps ${room.capacity}', style: const TextStyle(color: Colors.grey)),
+                                      ],
+                                    ),
+                                  ],
+                                  if (room.description != null && room.description!.isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      room.description!,
+                                      style: Theme.of(context).textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
                           ],
                         ),

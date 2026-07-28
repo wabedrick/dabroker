@@ -3,6 +3,7 @@ import 'package:broker_app/core/utils/money_format.dart';
 import 'package:broker_app/data/models/lodging.dart';
 import 'package:broker_app/features/lodgings/providers/lodging_list_provider.dart';
 import 'package:broker_app/features/lodgings/screens/add_lodging_screen.dart';
+import 'package:broker_app/features/lodgings/screens/host_lodging_room_list_screen.dart';
 import 'package:broker_app/features/bookings/screens/host_booking_list_screen.dart';
 import 'package:broker_app/features/lodgings/screens/lodging_detail_screen.dart';
 import 'package:flutter/material.dart';
@@ -220,6 +221,28 @@ class _HostLodgingCard extends ConsumerWidget {
                             ),
                           );
                         },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => HostLodgingRoomListScreen(lodging: lodging),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.meeting_room, size: 16),
+                        label: const Text('Manage Rooms'),
+                        style: ElevatedButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          textStyle: const TextStyle(fontSize: 12),
+                        ),
                       ),
                     ],
                   ),

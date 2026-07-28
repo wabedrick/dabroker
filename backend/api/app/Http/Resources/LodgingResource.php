@@ -41,8 +41,8 @@ class LodgingResource extends JsonResource
                     return [
                         'id' => $media->id,
                         'url' => $media->getFullUrl(),
-                        'thumb_url' => $media->hasGeneratedConversion('thumb') ? $media->getFullUrl('thumb') : $media->getFullUrl(),
-                        'preview_url' => $media->hasGeneratedConversion('preview') ? $media->getFullUrl('preview') : $media->getFullUrl(),
+                        'thumb_url' => $media->getFullUrl(),
+                        'preview_url' => $media->getFullUrl(),
                     ];
                 });
             }),

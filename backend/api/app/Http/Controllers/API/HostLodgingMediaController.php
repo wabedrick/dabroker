@@ -66,7 +66,7 @@ class HostLodgingMediaController extends Controller
         return [
             'id' => $media->uuid,
             'url' => $media->getUrl(),
-            'thumbnail_url' => $media->getUrl('thumb'),
+            'thumbnail_url' => $media->getUrl(),
             'mime_type' => $media->mime_type,
             'size' => $media->size,
             'caption' => $media->getCustomProperty('caption'),
