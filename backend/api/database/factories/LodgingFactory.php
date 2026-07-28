@@ -12,7 +12,7 @@ class LodgingFactory extends Factory
         return [
             'host_id' => User::factory(),
             'title' => fake()->sentence(3),
-            'type' => fake()->randomElement(['hotel', 'apartment', 'hostel', 'guesthouse', 'villa', 'cabin']),
+            'type' => fake()->randomElement(['hotel', 'hostel', 'guesthouse', 'villa', 'cabin']),
             'status' => 'pending',
             'price_per_night' => fake()->randomFloat(2, 50, 500),
             'currency' => 'USD',

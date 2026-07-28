@@ -15,7 +15,7 @@ class BookingController extends Controller
     {
         $bookings = $request->user()
             ->bookings()
-            ->with(['lodging', 'lodging.host.roles', 'lodging.host.permissions'])
+            ->with(['lodging', 'lodgingRoom', 'lodging.host.roles', 'lodging.host.permissions'])
             ->latest()
             ->paginate(20);
 
@@ -27,7 +27,7 @@ class BookingController extends Controller
         $bookings = Booking::whereHas('lodging', function ($query) {
             $query->where('host_id', Auth::id());
         })
-            ->with(['lodging', 'user.roles', 'user.permissions'])
+            ->with(['lodging', 'lodgingRoom', 'user.roles', 'user.permissions'])
             ->latest()
             ->paginate(20);
 
@@ -38,6 +38,7 @@ class BookingController extends Controller
     {
         $validated = $request->validate([
             'lodging_id' => 'required|exists:lodgings,public_id',
+            'lodging_room_id' => 'nullable|exists:lodging_rooms,public_id',
             'check_in' => 'required|date|after_or_equal:today',
             'check_out' => 'required|date|after:check_in',
             'guests_count' => 'required|integer|min:1',
@@ -46,31 +47,33 @@ class BookingController extends Controller
         ]);
 
         $lodging = Lodging::with('host')->where('public_id', $validated['lodging_id'])->firstOrFail();
+        $lodgingRoom = null;
+        if (!empty($validated['lodging_room_id'])) {
+            $lodgingRoom = \App\Models\LodgingRoom::where('public_id', $validated['lodging_room_id'])
+                ->where('lodging_id', $lodging->id)
+                ->firstOrFail();
+        }
 
-        // Check if lodging is approved
-        // if ($lodging->status !== 'approved') {
-        //     return response()->json(['message' => 'Lodging is not available for booking'], 400);
-        // }
-
-        // Check guests count (per room logic or total logic? Assuming max_guests is per room usually, but here it seems to be total for the listing.
-        // If total_rooms > 1, max_guests might be per room. Let's assume max_guests is per room for now, or total capacity.
-        // Let's assume max_guests is the capacity of a single unit/room type if we are talking about hotels.
-        // If the user books N rooms, the capacity is N * max_guests.
-
-        if ($validated['guests_count'] > ($lodging->max_guests * $validated['rooms_count'])) {
+        $maxGuests = $lodgingRoom ? $lodgingRoom->capacity : $lodging->max_guests;
+        if ($maxGuests && $validated['guests_count'] > ($maxGuests * $validated['rooms_count'])) {
             return response()->json([
-                'message' => "These rooms can accommodate maximum " . ($lodging->max_guests * $validated['rooms_count']) . " guests"
+                'message' => "These rooms can accommodate maximum " . ($maxGuests * $validated['rooms_count']) . " guests"
             ], 400);
         }
 
         $checkIn = Carbon::parse($validated['check_in']);
         $checkOut = Carbon::parse($validated['check_out']);
 
-        // Check availability
-        // Sum of rooms booked for overlapping dates
-        $bookedRooms = Booking::where('lodging_id', $lodging->id)
-            ->where('status', 'confirmed')
-            ->where(function ($query) use ($checkIn, $checkOut) {
+        $bookedRoomsQuery = Booking::where('lodging_id', $lodging->id)
+            ->where('status', 'confirmed');
+            
+        if ($lodgingRoom) {
+            $bookedRoomsQuery->where('lodging_room_id', $lodgingRoom->id);
+        } else {
+            $bookedRoomsQuery->whereNull('lodging_room_id');
+        }
+
+        $bookedRooms = $bookedRoomsQuery->where(function ($query) use ($checkIn, $checkOut) {
                 $query->whereBetween('check_in', [$checkIn, $checkOut])
                     ->orWhereBetween('check_out', [$checkIn, $checkOut])
                     ->orWhere(function ($q) use ($checkIn, $checkOut) {
@@ -80,7 +83,8 @@ class BookingController extends Controller
             })
             ->sum('rooms_count');
 
-        $availableRooms = $lodging->total_rooms - $bookedRooms;
+        $totalRooms = $lodgingRoom ? $lodgingRoom->quantity : $lodging->total_rooms;
+        $availableRooms = $totalRooms - $bookedRooms;
 
         if ($availableRooms < $validated['rooms_count']) {
             return response()->json([
@@ -90,11 +94,13 @@ class BookingController extends Controller
 
         // Calculate total price
         $nights = $checkIn->diffInDays($checkOut);
-        $totalPrice = $lodging->price_per_night * $nights * $validated['rooms_count'];
+        $pricePerNight = $lodgingRoom ? $lodgingRoom->price : $lodging->price_per_night;
+        $totalPrice = $pricePerNight * $nights * $validated['rooms_count'];
 
         $booking = Booking::create([
             'user_id' => Auth::id(),
             'lodging_id' => $lodging->id,
+            'lodging_room_id' => $lodgingRoom?->id,
             'check_in' => $checkIn,
             'check_out' => $checkOut,
             'guests_count' => $validated['guests_count'],

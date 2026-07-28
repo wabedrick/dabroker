@@ -18,22 +18,25 @@ class LodgingTest extends TestCase
         \Laravel\Sanctum\Sanctum::actingAs($host, ['*']);
 
         $response = $this->postJson('/api/v1/host/lodgings', [
-            'title' => 'Beautiful Apartment',
-            'type' => 'apartment',
-            'price_per_night' => 100,
+            'title' => 'Beautiful Hotel',
+            'type' => 'hotel',
+            'price_per_night' => 150000,
+            'currency' => 'UGX',
             'max_guests' => 4,
-            'description' => 'A beautiful apartment in the city center',
+            'total_rooms' => 2,
+            'description' => 'A beautiful place',
+            'address' => '123 Test St',
             'city' => 'Kampala',
             'country' => 'Uganda',
-            'currency' => 'UGX',
-            'total_rooms' => 2,
+            'state' => 'Central',
         ]);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('lodgings', [
-            'title' => 'Beautiful Apartment',
+            'title' => 'Beautiful Hotel',
             'host_id' => $host->id,
             'status' => 'pending',
+            'type' => 'hotel',
         ]);
     }
 

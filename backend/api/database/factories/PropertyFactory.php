@@ -22,7 +22,7 @@ class PropertyFactory extends Factory
             'owner_id' => User::factory(),
             'title' => $title,
             'slug' => Str::slug($title . '-' . Str::random(6)),
-            'type' => fake()->randomElement(['house', 'land', 'apartment', 'commercial']),
+            'type' => fake()->randomElement(['house', 'land']),
             'category' => fake()->randomElement(['sale', 'rent']),
             'status' => PropertyStatus::Approved,
             'price' => fake()->numberBetween(20000, 250000),

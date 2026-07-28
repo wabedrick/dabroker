@@ -224,6 +224,13 @@ Route::prefix('v1')->group(function (): void {
         // Lodging routes (authenticated)
         Route::prefix('host')->group(function (): void {
             Route::apiResource('lodgings', App\Http\Controllers\API\HostLodgingController::class)->except(['show']);
+            Route::apiResource('lodgings.rooms', App\Http\Controllers\API\HostLodgingRoomController::class)
+                ->scoped(['lodging' => 'public_id', 'room' => 'public_id'])
+                ->except(['show', 'edit', 'create']);
+            
+            Route::post('lodgings/{lodging:public_id}/rooms/{room:public_id}/media', [App\Http\Controllers\API\HostLodgingRoomMediaController::class, 'store']);
+            Route::delete('lodgings/{lodging:public_id}/rooms/{room:public_id}/media/{media}', [App\Http\Controllers\API\HostLodgingRoomMediaController::class, 'destroy']);
+
             Route::get('lodgings/{lodging:public_id}/availability', [App\Http\Controllers\API\HostLodgingAvailabilityController::class, 'index']);
             Route::put('lodgings/{lodging:public_id}/availability', [App\Http\Controllers\API\HostLodgingAvailabilityController::class, 'update']);
 

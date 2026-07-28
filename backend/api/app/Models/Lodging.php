@@ -93,6 +93,11 @@ class Lodging extends Model implements HasMedia
         return $this->hasMany(Booking::class);
     }
 
+    public function rooms(): HasMany
+    {
+        return $this->hasMany(LodgingRoom::class);
+    }
+
     public function scopeApproved($query)
     {
         return $query->where('status', 'approved');

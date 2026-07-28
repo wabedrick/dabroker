@@ -17,9 +17,16 @@ class BookingResource extends JsonResource
             $checkIn = Carbon::parse($this->check_in);
             $checkOut = Carbon::parse($this->check_out);
 
-            $bookedRooms = BookingModel::where('lodging_id', $this->lodging_id)
-                ->where('status', '!=', 'cancelled')
-                ->where(function ($query) use ($checkIn, $checkOut) {
+            $bookedRoomsQuery = BookingModel::where('lodging_id', $this->lodging_id)
+                ->where('status', '!=', 'cancelled');
+            
+            if ($this->lodging_room_id) {
+                $bookedRoomsQuery->where('lodging_room_id', $this->lodging_room_id);
+            } else {
+                $bookedRoomsQuery->whereNull('lodging_room_id');
+            }
+
+            $bookedRooms = $bookedRoomsQuery->where(function ($query) use ($checkIn, $checkOut) {
                     $query->whereBetween('check_in', [$checkIn, $checkOut])
                         ->orWhereBetween('check_out', [$checkIn, $checkOut])
                         ->orWhere(function ($q) use ($checkIn, $checkOut) {
@@ -29,7 +36,7 @@ class BookingResource extends JsonResource
                 })
                 ->sum('rooms_count');
 
-            $totalRooms = $this->lodging->total_rooms ?? 0;
+            $totalRooms = $this->lodgingRoom ? $this->lodgingRoom->quantity : ($this->lodging->total_rooms ?? 0);
             $availableRooms = max(0, $totalRooms - $bookedRooms);
         }
 
@@ -38,6 +45,7 @@ class BookingResource extends JsonResource
             'public_id' => $this->public_id,
             'user_id' => isset($this->user_id) ? (int) $this->user_id : null,
             'lodging_id' => isset($this->lodging_id) ? (int) $this->lodging_id : null,
+            'lodging_room_id' => isset($this->lodging_room_id) ? (int) $this->lodging_room_id : null,
             'check_in' => $this->check_in?->toDateString(),
             'check_out' => $this->check_out?->toDateString(),
             'guests_count' => isset($this->guests_count) ? (int) $this->guests_count : null,
@@ -47,6 +55,7 @@ class BookingResource extends JsonResource
             'status' => $this->status,
             'notes' => $this->notes,
             'lodging' => new LodgingResource($this->whenLoaded('lodging')),
+            'lodging_room' => new LodgingRoomResource($this->whenLoaded('lodgingRoom')),
             'user' => new UserResource($this->whenLoaded('user')),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

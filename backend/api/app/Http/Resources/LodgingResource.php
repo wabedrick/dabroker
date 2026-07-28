@@ -35,6 +35,7 @@ class LodgingResource extends JsonResource
             'approved_at' => $this->approved_at,
             'host' => new UserResource($this->whenLoaded('host')),
             'approver' => new UserResource($this->whenLoaded('approver')),
+            'rooms' => LodgingRoomResource::collection($this->whenLoaded('rooms')),
             'media' => $this->whenLoaded('media', function () {
                 return $this->getMedia('gallery')->map(function ($media) {
                     return [

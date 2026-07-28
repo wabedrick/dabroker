@@ -15,6 +15,7 @@ class Booking extends Model
         'public_id',
         'user_id',
         'lodging_id',
+        'lodging_room_id',
         'check_in',
         'check_out',
         'guests_count',
@@ -55,5 +56,10 @@ class Booking extends Model
     public function lodging(): BelongsTo
     {
         return $this->belongsTo(Lodging::class);
+    }
+
+    public function lodgingRoom(): BelongsTo
+    {
+        return $this->belongsTo(LodgingRoom::class);
     }
 }

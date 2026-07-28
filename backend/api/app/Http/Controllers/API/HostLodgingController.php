@@ -17,7 +17,7 @@ class HostLodgingController extends Controller
 
         $lodgings = $user
             ->lodgings()
-            ->with(['media', 'host.roles', 'host.permissions'])
+            ->with(['media', 'rooms', 'host.roles', 'host.permissions'])
             ->latest()
             ->paginate(20);
 
@@ -28,7 +28,7 @@ class HostLodgingController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'type' => 'required|string|in:hotel,guest_house,lodge,apartment,resort,hostel,villa,cabin',
+            'type' => 'required|string|in:hotel,guest_house,lodge,resort,hostel,villa,cabin',
             'price_per_night' => 'required|numeric|min:0',
             'currency' => 'required|string|size:3',
             'max_guests' => 'required|integer|min:1',
@@ -61,7 +61,7 @@ class HostLodgingController extends Controller
 
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
-            'type' => 'sometimes|string|in:hotel,guest_house,lodge,apartment,resort,hostel,villa,cabin',
+            'type' => 'sometimes|string|in:hotel,guest_house,lodge,resort,hostel,villa,cabin',
             'price_per_night' => 'sometimes|numeric|min:0',
             'currency' => 'sometimes|string|size:3',
             'max_guests' => 'sometimes|integer|min:1',
