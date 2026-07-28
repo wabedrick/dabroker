@@ -12,40 +12,29 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class PropertyBrowseController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): AnonymousResourceCollection
     {
-        try {
-            $perPage = (int) $request->integer('per_page', 15);
-            $perPage = max(1, min($perPage, 50));
-            $userId = $request->user('sanctum')?->id;
+        $perPage = (int) $request->integer('per_page', 15);
+        $perPage = max(1, min($perPage, 50));
+        $userId = $request->user('sanctum')?->id;
 
-            if ($request->filled('q')) {
-                $paginator = Property::search((string) $request->query('q'))
-                    ->query(function (Builder $builder) use ($request, $userId): void {
-                        $this->applyFilters($builder, $request);
-                        $this->applyFavoriteFlag($builder, $userId);
-                    })
-                    ->paginate($perPage);
-            } else {
-                $query = Property::query()->approved();
-                $this->applyFilters($query, $request);
-                $this->applyFavoriteFlag($query, $userId);
-                $paginator = $query->with(['owner:id,name,preferred_role', 'media'])->paginate($perPage);
-            }
-
-            $paginator->getCollection()->loadMissing(['owner:id,name,preferred_role', 'media']);
-
-            $response = PropertyResource::collection($paginator)->response()->getData(true);
-
-            return response()->json($response);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString()
-            ], 500);
+        if ($request->filled('q')) {
+            $paginator = Property::search((string) $request->query('q'))
+                ->query(function (Builder $builder) use ($request, $userId): void {
+                    $this->applyFilters($builder, $request);
+                    $this->applyFavoriteFlag($builder, $userId);
+                })
+                ->paginate($perPage);
+        } else {
+            $query = Property::query()->approved();
+            $this->applyFilters($query, $request);
+            $this->applyFavoriteFlag($query, $userId);
+            $paginator = $query->with(['owner:id,name,preferred_role', 'media'])->paginate($perPage);
         }
+
+        $paginator->getCollection()->loadMissing(['owner:id,name,preferred_role', 'media']);
+
+        return PropertyResource::collection($paginator);
     }
 
     public function show(Request $request, Property $property): PropertyResource
