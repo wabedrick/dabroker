@@ -20,14 +20,28 @@ use App\Http\Controllers\API\PropertyInquiryController;
 use App\Http\Controllers\API\LodgingBrowseController;
 use App\Models\Property;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
-Route::get('/debug-aws', function () {
-    return response()->json([
-        'AWS_ENDPOINT' => env('AWS_ENDPOINT'),
-        'AWS_URL' => env('AWS_URL'),
-        'AWS_DEFAULT_REGION' => env('AWS_DEFAULT_REGION'),
-        'AWS_BUCKET' => env('AWS_BUCKET'),
-    ]);
+Route::get('/debug-upload', function () {
+    try {
+        $disk = Storage::disk('s3');
+        $filename = 'test-' . Str::uuid() . '.txt';
+        $disk->put($filename, 'Hello world');
+        $url = $disk->url($filename);
+        return response()->json([
+            'status' => 'success',
+            'filename' => $filename,
+            'url' => $url,
+            'exists' => $disk->exists($filename),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ], 500);
+    }
 });
 use Illuminate\Support\Facades\Artisan;
 use App\Models\User;
