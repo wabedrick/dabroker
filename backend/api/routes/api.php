@@ -20,6 +20,8 @@ use App\Http\Controllers\API\PropertyInquiryController;
 use App\Http\Controllers\API\LodgingBrowseController;
 use App\Models\Property;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+use App\Models\User;
 
 Route::prefix('v1')->group(function (): void {
     Route::get('properties', [PropertyBrowseController::class, 'index']);
@@ -40,6 +42,19 @@ Route::prefix('v1')->group(function (): void {
 
     // Public professionals routes
     Route::get('professionals', [App\Http\Controllers\API\ProfessionalController::class, 'index']);
+    
+    Route::get('/fix-images', function () {
+        // Delete old demo properties so the seeder will regenerate them.
+        // The DemoPropertySeeder avoids seeding if properties already exist for the Demo Host.
+        $demoHost = User::where('email', 'demo.host@example.com')->first();
+        if ($demoHost) {
+            Property::where('owner_id', $demoHost->id)->forceDelete();
+        }
+        
+        Artisan::call('db:seed', ['--class' => 'DemoPropertySeeder']);
+        return response()->json(['message' => 'Properties re-seeded to S3 successfully!']);
+    });
+
     Route::get('professionals/{user}', [App\Http\Controllers\API\ProfessionalController::class, 'show']);
 
     Route::get('ratings', [App\Http\Controllers\API\RatingController::class, 'index']);
