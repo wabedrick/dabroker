@@ -8,10 +8,12 @@ import 'package:carousel_slider/carousel_slider.dart';
 
 class RoomDetailScreen extends ConsumerStatefulWidget {
   final LodgingRoom room;
+  final VoidCallback? onBookPressed;
 
   const RoomDetailScreen({
     super.key,
     required this.room,
+    this.onBookPressed,
   });
 
   @override
@@ -237,6 +239,23 @@ class _RoomDetailScreenState extends ConsumerState<RoomDetailScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: widget.onBookPressed != null
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: FilledButton(
+                  onPressed: widget.onBookPressed,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text(
+                    'Book this Room',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 

@@ -1003,7 +1003,10 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => RoomDetailScreen(room: room),
+                                builder: (_) => RoomDetailScreen(
+                                  room: room,
+                                  onBookPressed: isHost ? null : () => _showBookingDialog(context, lodging, room: room),
+                                ),
                               ),
                             );
                           },
