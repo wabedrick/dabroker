@@ -205,4 +205,38 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
       return false;
     }
   }
+
+  Future<bool> forgotPassword({required String identifier}) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _authRepository.forgotPassword(identifier: identifier);
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  Future<bool> resetPassword({
+    required String identifier,
+    required String otp,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _authRepository.resetPassword(
+        identifier: identifier,
+        otp: otp,
+        password: password,
+        passwordConfirmation: passwordConfirmation,
+      );
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
 }

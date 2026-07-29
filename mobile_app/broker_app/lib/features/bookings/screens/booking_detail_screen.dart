@@ -76,10 +76,10 @@ class BookingDetailScreen extends ConsumerWidget {
             if (booking.user?.email != null)
               ListTile(
                 leading: const Icon(Icons.email),
-                title: Text(booking.user!.email),
+                title: Text(booking.user!.email!),
                 onTap: () {
                   Navigator.pop(context);
-                  _launchEmail(booking.user!.email);
+                  _launchEmail(booking.user!.email!);
                 },
               ),
           ],

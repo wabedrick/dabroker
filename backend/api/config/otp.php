@@ -5,11 +5,14 @@ return [
     'driver' => env('OTP_PROVIDER', 'log'),
     'ttl' => (int) env('OTP_TTL', 300),
     'max_attempts' => (int) env('OTP_MAX_ATTEMPTS', 5),
-    'hardcoded_code' => env('OTP_HARDCODED_CODE', '123456'),
+    'hardcoded_code' => env('OTP_HARDCODED_CODE', null),
 
     'channels' => [
         'log' => [
             'class' => App\Services\OtpChannels\LogOtpChannel::class,
+        ],
+        'email' => [
+            'class' => App\Services\OtpChannels\EmailOtpChannel::class,
         ],
         'twilio' => [
             'class' => App\Services\OtpChannels\TwilioOtpChannel::class,

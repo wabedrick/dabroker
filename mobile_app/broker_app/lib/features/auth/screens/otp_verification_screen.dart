@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/auth_provider.dart';
 import 'login_screen.dart';
+import 'reset_password_screen.dart';
 
 class OtpVerificationScreen extends ConsumerStatefulWidget {
   final String identifier;
@@ -48,6 +49,19 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
         SnackBar(
           content: const Text('Please enter complete OTP code'),
           backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+
+    if (widget.purpose == 'password_reset') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ResetPasswordScreen(
+            identifier: widget.identifier,
+            otp: _otpCode,
+          ),
         ),
       );
       return;

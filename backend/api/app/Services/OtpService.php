@@ -9,7 +9,7 @@ class OtpService
 {
     private const CACHE_PREFIX = 'otp:';
 
-    public function __construct(private readonly OtpChannel $channel) {}
+    public function __construct(private readonly OtpChannel $defaultChannel) {}
 
     public function send(string $identifier, string $purpose): string
     {
@@ -25,10 +25,31 @@ class OtpService
 
         Cache::put($key, $payload, $ttl);
 
-        $this->channel->send($identifier, $code, $purpose);
+        $channel = $this->resolveChannel($identifier);
+        $channel->send($identifier, $code, $purpose);
 
         return $code;
     }
+
+    private function resolveChannel(string $identifier): OtpChannel
+    {
+        $driver = config('otp.driver');
+        
+        // If driver is explicitly 'log', use it for everything
+        if ($driver === 'log') {
+            return $this->defaultChannel;
+        }
+
+        // Route to email channel if it's an email address
+        if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+            $emailConfig = config('otp.channels.email', []);
+            return app()->make(\App\Services\OtpChannels\EmailOtpChannel::class, ['config' => $emailConfig]);
+        }
+
+        // Otherwise fallback to default configured provider (e.g., Twilio)
+        return $this->defaultChannel;
+    }
+
 
     public function verify(string $identifier, string $purpose, string $code): bool
     {
