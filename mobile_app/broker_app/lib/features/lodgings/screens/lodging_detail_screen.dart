@@ -13,6 +13,7 @@ import 'package:latlong2/latlong.dart';
 import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:broker_app/data/models/lodging.dart';
+import 'package:broker_app/data/models/lodging_room.dart';
 import 'package:broker_app/features/auth/providers/auth_provider.dart';
 import 'package:intl/intl.dart';
 
