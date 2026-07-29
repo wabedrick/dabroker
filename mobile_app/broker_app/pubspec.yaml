@@ -146,3 +146,14 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/dabroker_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#0B8A6E" # Uses your app's brandPrimary color
+  adaptive_icon_foreground: "assets/dabroker_icon.png"
+  # You can also use an image for the background instead of a color:
+  # adaptive_icon_background: "assets/background.png"

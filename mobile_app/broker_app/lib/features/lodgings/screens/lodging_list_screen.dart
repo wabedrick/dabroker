@@ -573,7 +573,6 @@ class _LodgingFilterChips extends StatelessWidget {
     (label: 'Hotel', value: 'hotel'),
     (label: 'Guest House', value: 'guest_house'),
     (label: 'Lodge', value: 'lodge'),
-    (label: 'Apartment', value: 'apartment'),
     (label: 'Resort', value: 'resort'),
   ];
 
@@ -767,82 +766,109 @@ class _LodgingList extends ConsumerWidget {
   }
 }
 
-class _LodgingCard extends StatelessWidget {
+class _LodgingCard extends ConsumerStatefulWidget {
   const _LodgingCard({required this.lodging});
 
   final Lodging lodging;
 
   @override
+  ConsumerState<_LodgingCard> createState() => _LodgingCardState();
+}
+
+class _LodgingCardState extends ConsumerState<_LodgingCard> {
+  bool _isFavorite = false;
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final images = lodging.media?.map((e) {
+    final images = widget.lodging.media?.map((e) {
           final url = e.previewUrl ?? e.url ?? '';
           return ImageHelper.fixUrl(url);
         }).toList() ?? [];
 
-    final priceText = lodging.pricePerNight != null
-        ? '${formatMoney(lodging.pricePerNight, lodging.currency, fractionDigits: 0)} / night'
+    final priceText = widget.lodging.pricePerNight != null
+        ? formatMoney(widget.lodging.pricePerNight, widget.lodging.currency, fractionDigits: 0)
         : 'Price on request';
 
-    return Card(
-      margin: EdgeInsets.zero,
-      clipBehavior: Clip.antiAlias,
-      elevation: 8,
-      shadowColor: Colors.black.withAlpha(50),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-        side: BorderSide(color: colorScheme.outlineVariant.withAlpha(50)),
-      ),
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => LodgingDetailScreen(
-                lodgingId: lodging.id,
-                initialLodging: lodging,
-              ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => LodgingDetailScreen(
+              lodgingId: widget.lodging.id,
+              initialLodging: widget.lodging,
             ),
-          );
-        },
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          // Remove heavy shadows for a cleaner, modern look
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AspectRatio(
-              aspectRatio: 16 / 10,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Hero(
-                    tag: 'lodging_image_${lodging.id}',
-                    child: LodgingImageCarousel(images: images, lodgingId: lodging.id),
-                  ),
-                  if (lodging.type != null)
-                    Positioned(
-                      top: 12,
-                      left: 12,
-                      child: IgnorePointer(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withAlpha(150),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            _formatTypeLabel(lodging.type!),
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
+              aspectRatio: 1 / 1, // Square images are popular on Airbnb
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Hero(
+                      tag: 'lodging_image_${widget.lodging.id}',
+                      child: LodgingImageCarousel(images: images, lodgingId: widget.lodging.id, aspectRatio: 1.0),
+                    ),
+                    if (widget.lodging.type != null)
+                      Positioned(
+                        top: 12,
+                        left: 12,
+                        child: IgnorePointer(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withAlpha(200),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              _formatTypeLabel(widget.lodging.type!),
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
                             ),
                           ),
                         ),
                       ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: IconButton(
+                        icon: Icon(
+                          _isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: _isFavorite ? colorScheme.primary : Colors.white,
+                          shadows: const [
+                            Shadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 1))
+                          ],
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isFavorite = !_isFavorite;
+                          });
+                          HapticFeedback.lightImpact();
+                        },
+                      ),
                     ),
-                ],
+                  ],
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -852,58 +878,63 @@ class _LodgingCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Hero(
-                          tag: 'lodging_title_${lodging.id}',
+                          tag: 'lodging_title_${widget.lodging.id}',
                           child: Material(
                             color: Colors.transparent,
                             child: Text(
-                              lodging.title,
+                              '${widget.lodging.city}, ${widget.lodging.country}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
                         ),
                       ),
-                      if (lodging.averageRating > 0) ...[
+                      if (widget.lodging.averageRating > 0) ...[
                         const SizedBox(width: 8),
                         Row(
                           children: [
-                            const Icon(Icons.star, size: 16, color: Colors.amber),
+                            const Icon(Icons.star, size: 14, color: Colors.black87),
                             const SizedBox(width: 4),
                             Text(
-                              lodging.averageRating.toStringAsFixed(1),
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              widget.lodging.averageRating.toStringAsFixed(1),
+                              style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 14),
                             ),
                           ],
                         ),
                       ],
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.location_on, size: 14, color: colorScheme.onSurfaceVariant),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          '${lodging.city}, ${lodging.country}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.lodging.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: priceText,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    priceText,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.primary,
+                        if (widget.lodging.pricePerNight != null)
+                          TextSpan(
+                            text: ' night',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ],

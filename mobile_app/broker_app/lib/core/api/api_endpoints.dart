@@ -31,6 +31,9 @@ class ApiEndpoints {
   static String lodgingDetail(String id) => '/lodgings/$id';
   static const String hostLodgings = '/host/lodgings';
   static String hostLodgingDetail(String id) => '/host/lodgings/$id';
+  static String hostLodgingRooms(String id) => '/host/lodgings/$id/rooms';
+  static String hostLodgingRoomDetail(String lodgingId, String roomId) =>
+      '/host/lodgings/$lodgingId/rooms/$roomId';
   static String hostLodgingAvailability(String id) =>
       '/host/lodgings/$id/availability';
   static String lodgingAvailability(String id) => '/lodgings/$id/availability';

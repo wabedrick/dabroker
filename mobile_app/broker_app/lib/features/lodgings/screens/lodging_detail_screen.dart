@@ -189,7 +189,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
     }
   }
 
-  Future<void> _showBookingDialog(BuildContext context, Lodging lodging) async {
+  Future<void> _showBookingDialog(BuildContext context, Lodging lodging, {LodgingRoom? room}) async {
     final user = ref.read(authStateProvider).user;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -217,7 +217,8 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
           bool checkingAvailability = false;
 
           final nights = dateRange?.duration.inDays ?? 0;
-          final totalPrice = (lodging.pricePerNight ?? 0) * nights * rooms;
+          final pricePerNight = room?.price ?? lodging.pricePerNight ?? 0;
+          final totalPrice = pricePerNight * nights * rooms;
 
           return Padding(
             padding: EdgeInsets.only(
@@ -230,7 +231,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
               shrinkWrap: true,
               children: [
                 Text(
-                  'Book ${lodging.title}',
+                  room != null ? 'Book ${room.name}' : 'Book ${lodging.title}',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 16),
@@ -309,28 +310,43 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                 ListTile(
                   title: const Text('Rooms'),
                   subtitle: Text(
-                    '$rooms rooms (Max ${((availableRooms ?? lodging.totalRooms) ?? 1)})',
+                    '$rooms rooms (Max ${room != null ? ((room.quantity ?? 1) < (availableRooms ?? lodging.totalRooms ?? 1) ? (room.quantity ?? 1) : (availableRooms ?? lodging.totalRooms ?? 1)) : (availableRooms ?? lodging.totalRooms ?? 1)})',
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove),
-                        onPressed: rooms > 1
-                            ? () => setModalState(() => rooms--)
-                            : null,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: (() {
-                          final maxRooms =
-                              (availableRooms ?? lodging.totalRooms ?? 1);
-                          return rooms < maxRooms
-                              ? () => setModalState(() => rooms++)
-                              : null;
-                        })(),
-                      ),
-                    ],
+                  trailing: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: colorScheme.outlineVariant),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove, size: 20),
+                          padding: const EdgeInsets.all(8),
+                          constraints: const BoxConstraints(),
+                          onPressed: rooms > 1
+                              ? () => setModalState(() => rooms--)
+                              : null,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Text('$rooms', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add, size: 20),
+                          padding: const EdgeInsets.all(8),
+                          constraints: const BoxConstraints(),
+                          onPressed: (() {
+                            final maxRooms = room != null 
+                                ? ((room.quantity ?? 1) < (availableRooms ?? lodging.totalRooms ?? 1) ? (room.quantity ?? 1) : (availableRooms ?? lodging.totalRooms ?? 1))
+                                : (availableRooms ?? lodging.totalRooms ?? 1);
+                            return rooms < maxRooms
+                                ? () => setModalState(() => rooms++)
+                                : null;
+                          })(),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 // Inline availability warning
@@ -344,7 +360,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  if (availableRooms! > 0 && rooms >= availableRooms!)
+                  if (availableRooms! > 0 && rooms >= (room?.quantity ?? availableRooms!))
                     Text(
                       'You have selected all available rooms',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -356,22 +372,36 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                 ListTile(
                   title: const Text('Guests'),
                   subtitle: Text('$guests guests'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove),
-                        onPressed: guests > 1
-                            ? () => setModalState(() => guests--)
-                            : null,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: guests < ((lodging.maxGuests ?? 1) * rooms)
-                            ? () => setModalState(() => guests++)
-                            : null,
-                      ),
-                    ],
+                  trailing: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: colorScheme.outlineVariant),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove, size: 20),
+                          padding: const EdgeInsets.all(8),
+                          constraints: const BoxConstraints(),
+                          onPressed: guests > 1
+                              ? () => setModalState(() => guests--)
+                              : null,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: Text('$guests', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add, size: 20),
+                          padding: const EdgeInsets.all(8),
+                          constraints: const BoxConstraints(),
+                          onPressed: guests < ((room?.capacity ?? lodging.maxGuests ?? 1) * rooms)
+                              ? () => setModalState(() => guests++)
+                              : null,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 TextField(
@@ -383,21 +413,65 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                   maxLines: 2,
                 ),
                 const SizedBox(height: 16),
-                if (dateRange != null)
+                if (dateRange != null) ...[
+                  if (pricePerNight > 0) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${formatMoney(pricePerNight, lodging.currency, fractionDigits: 0)} × $nights ${nights == 1 ? 'night' : 'nights'}',
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                          Text(
+                            formatMoney(
+                              pricePerNight * nights,
+                              lodging.currency,
+                              fractionDigits: 0,
+                            ),
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (rooms > 1)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Rooms',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                            Text(
+                              '× $rooms',
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ],
+                        ),
+                      ),
+                    const Divider(),
+                  ],
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.only(top: 8, bottom: 16),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Total',
-                          style: Theme.of(context).textTheme.titleMedium,
+                          'Total (${lodging.currency ?? 'USD'})',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Text(
                           formatMoney(
                             totalPrice,
                             lodging.currency,
-                            fractionDigits: 2,
+                            fractionDigits: 0,
                           ),
                           style: Theme.of(context).textTheme.titleLarge
                               ?.copyWith(
@@ -408,6 +482,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                       ],
                     ),
                   ),
+                ],
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -418,26 +493,21 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                                     rooms > availableRooms!)))
                         ? null
                         : () async {
-                            // Capture navigator & messenger to avoid using the
-                            // modal BuildContext across async gap.
                             final navigator = Navigator.of(context);
                             final messenger = ScaffoldMessenger.of(context);
 
                             final success = await ref
                                 .read(bookingProvider.notifier)
                                 .createBooking({
-                                  'lodging_id':
-                                      lodging.id, // Assuming public_id is id
-                                  'check_in': dateRange!.start
-                                      .toIso8601String(),
+                                  'lodging_id': lodging.id,
+                                  if (room != null) 'lodging_room_id': room.id,
+                                  'check_in': dateRange!.start.toIso8601String(),
                                   'check_out': dateRange!.end.toIso8601String(),
                                   'guests_count': guests,
                                   'rooms_count': rooms,
                                   'notes': notesController.text,
                                 });
 
-                            // Use captured references instead of the builder
-                            // context after await to satisfy analyzer.
                             navigator.pop();
                             if (success != null) {
                               ref.invalidate(myBookingsProvider);
@@ -558,6 +628,44 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                             return image;
                           },
                         ),
+                        // Top gradient for back button visibility
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: 120,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black.withAlpha(150),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Bottom gradient for indicator visibility
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: 80,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [
+                                  Colors.black.withAlpha(150),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                         Positioned(
                           bottom: 16,
                           right: 16,
@@ -567,15 +675,13 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: colorScheme.surface.withValues(
-                                alpha: 0.85,
-                              ),
+                              color: Colors.black.withAlpha(150),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
                               '${_currentImageIndex + 1} / ${lodging.media!.length}',
-                              style: TextStyle(
-                                color: colorScheme.onSurface,
+                              style: const TextStyle(
+                                color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -749,10 +855,48 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                   const SizedBox(height: 24),
                   _SectionTitle(title: 'Description'),
                   const SizedBox(height: 8),
-                  Text(
-                    lodging.description ?? 'No description available',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
+                  if (lodging.description != null && lodging.description!.isNotEmpty)
+                    StatefulBuilder(
+                      builder: (context, setState) {
+                        bool isExpanded = false;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              lodging.description!,
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
+                              maxLines: isExpanded ? null : 4,
+                              overflow: isExpanded ? null : TextOverflow.fade,
+                            ),
+                            if (!isExpanded && lodging.description!.length > 150)
+                              InkWell(
+                                onTap: () => setState(() => isExpanded = true),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'Show more',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          decoration: TextDecoration.underline,
+                                          color: colorScheme.primary,
+                                        ),
+                                      ),
+                                      Icon(Icons.keyboard_arrow_down, size: 18, color: colorScheme.primary),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      }
+                    )
+                  else
+                    Text(
+                      'No description available',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                   const SizedBox(height: 24),
                   if (lodging.latitude != null &&
                       lodging.longitude != null) ...[
@@ -807,28 +951,44 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                     const SizedBox(height: 24),
                   ],
                   if (lodging.amenities?.isNotEmpty == true) ...[
+                    const Divider(height: 48),
                     _SectionTitle(title: 'What this place offers'),
                     const SizedBox(height: 16),
-                    ...lodging.amenities!.map((amenity) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Row(
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 4,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                      ),
+                      itemCount: lodging.amenities!.length,
+                      itemBuilder: (context, index) {
+                        final amenity = lodging.amenities![index];
+                        return Row(
                           children: [
                             Icon(
                               _getAmenityIcon(amenity),
                               size: 24,
                               color: colorScheme.onSurfaceVariant,
                             ),
-                            const SizedBox(width: 16),
-                            Text(
-                              amenity,
-                              style: Theme.of(context).textTheme.bodyLarge,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                amenity,
+                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ],
-                        ),
-                      );
-                    }),
-                    const SizedBox(height: 24),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
                   ],
                   if (lodging.rooms?.isNotEmpty == true) ...[
                     _SectionTitle(title: 'Available Rooms'),
@@ -881,7 +1041,42 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                                     const SizedBox(height: 8),
                                     Text(
                                       room.description!,
-                                      style: Theme.of(context).textTheme.bodySmall,
+                                      style: Theme.of(context).textTheme.bodyMedium,
+                                    ),
+                                  ],
+                                  if (room.features != null && room.features!.isNotEmpty) ...[
+                                    const SizedBox(height: 12),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: room.features!.map((feature) {
+                                        return Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: colorScheme.surfaceContainerHighest,
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            feature,
+                                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                              color: colorScheme.onSurfaceVariant,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ],
+                                  if (!isHost) ...[
+                                    const SizedBox(height: 16),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: OutlinedButton(
+                                        onPressed: () => _showBookingDialog(context, lodging, room: room),
+                                        style: OutlinedButton.styleFrom(
+                                          side: BorderSide(color: colorScheme.primary),
+                                        ),
+                                        child: const Text('Book this Room'),
+                                      ),
                                     ),
                                   ],
                                 ],
@@ -894,36 +1089,152 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                     const SizedBox(height: 24),
                   ],
                   if (lodging.host != null) ...[
-                    const Divider(),
-                    const SizedBox(height: 24),
-                    _SectionTitle(title: 'Hosted by ${lodging.host!.name}'),
-                    const SizedBox(height: 16),
+                    const Divider(height: 48),
                     Row(
                       children: [
                         CircleAvatar(
-                          radius: 24,
+                          radius: 28,
+                          backgroundColor: colorScheme.primaryContainer,
                           child: Text(
                             lodging.host!.name[0].toUpperCase(),
-                            style: const TextStyle(fontSize: 20),
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onPrimaryContainer,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Joined ${DateFormat.yMMMM().format(lodging.host!.createdAt)}',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                            ),
-                          ],
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Hosted by ${lodging.host!.name}',
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Joined ${DateFormat.yMMMM().format(lodging.host!.createdAt)} • Superhost',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Icon(Icons.military_tech, color: colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${lodging.host!.name} is a Superhost. Superhosts are experienced, highly rated hosts who are committed to providing great stays for guests.',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
+                  const Divider(height: 48),
+                  _SectionTitle(title: 'Reviews'),
+                  const SizedBox(height: 16),
+                  if (lodging.averageRating > 0) ...[
+                    Row(
+                      children: [
+                        const Icon(Icons.star, size: 20, color: Colors.amber),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${lodging.averageRating.toStringAsFixed(1)} • ${lodging.ratingsCount} reviews',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  // Static Dummy Reviews
+                  SizedBox(
+                    height: 180,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: 3,
+                      separatorBuilder: (_, __) => const SizedBox(width: 16),
+                      itemBuilder: (context, index) {
+                        final reviewers = ['Sarah', 'Michael', 'Emma'];
+                        final dates = ['August 2025', 'July 2025', 'June 2025'];
+                        final texts = [
+                          'Absolutely wonderful stay! The place was exactly as described and perfectly clean.',
+                          'Great location and very communicative host. Would definitely stay here again when in town.',
+                          'Beautiful property with amazing amenities. Highly recommended for a relaxing getaway.'
+                        ];
+                        
+                        return Container(
+                          width: 280,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: colorScheme.outlineVariant.withAlpha(100)),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 16,
+                                    backgroundColor: colorScheme.secondaryContainer,
+                                    child: Text(
+                                      reviewers[index][0],
+                                      style: TextStyle(
+                                        color: colorScheme.onSecondaryContainer,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        reviewers[index],
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(
+                                        dates[index],
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Expanded(
+                                child: Text(
+                                  texts[index],
+                                  maxLines: 4,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   const SizedBox(height: 80), // Space for bottom button
                 ],
               ),

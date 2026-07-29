@@ -202,10 +202,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 value: 'host',
                                 child: Text('Host'),
                               ),
-                              DropdownMenuItem(
-                                value: 'professional',
-                                child: Text('Professional'),
-                              ),
                             ],
                             onChanged: (value) {
                               setState(() {
