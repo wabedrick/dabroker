@@ -20,7 +20,7 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email:rfc', 'max:255', 'unique:users,email'],
+            'email' => ['nullable', 'email:rfc', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'regex:/^\+?[0-9]{7,15}$/', 'unique:users,phone'],
             'country_code' => ['required', 'string', 'max:8'],
             'password' => ['required', 'string', 'min:10', 'confirmed'],

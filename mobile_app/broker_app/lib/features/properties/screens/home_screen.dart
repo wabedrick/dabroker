@@ -819,7 +819,7 @@ class _UserProfileButton extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        user.email,
+                        user.email ?? user.phone ?? '',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodySmall?.copyWith(

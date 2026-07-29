@@ -128,7 +128,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                   return ListTile(
                     title: Text(user.name),
                     subtitle: Text(
-                      '${user.email}\nRoles: ${user.roles.join(", ")}',
+                      '${user.email ?? user.phone ?? ""}\nRoles: ${user.roles.join(", ")}',
                     ),
                     isThreeLine: true,
                     trailing: Row(

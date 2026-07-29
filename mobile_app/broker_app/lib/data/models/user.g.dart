@@ -24,7 +24,7 @@ Map<String, dynamic> _$AuthResponseToJson(AuthResponse instance) =>
 _User _$UserFromJson(Map<String, dynamic> json) => _User(
   id: (json['id'] as num).toInt(),
   name: json['name'] as String,
-  email: json['email'] as String,
+  email: json['email'] as String?,
   phone: json['phone'] as String?,
   countryCode: json['country_code'] as String?,
   preferredRole: json['preferred_role'] as String,

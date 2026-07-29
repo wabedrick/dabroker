@@ -150,18 +150,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           TextFormField(
                             controller: _emailController,
                             decoration: const InputDecoration(
-                              labelText: 'Email',
+                              labelText: 'Email (Optional)',
                               hintText: 'Enter your email',
                               prefixIcon: Icon(Icons.email_outlined),
                             ),
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your email';
-                              }
-                              if (!value.contains('@')) {
-                                return 'Please enter a valid email';
+                              if (value != null && value.isNotEmpty) {
+                                if (!value.contains('@')) {
+                                  return 'Please enter a valid email';
+                                }
                               }
                               return null;
                             },

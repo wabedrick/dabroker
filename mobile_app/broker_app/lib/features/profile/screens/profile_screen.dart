@@ -68,7 +68,7 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           UserAccountsDrawerHeader(
             accountName: Text(user.name),
-            accountEmail: Text(user.email),
+            accountEmail: Text(user.email ?? user.phone ?? ''),
             currentAccountPicture: CircleAvatar(
               child: Text(
                 user.name[0].toUpperCase(),
