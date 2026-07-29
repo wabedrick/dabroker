@@ -27,6 +27,9 @@ abstract class AuthApiClient {
   @GET(ApiEndpoints.profile)
   Future<dynamic> getProfile();
 
+  @PUT(ApiEndpoints.profile)
+  Future<dynamic> updateProfile(@Body() Map<String, dynamic> body);
+
   @POST(ApiEndpoints.forgotPassword)
   Future<void> forgotPassword(@Body() Map<String, dynamic> body);
 

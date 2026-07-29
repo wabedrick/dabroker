@@ -10,13 +10,14 @@ class DemoAdminSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@example.com'],
+        $email = env('ADMIN_EMAIL', 'admin@example.com');
+        $admin = User::updateOrCreate(
+            ['email' => $email],
             [
-                'name' => 'Demo Admin',
-                'phone' => '+256700000999',
-                'country_code' => '+256',
-                'password' => Hash::make('Admin#1234'),
+                'name' => env('ADMIN_NAME', 'Demo Admin'),
+                'phone' => env('ADMIN_PHONE', '+256700000999'),
+                'country_code' => env('ADMIN_COUNTRY_CODE', '+256'),
+                'password' => Hash::make(env('ADMIN_PASSWORD', 'Admin#1234')),
                 'status' => 'active',
                 'preferred_role' => 'admin',
             ],

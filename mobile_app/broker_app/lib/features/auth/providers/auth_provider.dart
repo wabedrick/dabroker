@@ -180,6 +180,18 @@ class AuthStateNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> updateProfile(Map<String, dynamic> data) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final user = await _authRepository.updateProfile(data);
+      state = state.copyWith(user: user, isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
   Future<bool> resendOtp({
     required String identifier,
     required String purpose,

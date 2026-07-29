@@ -127,6 +127,17 @@ class AuthRepository {
     }
   }
 
+  Future<User> updateProfile(Map<String, dynamic> data) async {
+    try {
+      final response = await _apiClient.updateProfile(data);
+      final user = User.fromJson(response['data'] as Map<String, dynamic>);
+      await _storage.saveUser(user.toJson());
+      return user;
+    } catch (e) {
+      throw ApiErrorHandler.getErrorMessage(e);
+    }
+  }
+
   Future<void> forgotPassword({required String identifier}) async {
     try {
       await _apiClient.forgotPassword({

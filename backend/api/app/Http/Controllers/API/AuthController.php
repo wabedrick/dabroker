@@ -220,6 +220,17 @@ class AuthController extends Controller
         return new UserResource($request->user());
     }
 
+    public function updateProfile(\App\Http\Requests\Auth\UpdateProfileRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $user->update($request->validated());
+
+        return response()->json([
+            'message' => 'Profile updated successfully.',
+            'data' => new UserResource($user->fresh()),
+        ]);
+    }
+
     private function otpEnabled(): bool
     {
         return (bool) config('otp.enabled', true);

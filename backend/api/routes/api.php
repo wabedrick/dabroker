@@ -107,6 +107,7 @@ Route::prefix('v1')->group(function (): void {
 
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::get('profile', [AuthController::class, 'me']);
+        Route::put('profile', [AuthController::class, 'updateProfile']);
 
         Route::prefix('notifications')->group(function (): void {
             Route::get('preferences', [NotificationPreferenceController::class, 'show']);

@@ -6,6 +6,7 @@ import 'package:broker_app/features/bookings/screens/host_booking_list_screen.da
 
 import 'package:broker_app/features/inquiries/screens/owner_inquiry_list_screen.dart';
 import 'package:broker_app/features/lodgings/screens/host_lodging_list_screen.dart';
+import 'package:broker_app/features/profile/screens/edit_profile_screen.dart';
 import 'package:broker_app/features/properties/screens/owner_property_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,7 +48,22 @@ class ProfileScreen extends ConsumerWidget {
 
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(
+        title: const Text('Profile'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            tooltip: 'Edit Profile',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => EditProfileScreen(user: user),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: ListView(
         children: [
           UserAccountsDrawerHeader(
@@ -144,8 +160,17 @@ class ProfileScreen extends ConsumerWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
+            leading: Icon(
+              Icons.power_settings_new_rounded,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            title: Text(
+              'Logout',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             onTap: () async {
               await ref.read(authStateProvider.notifier).logout();
               if (context.mounted) {
