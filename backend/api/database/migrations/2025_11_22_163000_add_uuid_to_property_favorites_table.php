@@ -22,9 +22,11 @@ return new class extends Migration
             }
         });
 
-        Schema::table('property_favorites', function (Blueprint $table): void {
-            $table->uuid('public_id')->nullable(false)->change();
-        });
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            Schema::table('property_favorites', function (Blueprint $table): void {
+                $table->uuid('public_id')->nullable(false)->change();
+            });
+        }
     }
 
     public function down(): void

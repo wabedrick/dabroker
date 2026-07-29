@@ -122,34 +122,45 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $user = $this->findUserByIdentifier($request->identifier, true);
+        try {
+            $user = $this->findUserByIdentifier($request->identifier, true);
 
-        if (! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'password' => __('auth.password'),
+            if (! Hash::check($request->password, $user->password)) {
+                throw ValidationException::withMessages([
+                    'password' => __('auth.password'),
+                ]);
+            }
+
+            if (! $this->otpEnabled() && $user->status === 'pending') {
+                $user->update([
+                    'status' => 'active',
+                    'phone_verified_at' => filter_var($request->identifier, FILTER_VALIDATE_EMAIL) ? $user->phone_verified_at : now(),
+                    'email_verified_at' => filter_var($request->identifier, FILTER_VALIDATE_EMAIL) ? now() : $user->email_verified_at,
+                ]);
+            }
+
+            $token = $user->createToken($request->device_name ?? 'auth_token')->plainTextToken;
+
+            // Update last login
+            $user->update(['last_login_at' => now()]);
+
+            return response()->json([
+                'message' => 'Login successful.',
+                'data' => [
+                    'user' => new UserResource($user),
+                    'token' => $token,
+                ],
             ]);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Server Error',
+                'debug_message' => $e->getMessage(),
+                'debug_file' => $e->getFile(),
+                'debug_line' => $e->getLine(),
+            ], 500);
         }
-
-        if (! $this->otpEnabled() && $user->status === 'pending') {
-            $user->update([
-                'status' => 'active',
-                'phone_verified_at' => filter_var($request->identifier, FILTER_VALIDATE_EMAIL) ? $user->phone_verified_at : now(),
-                'email_verified_at' => filter_var($request->identifier, FILTER_VALIDATE_EMAIL) ? now() : $user->email_verified_at,
-            ]);
-        }
-
-        $token = $user->createToken($request->device_name ?? 'auth_token')->plainTextToken;
-
-        // Update last login
-        $user->update(['last_login_at' => now()]);
-
-        return response()->json([
-            'message' => 'Login successful.',
-            'data' => [
-                'user' => new UserResource($user),
-                'token' => $token,
-            ],
-        ]);
     }
 
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
