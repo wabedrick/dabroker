@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:broker_app/data/models/lodging_room.dart';
 import 'package:broker_app/core/utils/image_helper.dart';
 import 'package:broker_app/core/utils/money_format.dart';
-import 'package:broker_app/core/theme/app_spacing.dart';
+import 'package:broker_app/core/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
@@ -104,7 +104,7 @@ class _RoomDetailScreenState extends ConsumerState<RoomDetailScreen> {
             ],
 
             Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+              padding: EdgeInsets.all(AppSpacing.lg),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

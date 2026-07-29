@@ -1094,6 +1094,7 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                             ),
                           ],
                         ),
+                        ),
                       );
                     }),
                     const SizedBox(height: 24),
