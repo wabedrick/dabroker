@@ -234,7 +234,7 @@ class _EditRoleDialogState extends State<_EditRoleDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final allRoles = ['buyer', 'seller', 'host', 'professional', 'admin'];
+    final allRoles = ['buyer', 'seller', 'host', 'admin'];
 
     return AlertDialog(
       title: Text('Edit Roles for ${widget.user.name}'),

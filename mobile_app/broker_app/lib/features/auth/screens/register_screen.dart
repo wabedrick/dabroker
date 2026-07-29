@@ -41,10 +41,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     // Unfocus keyboard
     FocusScope.of(context).unfocus();
 
+    // Combine country code and phone for E.164 format
+    final fullPhone = '$_countryCode${_phoneController.text.trim()}';
+
     ref.read(authStateProvider.notifier).register(
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
-          phone: _phoneController.text.trim(),
+          phone: fullPhone,
           countryCode: _countryCode,
           password: _passwordController.text,
           passwordConfirmation: _confirmPasswordController.text,
@@ -57,11 +60,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     ref.listen(authStateProvider, (previous, next) {
       if (previous?.isLoading == true && !next.isLoading) {
         if (next.isAuthenticated || next.user != null) {
+          final fullPhone = '$_countryCode${_phoneController.text.trim()}';
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => OtpVerificationScreen(
-                identifier: _phoneController.text.trim(),
+                identifier: fullPhone,
                 purpose: 'registration',
               ),
             ),
@@ -177,6 +181,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your phone number';
+                              }
+                              if (!RegExp(r'^\d{7,15}$').hasMatch(value)) {
+                                return 'Please enter a valid phone number (7-15 digits)';
                               }
                               return null;
                             },

@@ -109,8 +109,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             controller: _identifierController,
                             decoration: const InputDecoration(
                               labelText: 'Email or Phone',
-                              hintText: 'Enter your email or phone number',
-                              prefixIcon: Icon(Icons.person_outline),
+                              hintText: 'Email or phone (with country code e.g. +256...)',
+                              prefixIcon: const Icon(Icons.person_outline),
                             ),
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,

@@ -131,10 +131,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
+                      readOnly: !widget.user.roles.contains('super_admin'),
+                      decoration: InputDecoration(
                         labelText: 'Email Address',
-                        prefixIcon: Icon(Icons.email_outlined),
-                        border: OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.email_outlined),
+                        border: const OutlineInputBorder(),
+                        helperText: widget.user.roles.contains('super_admin')
+                            ? null
+                            : 'Only the main admin can change emails.',
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
