@@ -154,7 +154,7 @@ class LodgingBrowseController extends Controller
             }
         }
 
-        $lodging->load(['host.roles', 'host.permissions', 'media', 'rooms']);
+        $lodging->load(['host.roles', 'host.permissions', 'media', 'rooms', 'rooms.media']);
 
         return new \App\Http\Resources\LodgingResource($lodging);
     }

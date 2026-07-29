@@ -16,7 +16,7 @@ import 'package:broker_app/data/models/lodging.dart';
 import 'package:broker_app/data/models/lodging_room.dart';
 import 'package:broker_app/features/auth/providers/auth_provider.dart';
 import 'package:intl/intl.dart';
-
+import 'package:broker_app/features/lodgings/screens/room_detail_screen.dart';
 class LodgingDetailScreen extends ConsumerStatefulWidget {
   const LodgingDetailScreen({
     super.key,
@@ -998,9 +998,18 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                       return Card(
                         margin: const EdgeInsets.only(bottom: 16),
                         clipBehavior: Clip.antiAlias,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => RoomDetailScreen(room: room),
+                              ),
+                            );
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                             if (room.media != null && room.media!.isNotEmpty)
                               AspectRatio(
                                 aspectRatio: 16 / 9,
