@@ -576,22 +576,31 @@ class _InlineError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isNetworkError = message.toLowerCase().contains('internet') || 
+                           message.toLowerCase().contains('connection') ||
+                           message.toLowerCase().contains('offline') ||
+                           message.toLowerCase().contains('timeout');
+                           
+    final icon = isNetworkError ? Icons.wifi_off_rounded : Icons.error_outline_rounded;
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.errorContainer,
+        color: colorScheme.errorContainer.withAlpha(80),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.errorContainer),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline, color: colorScheme.error),
+          Icon(icon, color: colorScheme.error),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               message,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onErrorContainer,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -1034,32 +1043,73 @@ class _ErrorView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
+    
+    final isNetworkError = error.toLowerCase().contains('internet') || 
+                           error.toLowerCase().contains('connection') ||
+                           error.toLowerCase().contains('offline');
+    final isTimeoutError = error.toLowerCase().contains('timed out') || 
+                           error.toLowerCase().contains('timeout');
+    
+    final String title;
+    final IconData icon;
+    
+    if (isTimeoutError) {
+      title = 'Slow Connection';
+      icon = Icons.wifi_tethering_error_rounded;
+    } else if (isNetworkError) {
+      title = 'No Internet Connection';
+      icon = Icons.wifi_off_rounded;
+    } else {
+      title = 'Oops! Something went wrong';
+      icon = Icons.error_outline_rounded;
+    }
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, size: 48, color: colorScheme.error),
-            const SizedBox(height: 12),
-            Text(
-              'Something went wrong',
-              style: Theme.of(context).textTheme.titleMedium,
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: colorScheme.errorContainer.withAlpha(50),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 64, color: colorScheme.error),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 24),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
             Text(
               error,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
+                height: 1.5,
               ),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
+            const SizedBox(height: 32),
+            FilledButton.icon(
               onPressed: () => ref
                   .read(propertyListProvider.notifier)
                   .refresh(params: ref.read(propertyListProvider).params),
-              child: const Text('Try Again'),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try Again'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
           ],
         ),

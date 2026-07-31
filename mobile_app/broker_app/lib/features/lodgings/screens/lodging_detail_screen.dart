@@ -5,6 +5,7 @@ import 'package:broker_app/core/utils/image_helper.dart';
 import 'package:broker_app/core/utils/money_format.dart';
 import 'package:broker_app/features/bookings/providers/booking_provider.dart';
 import 'package:broker_app/features/lodgings/providers/lodging_list_provider.dart';
+import 'package:broker_app/features/lodgings/providers/lodging_reviews_provider.dart';
 import 'package:broker_app/features/lodgings/screens/add_lodging_screen.dart';
 import 'package:broker_app/features/lodgings/screens/host_lodging_room_list_screen.dart';
 import 'package:flutter/material.dart';
@@ -1175,78 +1176,133 @@ class _LodgingDetailScreenState extends ConsumerState<LodgingDetailScreen> {
                     ),
                     const SizedBox(height: 16),
                   ],
-                  // Static Dummy Reviews
-                  SizedBox(
-                    height: 180,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 3,
-                      separatorBuilder: (_, __) => const SizedBox(width: 16),
-                      itemBuilder: (context, index) {
-                        final reviewers = ['Sarah', 'Michael', 'Emma'];
-                        final dates = ['August 2025', 'July 2025', 'June 2025'];
-                        final texts = [
-                          'Absolutely wonderful stay! The place was exactly as described and perfectly clean.',
-                          'Great location and very communicative host. Would definitely stay here again when in town.',
-                          'Beautiful property with amazing amenities. Highly recommended for a relaxing getaway.'
-                        ];
-                        
-                        return Container(
-                          width: 280,
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: colorScheme.outlineVariant.withAlpha(100)),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 16,
-                                    backgroundColor: colorScheme.secondaryContainer,
-                                    child: Text(
-                                      reviewers[index][0],
-                                      style: TextStyle(
-                                        color: colorScheme.onSecondaryContainer,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                  // Real Reviews
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final reviewsAsync = ref.watch(lodgingReviewsProvider(lodging.id));
+                      
+                      return reviewsAsync.when(
+                        data: (reviews) {
+                          if (reviews.isEmpty) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24),
+                              child: Text('No reviews yet. Be the first to review!'),
+                            );
+                          }
+                          
+                          return SizedBox(
+                            height: 180,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: reviews.length,
+                              separatorBuilder: (_, __) => const SizedBox(width: 16),
+                              itemBuilder: (context, index) {
+                                final review = reviews[index];
+                                final reviewerName = review.user?.name ?? 'Anonymous';
+                                final reviewerInitial = reviewerName.isNotEmpty ? reviewerName[0].toUpperCase() : '?';
+                                final dateText = review.createdAt != null 
+                                  ? '${review.createdAt!.year}-${review.createdAt!.month.toString().padLeft(2, '0')}-${review.createdAt!.day.toString().padLeft(2, '0')}' 
+                                  : 'Recently';
+                                  
+                                return Container(
+                                  width: 280,
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: colorScheme.outlineVariant.withAlpha(100)),
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Column(
+                                  child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        reviewers[index],
-                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      Row(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 16,
+                                            backgroundColor: colorScheme.secondaryContainer,
+                                            child: Text(
+                                              reviewerInitial,
+                                              style: TextStyle(
+                                                color: colorScheme.onSecondaryContainer,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    Expanded(
+                                                      child: Text(
+                                                        reviewerName,
+                                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        const Icon(Icons.star_rounded, size: 14, color: Colors.amber),
+                                                        const SizedBox(width: 4),
+                                                        Text(
+                                                          '${review.rating}',
+                                                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                                Text(
+                                                  dateText,
+                                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                                    color: colorScheme.onSurfaceVariant,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        dates[index],
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: colorScheme.onSurfaceVariant,
+                                      const SizedBox(height: 12),
+                                      Expanded(
+                                        child: Text(
+                                          (review.review == null || review.review!.trim().isEmpty) ? 'No comment provided.' : review.review!,
+                                          maxLines: 4,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            fontStyle: (review.review == null || review.review!.trim().isEmpty) ? FontStyle.italic : null,
+                                            color: (review.review == null || review.review!.trim().isEmpty) ? colorScheme.onSurfaceVariant : null,
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Expanded(
-                                child: Text(
-                                  texts[index],
-                                  maxLines: 4,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-                              ),
-                            ],
+                                );
+                              },
+                            ),
+                          );
+                        },
+                        loading: () => const SizedBox(
+                          height: 180,
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                        error: (error, stack) => SizedBox(
+                          height: 180,
+                          child: Center(
+                            child: Text(
+                              'Could not load reviews',
+                              style: TextStyle(color: colorScheme.error),
+                            ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 24),
                   const SizedBox(height: 80), // Space for bottom button

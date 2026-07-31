@@ -4,6 +4,7 @@ import 'package:broker_app/core/utils/api_error_handler.dart';
 import 'package:broker_app/data/models/lodging.dart';
 import 'package:broker_app/data/models/lodging_list_response.dart';
 import 'package:broker_app/data/models/lodging_room.dart';
+import 'package:broker_app/data/models/rating.dart';
 import 'package:broker_app/features/lodgings/repositories/lodging_api_client.dart';
 
 class LodgingRepository {
@@ -55,6 +56,20 @@ class LodgingRepository {
         'page': page,
         'per_page': perPage,
       });
+    } catch (error) {
+      throw ApiErrorHandler.getErrorMessage(error);
+    }
+  }
+
+  Future<List<Rating>> fetchRatings(String lodgingId, {int page = 1}) async {
+    try {
+      final response = await _apiClient.fetchRatings({
+        'rateable_type': 'lodging',
+        'rateable_id': lodgingId,
+        'page': page,
+      });
+      final data = response['data'] as List<dynamic>;
+      return data.map((e) => Rating.fromJson(e as Map<String, dynamic>)).toList();
     } catch (error) {
       throw ApiErrorHandler.getErrorMessage(error);
     }

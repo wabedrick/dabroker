@@ -22,6 +22,11 @@ abstract class LodgingApiClient {
     @Queries() Map<String, dynamic> queries,
   );
 
+  @GET('/ratings')
+  Future<dynamic> fetchRatings(
+    @Queries() Map<String, dynamic> queries,
+  );
+
   @POST('/ratings')
   Future<void> rateLodging(@Body() Map<String, dynamic> body);
 
