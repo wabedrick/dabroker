@@ -19,12 +19,33 @@ class PropertyBrowseController extends Controller
         $userId = $request->user('sanctum')?->id;
 
         if ($request->filled('q')) {
-            $paginator = Property::search((string) $request->query('q'))
-                ->query(function (Builder $builder) use ($request, $userId): void {
-                    $this->applyFilters($builder, $request);
+            try {
+                $scoutBuilder = Property::search((string) $request->query('q'));
+
+                foreach (['type', 'category', 'city', 'state', 'country', 'currency'] as $field) {
+                    if ($request->filled($field)) {
+                        $scoutBuilder->where($field, $request->query($field));
+                    }
+                }
+
+                $paginator = $scoutBuilder->query(function (Builder $builder) use ($request, $userId): void {
+                    $this->applyFilters($builder, $request); // Keeps complex DB-only filters like price
                     $this->applyFavoriteFlag($builder, $userId);
-                })
-                ->paginate($perPage);
+                })->paginate($perPage);
+            } catch (\Exception $e) {
+                // Fallback to Eloquent search if Meilisearch is down or misconfigured
+                $query = Property::query()->approved();
+                $this->applyFilters($query, $request);
+                $this->applyFavoriteFlag($query, $userId);
+                
+                $search = (string) $request->query('q');
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhere('city', 'like', "%{$search}%")
+                      ->orWhere('description', 'like', "%{$search}%");
+                });
+                $paginator = $query->with(['owner:id,name,preferred_role', 'media'])->paginate($perPage);
+            }
         } else {
             $query = Property::query()->approved();
             $this->applyFilters($query, $request);
