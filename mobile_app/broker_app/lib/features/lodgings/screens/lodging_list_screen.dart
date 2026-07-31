@@ -144,8 +144,8 @@ class _LodgingListScreenState extends ConsumerState<LodgingListScreen> {
       builder: (context) {
         return _LodgingFiltersBottomSheet(
           initialState: currentState,
-          onApply: (minPrice, maxPrice) {
-            ref.read(lodgingListProvider.notifier).updatePriceFilter(minPrice, maxPrice);
+          onApply: (minPrice, maxPrice, currency) {
+            ref.read(lodgingListProvider.notifier).updatePriceFilter(minPrice, maxPrice, currency: currency);
             Navigator.pop(context);
           },
         );
@@ -979,7 +979,7 @@ class _LodgingCardState extends ConsumerState<_LodgingCard> {
 
 class _LodgingFiltersBottomSheet extends StatefulWidget {
   final LodgingListState initialState;
-  final void Function(double? minPrice, double? maxPrice) onApply;
+  final void Function(double? minPrice, double? maxPrice, String? currency) onApply;
 
   const _LodgingFiltersBottomSheet({
     required this.initialState,
@@ -993,6 +993,7 @@ class _LodgingFiltersBottomSheet extends StatefulWidget {
 class _LodgingFiltersBottomSheetState extends State<_LodgingFiltersBottomSheet> {
   final TextEditingController _minPriceController = TextEditingController();
   final TextEditingController _maxPriceController = TextEditingController();
+  String _selectedCurrency = 'UGX';
 
   @override
   void initState() {
@@ -1003,6 +1004,7 @@ class _LodgingFiltersBottomSheetState extends State<_LodgingFiltersBottomSheet> 
     if (widget.initialState.maxPrice != null) {
       _maxPriceController.text = widget.initialState.maxPrice.toString();
     }
+    _selectedCurrency = widget.initialState.currency ?? 'UGX';
   }
 
   @override
@@ -1037,14 +1039,31 @@ class _LodgingFiltersBottomSheetState extends State<_LodgingFiltersBottomSheet> 
           ),
           const Divider(),
           const SizedBox(height: 16),
-          Text('Price Range (per night)', style: Theme.of(context).textTheme.titleMedium),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Price Range (per night)', style: Theme.of(context).textTheme.titleMedium),
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(value: 'UGX', label: Text('UGX')),
+                  ButtonSegment(value: 'USD', label: Text('USD')),
+                ],
+                selected: {_selectedCurrency},
+                onSelectionChanged: (val) {
+                  setState(() {
+                    _selectedCurrency = val.first;
+                  });
+                },
+              ),
+            ],
+          ),
           const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
                 child: TextField(
                   controller: _minPriceController,
-                  decoration: const InputDecoration(labelText: 'Min Price', prefixText: '\$'),
+                  decoration: InputDecoration(labelText: 'Min Price', prefixText: _selectedCurrency == 'UGX' ? 'USh ' : '\$ '),
                   keyboardType: TextInputType.number,
                 ),
               ),
@@ -1052,7 +1071,7 @@ class _LodgingFiltersBottomSheetState extends State<_LodgingFiltersBottomSheet> 
               Expanded(
                 child: TextField(
                   controller: _maxPriceController,
-                  decoration: const InputDecoration(labelText: 'Max Price', prefixText: '\$'),
+                  decoration: InputDecoration(labelText: 'Max Price', prefixText: _selectedCurrency == 'UGX' ? 'USh ' : '\$ '),
                   keyboardType: TextInputType.number,
                 ),
               ),
@@ -1066,7 +1085,7 @@ class _LodgingFiltersBottomSheetState extends State<_LodgingFiltersBottomSheet> 
                   onPressed: () {
                     _minPriceController.clear();
                     _maxPriceController.clear();
-                    widget.onApply(null, null);
+                    widget.onApply(null, null, 'UGX');
                   },
                   child: const Text('Clear Filters'),
                 ),
@@ -1077,7 +1096,7 @@ class _LodgingFiltersBottomSheetState extends State<_LodgingFiltersBottomSheet> 
                   onPressed: () {
                     final min = double.tryParse(_minPriceController.text);
                     final max = double.tryParse(_maxPriceController.text);
-                    widget.onApply(min, max);
+                    widget.onApply(min, max, _selectedCurrency);
                   },
                   child: const Text('Apply'),
                 ),

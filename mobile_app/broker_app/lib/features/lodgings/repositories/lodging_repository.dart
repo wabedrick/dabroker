@@ -17,6 +17,7 @@ class LodgingRepository {
     required int perPage,
     String? type,
     String? search,
+    String? currency = 'UGX',
     double? latitude,
     double? longitude,
     double? radius,
@@ -44,6 +45,7 @@ class LodgingRepository {
         if (sortBy != null) 'sort_by': sortBy,
         if (minPrice != null) 'min_price': minPrice,
         if (maxPrice != null) 'max_price': maxPrice,
+        if (currency != null) 'currency': currency,
       };
       return await _apiClient.fetchLodgings(queries);
     } catch (error) {

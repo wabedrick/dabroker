@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 
 class OwnerPropertyRoomController extends Controller
 {
-    public function index(Request $request, Property $property): JsonResponse
+    public function index(Request $request, Property $property)
     {
         $this->authorize('view', $property);
         // Only return rooms for this property

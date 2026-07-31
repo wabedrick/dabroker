@@ -11,6 +11,7 @@ class PropertyQueryParams {
   final double? radiusKm;
   final String? sort;
   final List<String>? amenities;
+  final String? currency;
 
   const PropertyQueryParams({
     this.search,
@@ -23,6 +24,7 @@ class PropertyQueryParams {
     this.radiusKm,
     this.sort,
     this.amenities,
+    this.currency = 'UGX', // Default to UGX
   });
 
   PropertyQueryParams copyWith({
@@ -36,6 +38,7 @@ class PropertyQueryParams {
     Object? radiusKm = _unset,
     Object? sort = _unset,
     Object? amenities = _unset,
+    Object? currency = _unset,
   }) {
     return PropertyQueryParams(
       search: search == _unset ? this.search : search as String?,
@@ -48,6 +51,7 @@ class PropertyQueryParams {
       radiusKm: radiusKm == _unset ? this.radiusKm : (radiusKm as num?)?.toDouble(),
       sort: sort == _unset ? this.sort : sort as String?,
       amenities: amenities == _unset ? this.amenities : amenities as List<String>?,
+      currency: currency == _unset ? this.currency : currency as String?,
     );
   }
 
@@ -66,6 +70,7 @@ class PropertyQueryParams {
     }
     if (sort?.isNotEmpty ?? false) params['sort'] = sort;
     if (amenities?.isNotEmpty ?? false) params['amenities'] = amenities!.join(',');
+    if (currency?.isNotEmpty ?? false) params['currency'] = currency;
 
     return params;
   }

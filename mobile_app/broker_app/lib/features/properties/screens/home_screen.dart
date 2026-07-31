@@ -1205,93 +1205,112 @@ class _FiltersBottomSheetState extends State<_FiltersBottomSheet> {
         top: 16,
         bottom: MediaQuery.of(context).viewInsets.bottom + 16,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Filters', style: Theme.of(context).textTheme.titleLarge),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-          const Divider(),
-          const SizedBox(height: 16),
-          Text('Price Range', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _minPriceController,
-                  decoration: const InputDecoration(labelText: 'Min Price', prefixText: '\$'),
-                  keyboardType: TextInputType.number,
-                  onChanged: (val) {
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Filters', style: Theme.of(context).textTheme.titleLarge),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const Divider(),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Price Range', style: Theme.of(context).textTheme.titleMedium),
+                SegmentedButton<String>(
+                  segments: const [
+                    ButtonSegment(value: 'UGX', label: Text('UGX')),
+                    ButtonSegment(value: 'USD', label: Text('USD')),
+                  ],
+                  selected: {_params.currency ?? 'UGX'},
+                  onSelectionChanged: (val) {
                     setState(() {
-                      _params = _params.copyWith(priceMin: double.tryParse(val));
+                      _params = _params.copyWith(currency: val.first);
                     });
                   },
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextField(
-                  controller: _maxPriceController,
-                  decoration: const InputDecoration(labelText: 'Max Price', prefixText: '\$'),
-                  keyboardType: TextInputType.number,
-                  onChanged: (val) {
-                    setState(() {
-                      _params = _params.copyWith(priceMax: double.tryParse(val));
-                    });
-                  },
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _minPriceController,
+                    decoration: InputDecoration(labelText: 'Min Price', prefixText: (_params.currency ?? 'UGX') == 'UGX' ? 'USh ' : '\$ '),
+                    keyboardType: TextInputType.number,
+                    onChanged: (val) {
+                      setState(() {
+                        _params = _params.copyWith(priceMin: double.tryParse(val));
+                      });
+                    },
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text('Amenities', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: allAmenities.map((amenity) {
-              final isSelected = _params.amenities?.contains(amenity) ?? false;
-              return FilterChip(
-                label: Text(amenity),
-                selected: isSelected,
-                onSelected: (_) => _toggleAmenity(amenity),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    setState(() {
-                      _params = _params.copyWith(amenities: null, priceMin: null, priceMax: null);
-                      _minPriceController.clear();
-                      _maxPriceController.clear();
-                    });
-                  },
-                  child: const Text('Clear Filters'),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextField(
+                    controller: _maxPriceController,
+                    decoration: InputDecoration(labelText: 'Max Price', prefixText: (_params.currency ?? 'UGX') == 'UGX' ? 'USh ' : '\$ '),
+                    keyboardType: TextInputType.number,
+                    onChanged: (val) {
+                      setState(() {
+                        _params = _params.copyWith(priceMax: double.tryParse(val));
+                      });
+                    },
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: FilledButton(
-                  onPressed: () => widget.onApply(_params),
-                  child: const Text('Apply'),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text('Amenities', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: allAmenities.map((amenity) {
+                final isSelected = _params.amenities?.contains(amenity) ?? false;
+                return FilterChip(
+                  label: Text(amenity),
+                  selected: isSelected,
+                  onSelected: (_) => _toggleAmenity(amenity),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      setState(() {
+                        _params = _params.copyWith(amenities: null, priceMin: null, priceMax: null, currency: 'UGX');
+                        _minPriceController.clear();
+                        _maxPriceController.clear();
+                      });
+                    },
+                    child: const Text('Clear Filters'),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => widget.onApply(_params),
+                    child: const Text('Apply'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

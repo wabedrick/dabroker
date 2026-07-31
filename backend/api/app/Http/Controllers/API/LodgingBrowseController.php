@@ -30,13 +30,44 @@ class LodgingBrowseController extends Controller
             $query->where('city', 'like', "%{$request->city}%");
         }
 
-        // Filter by price range
-        if ($request->has('min_price')) {
-            $query->where('price_per_night', '>=', $request->min_price);
-        }
+        // Filter by price range and currency
+        if ($request->has('min_price') || $request->has('max_price')) {
+            $minPrice = $request->has('min_price') ? (float) $request->min_price : null;
+            $maxPrice = $request->has('max_price') ? (float) $request->max_price : null;
+            $requestCurrency = $request->input('currency', 'UGX');
+            $exchangeRate = config('app.exchange_rate_usd_ugx', 3800); // Default approx rate
 
-        if ($request->has('max_price')) {
-            $query->where('price_per_night', '<=', $request->max_price);
+            $query->where(function ($q) use ($requestCurrency, $minPrice, $maxPrice, $exchangeRate) {
+                if ($requestCurrency === 'UGX') {
+                    $usdMin = $minPrice !== null ? $minPrice / $exchangeRate : null;
+                    $usdMax = $maxPrice !== null ? $maxPrice / $exchangeRate : null;
+
+                    $q->where(function ($subQ) use ($minPrice, $maxPrice) {
+                        $subQ->where('currency', 'UGX');
+                        if ($minPrice !== null) $subQ->where('price_per_night', '>=', $minPrice);
+                        if ($maxPrice !== null) $subQ->where('price_per_night', '<=', $maxPrice);
+                    })->orWhere(function ($subQ) use ($usdMin, $usdMax) {
+                        $subQ->where('currency', 'USD');
+                        if ($usdMin !== null) $subQ->where('price_per_night', '>=', $usdMin);
+                        if ($usdMax !== null) $subQ->where('price_per_night', '<=', $usdMax);
+                    });
+                } else {
+                    $ugxMin = $minPrice !== null ? $minPrice * $exchangeRate : null;
+                    $ugxMax = $maxPrice !== null ? $maxPrice * $exchangeRate : null;
+
+                    $q->where(function ($subQ) use ($minPrice, $maxPrice) {
+                        $subQ->where('currency', 'USD');
+                        if ($minPrice !== null) $subQ->where('price_per_night', '>=', $minPrice);
+                        if ($maxPrice !== null) $subQ->where('price_per_night', '<=', $maxPrice);
+                    })->orWhere(function ($subQ) use ($ugxMin, $ugxMax) {
+                        $subQ->where('currency', 'UGX');
+                        if ($ugxMin !== null) $subQ->where('price_per_night', '>=', $ugxMin);
+                        if ($ugxMax !== null) $subQ->where('price_per_night', '<=', $ugxMax);
+                    });
+                }
+            });
+        } elseif ($request->has('currency')) {
+            $query->where('currency', $request->currency);
         }
 
         // Filter by max guests

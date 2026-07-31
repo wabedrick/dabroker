@@ -83,12 +83,44 @@ class PropertyBrowseController extends Controller
             }
         }
 
-        if ($request->filled('price_min')) {
-            $builder->where('price', '>=', (float) $request->query('price_min'));
-        }
+        if ($request->filled('price_min') || $request->filled('price_max')) {
+            $minPrice = $request->filled('price_min') ? (float) $request->query('price_min') : null;
+            $maxPrice = $request->filled('price_max') ? (float) $request->query('price_max') : null;
+            $requestCurrency = $request->query('currency', 'UGX');
+            $exchangeRate = config('app.exchange_rate_usd_ugx', 3800); // Default approx rate
 
-        if ($request->filled('price_max')) {
-            $builder->where('price', '<=', (float) $request->query('price_max'));
+            $builder->where(function ($query) use ($requestCurrency, $minPrice, $maxPrice, $exchangeRate) {
+                if ($requestCurrency === 'UGX') {
+                    $usdMin = $minPrice !== null ? $minPrice / $exchangeRate : null;
+                    $usdMax = $maxPrice !== null ? $maxPrice / $exchangeRate : null;
+
+                    $query->where(function ($q) use ($minPrice, $maxPrice) {
+                        $q->where('currency', 'UGX');
+                        if ($minPrice !== null) $q->where('price', '>=', $minPrice);
+                        if ($maxPrice !== null) $q->where('price', '<=', $maxPrice);
+                    })->orWhere(function ($q) use ($usdMin, $usdMax) {
+                        $q->where('currency', 'USD');
+                        if ($usdMin !== null) $q->where('price', '>=', $usdMin);
+                        if ($usdMax !== null) $q->where('price', '<=', $usdMax);
+                    });
+                } else {
+                    $ugxMin = $minPrice !== null ? $minPrice * $exchangeRate : null;
+                    $ugxMax = $maxPrice !== null ? $maxPrice * $exchangeRate : null;
+
+                    $query->where(function ($q) use ($minPrice, $maxPrice) {
+                        $q->where('currency', 'USD');
+                        if ($minPrice !== null) $q->where('price', '>=', $minPrice);
+                        if ($maxPrice !== null) $q->where('price', '<=', $maxPrice);
+                    })->orWhere(function ($q) use ($ugxMin, $ugxMax) {
+                        $q->where('currency', 'UGX');
+                        if ($ugxMin !== null) $q->where('price', '>=', $ugxMin);
+                        if ($ugxMax !== null) $q->where('price', '<=', $ugxMax);
+                    });
+                }
+            });
+        } elseif ($request->filled('currency')) {
+            // If no price is specified but currency is, just filter by currency
+            $builder->where('currency', $request->query('currency'));
         }
 
         if ($request->filled('available_from')) {

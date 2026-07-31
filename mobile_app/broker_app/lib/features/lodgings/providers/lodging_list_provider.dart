@@ -47,8 +47,8 @@ class LodgingListState {
   final double? east;
   final double? west;
   final String? sortBy;
-  final double? minPrice;
   final double? maxPrice;
+  final String? currency;
 
   const LodgingListState({
     this.items = const [],
@@ -70,6 +70,7 @@ class LodgingListState {
     this.sortBy,
     this.minPrice,
     this.maxPrice,
+    this.currency = 'UGX',
   });
 
   LodgingListState copyWith({
@@ -92,6 +93,7 @@ class LodgingListState {
     String? sortBy,
     double? minPrice,
     double? maxPrice,
+    String? currency,
     // Explicit clear flags — set to true to force the field to null
     bool clearSearchQuery = false,
     bool clearLatLng = false,
@@ -121,6 +123,7 @@ class LodgingListState {
       sortBy: clearSortBy ? null : (sortBy ?? this.sortBy),
       minPrice: clearMinPrice ? null : (minPrice ?? this.minPrice),
       maxPrice: clearMaxPrice ? null : (maxPrice ?? this.maxPrice),
+      currency: currency ?? this.currency,
     );
   }
 }
@@ -144,6 +147,7 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
     String? sortBy,
     double? minPrice,
     double? maxPrice,
+    String? currency,
     // Explicit clear flags mirrored from copyWith
     bool clearSearchQuery = false,
     bool clearLatLng = false,
@@ -169,6 +173,7 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
       sortBy: sortBy,
       minPrice: minPrice,
       maxPrice: maxPrice,
+      currency: currency,
       hasMore: true,
       currentPage: 1,
       clearSearchQuery: clearSearchQuery,
@@ -197,6 +202,7 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
         sortBy: s.sortBy,
         minPrice: s.minPrice,
         maxPrice: s.maxPrice,
+        currency: s.currency,
       );
       state = state.copyWith(
         items: response.data,
@@ -228,6 +234,7 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
         sortBy: state.sortBy,
         minPrice: state.minPrice,
         maxPrice: state.maxPrice,
+        currency: state.currency,
       );
       state = state.copyWith(
         items: response.data,
@@ -262,6 +269,7 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
         sortBy: state.sortBy,
         minPrice: state.minPrice,
         maxPrice: state.maxPrice,
+        currency: state.currency,
       );
 
       state = state.copyWith(
@@ -283,10 +291,11 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
     );
   }
 
-  void updatePriceFilter(double? min, double? max) {
+  void updatePriceFilter(double? min, double? max, {String? currency}) {
     load(
       minPrice: min,
       maxPrice: max,
+      currency: currency,
       clearMinPrice: min == null,
       clearMaxPrice: max == null,
     );
