@@ -22,14 +22,8 @@ class PropertyBrowseController extends Controller
             try {
                 $scoutBuilder = Property::search((string) $request->query('q'));
 
-                foreach (['type', 'category', 'city', 'state', 'country', 'currency'] as $field) {
-                    if ($request->filled($field)) {
-                        $scoutBuilder->where($field, $request->query($field));
-                    }
-                }
-
                 $paginator = $scoutBuilder->query(function (Builder $builder) use ($request, $userId): void {
-                    $this->applyFilters($builder, $request); // Keeps complex DB-only filters like price
+                    $this->applyFilters($builder, $request); // DB filters
                     $this->applyFavoriteFlag($builder, $userId);
                 })->paginate($perPage);
             } catch (\Exception $e) {
@@ -38,12 +32,20 @@ class PropertyBrowseController extends Controller
                 $this->applyFilters($query, $request);
                 $this->applyFavoriteFlag($query, $userId);
                 
-                $search = (string) $request->query('q');
-                $query->where(function ($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                      ->orWhere('city', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%");
+                $searchTerms = array_filter(explode(' ', (string) $request->query('q')));
+                
+                $query->where(function ($q) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $q->where(function ($innerQ) use ($term) {
+                            $innerQ->where('title', 'like', "%{$term}%")
+                                   ->orWhere('city', 'like', "%{$term}%")
+                                   ->orWhere('description', 'like', "%{$term}%")
+                                   ->orWhere('type', 'like', "%{$term}%")
+                                   ->orWhere('category', 'like', "%{$term}%");
+                        });
+                    }
                 });
+                
                 $paginator = $query->with(['owner:id,name,preferred_role', 'media'])->paginate($perPage);
             }
         } else {
