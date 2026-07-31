@@ -95,6 +95,16 @@ class PropertyBrowseController extends Controller
             $builder->whereDate('available_from', '<=', $request->query('available_from'));
         }
 
+        if ($request->filled('amenities')) {
+            $amenities = is_string($request->query('amenities'))
+                ? explode(',', $request->query('amenities'))
+                : (array) $request->query('amenities');
+
+            foreach ($amenities as $amenity) {
+                $builder->whereJsonContains('amenities', $amenity);
+            }
+        }
+
         if ($request->filled('lat') && $request->filled('lng') && $request->filled('radius_km')) {
             $this->applyBoundingBoxFilter(
                 $builder,

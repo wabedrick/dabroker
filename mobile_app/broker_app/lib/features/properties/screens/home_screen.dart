@@ -148,7 +148,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         children: [
-
+                          _QuickFilterPill(
+                            label: 'Filters',
+                            icon: Icons.tune,
+                            isSelected: state.params.amenities?.isNotEmpty ?? false,
+                            onTap: () => _showFiltersBottomSheet(context, state.params),
+                          ),
+                          const SizedBox(width: 8),
                           _QuickFilterPill(
                             label: 'For rent',
                             icon: Icons.key,
@@ -278,6 +284,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   void _applyFilters(PropertyQueryParams params) {
     ref.read(propertyListProvider.notifier).updateFilters(params);
+  }
+
+  void _showFiltersBottomSheet(BuildContext context, PropertyQueryParams currentParams) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) {
+        return _FiltersBottomSheet(
+          initialParams: currentParams,
+          onApply: (params) {
+            _applyFilters(params);
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
   }
 }
 
@@ -1113,6 +1136,162 @@ class _ErrorView extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _FiltersBottomSheet extends StatefulWidget {
+  final PropertyQueryParams initialParams;
+  final ValueChanged<PropertyQueryParams> onApply;
+
+  const _FiltersBottomSheet({
+    required this.initialParams,
+    required this.onApply,
+  });
+
+  @override
+  State<_FiltersBottomSheet> createState() => _FiltersBottomSheetState();
+}
+
+class _FiltersBottomSheetState extends State<_FiltersBottomSheet> {
+  late PropertyQueryParams _params;
+  final TextEditingController _minPriceController = TextEditingController();
+  final TextEditingController _maxPriceController = TextEditingController();
+
+  final List<String> _apartmentAmenities = [
+    '24/7 Security', 'Serviced', 'Generator Backup', 'Elevator Available'
+  ];
+
+  final List<String> _rentalAmenities = [
+    'Self-Contained', 'Separate Yaka Meter', 'Shared Outside Toilet', 'Gated Compound'
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _params = widget.initialParams;
+    if (_params.priceMin != null) _minPriceController.text = _params.priceMin.toString();
+    if (_params.priceMax != null) _maxPriceController.text = _params.priceMax.toString();
+  }
+
+  @override
+  void dispose() {
+    _minPriceController.dispose();
+    _maxPriceController.dispose();
+    super.dispose();
+  }
+
+  void _toggleAmenity(String amenity) {
+    setState(() {
+      final currentAmenities = _params.amenities?.toList() ?? [];
+      if (currentAmenities.contains(amenity)) {
+        currentAmenities.remove(amenity);
+      } else {
+        currentAmenities.add(amenity);
+      }
+      _params = _params.copyWith(amenities: currentAmenities.isEmpty ? null : currentAmenities);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final allAmenities = [..._apartmentAmenities, ..._rentalAmenities];
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Filters', style: Theme.of(context).textTheme.titleLarge),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+          const Divider(),
+          const SizedBox(height: 16),
+          Text('Price Range', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _minPriceController,
+                  decoration: const InputDecoration(labelText: 'Min Price', prefixText: '\$'),
+                  keyboardType: TextInputType.number,
+                  onChanged: (val) {
+                    setState(() {
+                      _params = _params.copyWith(priceMin: double.tryParse(val));
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextField(
+                  controller: _maxPriceController,
+                  decoration: const InputDecoration(labelText: 'Max Price', prefixText: '\$'),
+                  keyboardType: TextInputType.number,
+                  onChanged: (val) {
+                    setState(() {
+                      _params = _params.copyWith(priceMax: double.tryParse(val));
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text('Amenities', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: allAmenities.map((amenity) {
+              final isSelected = _params.amenities?.contains(amenity) ?? false;
+              return FilterChip(
+                label: Text(amenity),
+                selected: isSelected,
+                onSelected: (_) => _toggleAmenity(amenity),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      _params = _params.copyWith(amenities: null, priceMin: null, priceMax: null);
+                      _minPriceController.clear();
+                      _maxPriceController.clear();
+                    });
+                  },
+                  child: const Text('Clear Filters'),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () => widget.onApply(_params),
+                  child: const Text('Apply'),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

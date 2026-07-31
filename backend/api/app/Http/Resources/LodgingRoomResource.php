@@ -27,7 +27,7 @@ class LodgingRoomResource extends JsonResource
             'quantity' => $this->quantity,
             'room_type' => $this->room_type,
             'bed_type' => $this->bed_type,
-            'gallery' => $this->formatGallery(),
+            'media' => $this->formatGallery(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:broker_app/core/utils/image_helper.dart';
 import 'package:broker_app/data/models/lodging.dart';
 import 'package:broker_app/data/models/lodging_room.dart';
 import 'package:broker_app/features/lodgings/providers/lodging_management_provider.dart';
@@ -145,7 +145,7 @@ class _HostLodgingRoomListScreenState extends ConsumerState<HostLodgingRoomListS
                               decoration: BoxDecoration(
                                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                                 image: DecorationImage(
-                                  image: NetworkImage(room.media!.first.url),
+                                  image: NetworkImage(ImageHelper.fixUrl(room.media!.first.url)),
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -367,7 +367,7 @@ class _RoomDialogState extends ConsumerState<_RoomDialog> {
                             )
                           : widget.room?.media != null && widget.room!.media!.isNotEmpty
                               ? DecorationImage(
-                                  image: NetworkImage(widget.room!.media!.first.url),
+                                  image: NetworkImage(ImageHelper.fixUrl(widget.room!.media!.first.url)),
                                   fit: BoxFit.cover,
                                 )
                               : null,

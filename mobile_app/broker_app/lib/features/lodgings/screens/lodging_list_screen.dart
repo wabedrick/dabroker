@@ -136,6 +136,22 @@ class _LodgingListScreenState extends ConsumerState<LodgingListScreen> {
       );
     }
   }
+  void _showFiltersBottomSheet(BuildContext context, LodgingListState currentState) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) {
+        return _LodgingFiltersBottomSheet(
+          initialState: currentState,
+          onApply: (minPrice, maxPrice) {
+            ref.read(lodgingListProvider.notifier).updatePriceFilter(minPrice, maxPrice);
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
 
   void _showLocationSearch() {
     // Capture the parent's ScaffoldMessenger BEFORE opening dialog,
@@ -331,6 +347,8 @@ class _LodgingListScreenState extends ConsumerState<LodgingListScreen> {
                     const SizedBox(height: 8),
                     _LodgingFilterChips(
                       selectedType: state.typeFilter,
+                      hasActiveFilters: state.minPrice != null || state.maxPrice != null,
+                      onOpenFilters: () => _showFiltersBottomSheet(context, state),
                       onFilterSelected: (type) {
                         ref.read(lodgingListProvider.notifier).updateTypeFilter(type);
                       },
@@ -563,10 +581,14 @@ class _LodgingFilterChips extends StatelessWidget {
   const _LodgingFilterChips({
     required this.selectedType,
     required this.onFilterSelected,
+    required this.onOpenFilters,
+    this.hasActiveFilters = false,
   });
 
   final String? selectedType;
   final ValueChanged<String?> onFilterSelected;
+  final VoidCallback onOpenFilters;
+  final bool hasActiveFilters;
 
   static const _filters = [
     (label: 'All', value: null),
@@ -583,8 +605,18 @@ class _LodgingFilterChips extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _filters.length + 1,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
-          final filter = _filters[index];
+          if (index == 0) {
+            return ActionChip(
+              avatar: const Icon(Icons.tune, size: 16),
+              label: const Text('Filters'),
+              backgroundColor: hasActiveFilters ? Theme.of(context).colorScheme.primaryContainer : null,
+              onPressed: onOpenFilters,
+            );
+          }
+          final filter = _filters[index - 1];
           final isSelected = selectedType == filter.value;
           return ChoiceChip(
             label: Text(filter.label),
@@ -599,8 +631,6 @@ class _LodgingFilterChips extends StatelessWidget {
             },
           );
         },
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemCount: _filters.length,
       ),
     );
   }
@@ -782,7 +812,7 @@ class _LodgingCardState extends ConsumerState<_LodgingCard> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final images = widget.lodging.media?.map((e) {
-          final url = e.previewUrl ?? e.url ?? '';
+          final url = e.previewUrl ?? e.url;
           return ImageHelper.fixUrl(url);
         }).toList() ?? [];
 
@@ -942,6 +972,119 @@ class _LodgingCardState extends ConsumerState<_LodgingCard> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _LodgingFiltersBottomSheet extends StatefulWidget {
+  final LodgingListState initialState;
+  final void Function(double? minPrice, double? maxPrice) onApply;
+
+  const _LodgingFiltersBottomSheet({
+    required this.initialState,
+    required this.onApply,
+  });
+
+  @override
+  State<_LodgingFiltersBottomSheet> createState() => _LodgingFiltersBottomSheetState();
+}
+
+class _LodgingFiltersBottomSheetState extends State<_LodgingFiltersBottomSheet> {
+  final TextEditingController _minPriceController = TextEditingController();
+  final TextEditingController _maxPriceController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialState.minPrice != null) {
+      _minPriceController.text = widget.initialState.minPrice.toString();
+    }
+    if (widget.initialState.maxPrice != null) {
+      _maxPriceController.text = widget.initialState.maxPrice.toString();
+    }
+  }
+
+  @override
+  void dispose() {
+    _minPriceController.dispose();
+    _maxPriceController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Filters', style: Theme.of(context).textTheme.titleLarge),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+          const Divider(),
+          const SizedBox(height: 16),
+          Text('Price Range (per night)', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _minPriceController,
+                  decoration: const InputDecoration(labelText: 'Min Price', prefixText: '\$'),
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextField(
+                  controller: _maxPriceController,
+                  decoration: const InputDecoration(labelText: 'Max Price', prefixText: '\$'),
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    _minPriceController.clear();
+                    _maxPriceController.clear();
+                    widget.onApply(null, null);
+                  },
+                  child: const Text('Clear Filters'),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () {
+                    final min = double.tryParse(_minPriceController.text);
+                    final max = double.tryParse(_maxPriceController.text);
+                    widget.onApply(min, max);
+                  },
+                  child: const Text('Apply'),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -25,6 +25,8 @@ class LodgingRepository {
     double? east,
     double? west,
     String? sortBy,
+    double? minPrice,
+    double? maxPrice,
   }) async {
     try {
       final queries = {
@@ -40,6 +42,8 @@ class LodgingRepository {
         if (east != null) 'east': east,
         if (west != null) 'west': west,
         if (sortBy != null) 'sort_by': sortBy,
+        if (minPrice != null) 'min_price': minPrice,
+        if (maxPrice != null) 'max_price': maxPrice,
       };
       return await _apiClient.fetchLodgings(queries);
     } catch (error) {

@@ -50,6 +50,27 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
   final List<String> _deletedImageIds = [];
   final ImagePicker _picker = ImagePicker();
 
+  final List<String> _selectedAmenities = [];
+
+  final List<String> _apartmentAmenities = [
+    '24/7 Security', 'Serviced', 'Generator Backup', 'Elevator Available'
+  ];
+
+  final List<String> _rentalAmenities = [
+    'Self-Contained', 'Separate Yaka Meter', 'Shared Outside Toilet', 'Gated Compound'
+  ];
+
+  List<String> get _availableAmenities {
+    final Set<String> amenities = {};
+    if (_type == 'apartment') {
+      amenities.addAll(_apartmentAmenities);
+    }
+    if (_category == 'rent') {
+      amenities.addAll(_rentalAmenities);
+    }
+    return amenities.toList();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -77,6 +98,10 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
 
       if (p.gallery != null) {
         _existingImages.addAll(p.gallery!);
+      }
+      
+      if (p.amenities != null) {
+        _selectedAmenities.addAll(p.amenities!);
       }
     }
   }
@@ -246,7 +271,7 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
       'country': _countryController.text,
       'latitude': double.tryParse(_latitudeController.text),
       'longitude': double.tryParse(_longitudeController.text),
-      'amenities': [],
+      'amenities': _selectedAmenities,
       'metadata': {
         if (_type != 'land' && _bedroomsController.text.isNotEmpty) 'bedrooms': int.tryParse(_bedroomsController.text),
         if (_type != 'land' && _bathroomsController.text.isNotEmpty) 'bathrooms': int.tryParse(_bathroomsController.text),
@@ -569,6 +594,33 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                   ],
                 ),
               ],
+              if (_type == 'apartment' || _category == 'rent') ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 8),
+                const Text('Amenities', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _availableAmenities.map((amenity) {
+                    final isSelected = _selectedAmenities.contains(amenity);
+                    return FilterChip(
+                      label: Text(amenity),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          if (selected) {
+                            _selectedAmenities.add(amenity);
+                          } else {
+                            _selectedAmenities.remove(amenity);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ],
             ],
           ),
         ),
@@ -618,8 +670,10 @@ class _AddPropertyScreenState extends ConsumerState<AddPropertyScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
                 children: [
                   ElevatedButton.icon(
                     icon: const Icon(Icons.my_location),

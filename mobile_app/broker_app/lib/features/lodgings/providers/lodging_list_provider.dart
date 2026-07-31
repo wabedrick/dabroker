@@ -47,6 +47,8 @@ class LodgingListState {
   final double? east;
   final double? west;
   final String? sortBy;
+  final double? minPrice;
+  final double? maxPrice;
 
   const LodgingListState({
     this.items = const [],
@@ -66,6 +68,8 @@ class LodgingListState {
     this.east,
     this.west,
     this.sortBy,
+    this.minPrice,
+    this.maxPrice,
   });
 
   LodgingListState copyWith({
@@ -86,12 +90,16 @@ class LodgingListState {
     double? east,
     double? west,
     String? sortBy,
+    double? minPrice,
+    double? maxPrice,
     // Explicit clear flags — set to true to force the field to null
     bool clearSearchQuery = false,
     bool clearLatLng = false,
     bool clearBounds = false,
     bool clearSortBy = false,
     bool clearTypeFilter = false,
+    bool clearMinPrice = false,
+    bool clearMaxPrice = false,
   }) {
     return LodgingListState(
       items: items ?? this.items,
@@ -111,6 +119,8 @@ class LodgingListState {
       east: clearBounds ? null : (east ?? this.east),
       west: clearBounds ? null : (west ?? this.west),
       sortBy: clearSortBy ? null : (sortBy ?? this.sortBy),
+      minPrice: clearMinPrice ? null : (minPrice ?? this.minPrice),
+      maxPrice: clearMaxPrice ? null : (maxPrice ?? this.maxPrice),
     );
   }
 }
@@ -132,12 +142,16 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
     double? east,
     double? west,
     String? sortBy,
+    double? minPrice,
+    double? maxPrice,
     // Explicit clear flags mirrored from copyWith
     bool clearSearchQuery = false,
     bool clearLatLng = false,
     bool clearBounds = false,
     bool clearSortBy = false,
     bool clearTypeFilter = false,
+    bool clearMinPrice = false,
+    bool clearMaxPrice = false,
   }) async {
     state = state.copyWith(
       items: const [],
@@ -153,6 +167,8 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
       east: east,
       west: west,
       sortBy: sortBy,
+      minPrice: minPrice,
+      maxPrice: maxPrice,
       hasMore: true,
       currentPage: 1,
       clearSearchQuery: clearSearchQuery,
@@ -160,6 +176,8 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
       clearBounds: clearBounds,
       clearSortBy: clearSortBy,
       clearTypeFilter: clearTypeFilter,
+      clearMinPrice: clearMinPrice,
+      clearMaxPrice: clearMaxPrice,
     );
     // Re-read state after copyWith so we use the cleared/updated values
     final s = state;
@@ -177,6 +195,8 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
         east: s.east,
         west: s.west,
         sortBy: s.sortBy,
+        minPrice: s.minPrice,
+        maxPrice: s.maxPrice,
       );
       state = state.copyWith(
         items: response.data,
@@ -206,6 +226,8 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
         east: state.east,
         west: state.west,
         sortBy: state.sortBy,
+        minPrice: state.minPrice,
+        maxPrice: state.maxPrice,
       );
       state = state.copyWith(
         items: response.data,
@@ -238,6 +260,8 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
         east: state.east,
         west: state.west,
         sortBy: state.sortBy,
+        minPrice: state.minPrice,
+        maxPrice: state.maxPrice,
       );
 
       state = state.copyWith(
@@ -256,15 +280,15 @@ class LodgingListNotifier extends StateNotifier<LodgingListState> {
     load(
       type: type,
       clearTypeFilter: type == null,
-      search: state.searchQuery,
-      latitude: state.latitude,
-      longitude: state.longitude,
-      radius: state.radius,
-      north: state.north,
-      south: state.south,
-      east: state.east,
-      west: state.west,
-      sortBy: state.sortBy,
+    );
+  }
+
+  void updatePriceFilter(double? min, double? max) {
+    load(
+      minPrice: min,
+      maxPrice: max,
+      clearMinPrice: min == null,
+      clearMaxPrice: max == null,
     );
   }
 
