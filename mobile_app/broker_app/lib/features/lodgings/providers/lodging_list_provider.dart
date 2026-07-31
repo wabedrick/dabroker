@@ -47,6 +47,7 @@ class LodgingListState {
   final double? east;
   final double? west;
   final String? sortBy;
+  final double? minPrice;
   final double? maxPrice;
   final String? currency;
 
