@@ -66,8 +66,6 @@ class LodgingBrowseController extends Controller
                     });
                 }
             });
-        } elseif ($request->has('currency')) {
-            $query->where('currency', $request->currency);
         }
 
         // Filter by max guests

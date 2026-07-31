@@ -141,9 +141,6 @@ class PropertyBrowseController extends Controller
                     });
                 }
             });
-        } elseif ($request->filled('currency')) {
-            // If no price is specified but currency is, just filter by currency
-            $builder->where('currency', $request->query('currency'));
         }
 
         if ($request->filled('available_from')) {
