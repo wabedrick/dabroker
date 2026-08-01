@@ -49,7 +49,15 @@ class AuthController extends Controller
         });
 
         if ($requiresOtp) {
-            $this->otpService->send($user->phone ?? $user->email, 'registration');
+            try {
+                $this->otpService->send($user->phone ?? $user->email, 'registration');
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send registration OTP: ' . $e->getMessage());
+                return response()->json([
+                    'message' => 'Registration successful, but we could not send the OTP. Please request a new one.',
+                    'data' => new UserResource($user),
+                ], 201);
+            }
         } else {
             $this->activateUserWithoutOtp($user);
         }
@@ -77,7 +85,14 @@ class AuthController extends Controller
             ]);
         }
 
-        $this->otpService->send($data['identifier'], $data['purpose']);
+        try {
+            $this->otpService->send($data['identifier'], $data['purpose']);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to resend OTP: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to send OTP. Please try again later.',
+            ], 500);
+        }
 
         return response()->json([
             'message' => 'OTP resent successfully.',
@@ -131,6 +146,21 @@ class AuthController extends Controller
                 ]);
             }
 
+            if ($this->otpEnabled() && $user->status === 'pending') {
+                try {
+                    $this->otpService->send($request->identifier, 'registration');
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to send login OTP: ' . $e->getMessage());
+                    throw ValidationException::withMessages([
+                        'identifier' => 'OTP_VERIFICATION_REQUIRED',
+                        'otp_error' => 'Failed to send OTP. Please try again later.',
+                    ]);
+                }
+                throw ValidationException::withMessages([
+                    'identifier' => 'OTP_VERIFICATION_REQUIRED',
+                ]);
+            }
+
             if (! $this->otpEnabled() && $user->status === 'pending') {
                 $user->update([
                     'status' => 'active',
@@ -172,7 +202,14 @@ class AuthController extends Controller
             ->orWhere('phone', $identifier)
             ->firstOrFail();
 
-        $this->otpService->send($identifier, 'password_reset');
+        try {
+            $this->otpService->send($identifier, 'password_reset');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send forgot password OTP: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to send OTP. Please try again later.',
+            ], 500);
+        }
 
         return response()->json([
             'message' => 'OTP sent to the provided identifier.',

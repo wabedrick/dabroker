@@ -121,6 +121,7 @@ flutter:
     - assets/config/development.json
     - assets/config/production.json
     - assets/config/local_override.json
+    - assets/dabroker_icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

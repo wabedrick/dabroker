@@ -331,6 +331,18 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         selectedColor: colorScheme.secondaryContainer,
       ),
+
+      // SnackBar Theme
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: colorScheme.inverseSurface,
+        contentTextStyle: _buildTextTheme(brightness: Brightness.light).bodyMedium?.copyWith(
+          color: colorScheme.onInverseSurface,
+        ),
+        actionTextColor: colorScheme.inversePrimary,
+        elevation: 6,
+      ),
     );
   }
 
@@ -404,6 +416,18 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         selectedColor: colorScheme.secondaryContainer,
+      ),
+
+      // SnackBar Theme
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: colorScheme.inverseSurface,
+        contentTextStyle: _buildTextTheme(brightness: Brightness.dark).bodyMedium?.copyWith(
+          color: colorScheme.onInverseSurface,
+        ),
+        actionTextColor: colorScheme.inversePrimary,
+        elevation: 6,
       ),
     );
   }

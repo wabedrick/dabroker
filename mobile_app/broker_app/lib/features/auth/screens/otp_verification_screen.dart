@@ -244,7 +244,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Enter the 6-digit code sent to\n${widget.identifier}\n\n(Hint: For testing, use 123456)',
+                              'Enter the 6-digit code sent to\n${widget.identifier}',
                               style: Theme.of(context).textTheme.bodyLarge
                                   ?.copyWith(color: AppColors.textSecondary),
                               textAlign: TextAlign.center,

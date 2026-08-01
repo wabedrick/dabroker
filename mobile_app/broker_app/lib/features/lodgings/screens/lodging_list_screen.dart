@@ -13,6 +13,7 @@ import 'package:broker_app/features/lodgings/widgets/location_search_dialog.dart
 import 'package:broker_app/features/lodgings/widgets/lodging_image_carousel.dart';
 import 'package:broker_app/core/providers/location_provider.dart';
 import 'package:flutter/material.dart';
+import '../../../core/widgets/app_error_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -683,7 +684,11 @@ class _LodgingList extends ConsumerWidget {
 
     if (state.error != null && state.items.isEmpty) {
       return SliverFillRemaining(
-        child: Center(child: Text('Error: ${state.error}')),
+        hasScrollBody: false,
+        child: AppErrorView(
+          error: state.error!,
+          onRetry: () => ref.read(lodgingListProvider.notifier).refresh(),
+        ),
       );
     }
 

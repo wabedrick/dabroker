@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../core/widgets/app_error_view.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -406,7 +407,12 @@ class _PropertyFeedSliver extends ConsumerWidget {
     if (state.error != null && state.items.isEmpty) {
       return SliverFillRemaining(
         hasScrollBody: false,
-        child: _ErrorView(error: state.error!),
+        child: AppErrorView(
+          error: state.error!,
+          onRetry: () => ref
+              .read(propertyListProvider.notifier)
+              .refresh(params: ref.read(propertyListProvider).params),
+        ),
       );
     }
 
@@ -1058,88 +1064,6 @@ class _QuickFilterPill extends StatelessWidget {
   }
 }
 
-class _ErrorView extends ConsumerWidget {
-  const _ErrorView({required this.error});
-
-  final String error;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final colorScheme = Theme.of(context).colorScheme;
-    
-    final isNetworkError = error.toLowerCase().contains('internet') || 
-                           error.toLowerCase().contains('connection') ||
-                           error.toLowerCase().contains('offline');
-    final isTimeoutError = error.toLowerCase().contains('timed out') || 
-                           error.toLowerCase().contains('timeout');
-    
-    final String title;
-    final IconData icon;
-    
-    if (isTimeoutError) {
-      title = 'Slow Connection';
-      icon = Icons.wifi_tethering_error_rounded;
-    } else if (isNetworkError) {
-      title = 'No Internet Connection';
-      icon = Icons.wifi_off_rounded;
-    } else {
-      title = 'Oops! Something went wrong';
-      icon = Icons.error_outline_rounded;
-    }
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: colorScheme.errorContainer.withAlpha(50),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 64, color: colorScheme.error),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              error,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 32),
-            FilledButton.icon(
-              onPressed: () => ref
-                  .read(propertyListProvider.notifier)
-                  .refresh(params: ref.read(propertyListProvider).params),
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Try Again'),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _FiltersBottomSheet extends StatefulWidget {
   final PropertyQueryParams initialParams;

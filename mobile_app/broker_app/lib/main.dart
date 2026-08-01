@@ -14,6 +14,8 @@ import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/register_screen.dart';
 import 'features/home/screens/main_screen.dart';
 
+import 'features/splash/screens/splash_screen.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppConfig.load();
@@ -63,7 +65,7 @@ class _BrokerAppState extends ConsumerState<BrokerApp> {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      home: const MainScreen(),
+      home: const SplashScreen(),
     );
   }
 }
