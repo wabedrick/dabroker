@@ -209,6 +209,7 @@ class _LodgingListScreenState extends ConsumerState<LodgingListScreen> {
         user != null &&
         (user.roles.contains('host') ||
             user.roles.contains('seller') ||
+            user.roles.contains('owner') ||
             user.roles.contains('admin') ||
             user.roles.contains('super_admin'));
 

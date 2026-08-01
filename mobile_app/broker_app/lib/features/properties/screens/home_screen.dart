@@ -201,6 +201,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         user.permissions.contains('properties.create') ||
         user.roles.contains('seller') ||
         user.roles.contains('owner') ||
+        user.roles.contains('host') ||
         user.roles.contains('admin') ||
         user.roles.contains('super_admin');
 
