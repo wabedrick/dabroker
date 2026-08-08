@@ -23,10 +23,15 @@ class StorePropertyRequest extends FormRequest
             'title' => ['required', 'string', 'max:150'],
             'type' => ['required', 'string', 'max:50'], // Changed to string
             'category' => ['nullable', 'string', 'max:120'],
-            'price' => ['nullable', 'numeric', 'min:0'],
+            'price' => [
+                Rule::requiredIf(fn () => !in_array($this->input('type'), ['apartment', 'rental']) && $this->input('category') !== 'rent'),
+                'nullable',
+                'numeric',
+                'min:0'
+            ],
             'currency' => ['required', 'string', 'size:3'],
-            'size' => ['nullable', 'numeric', 'min:0'],
-            'size_unit' => ['nullable', 'string', 'max:20'],
+            'size' => ['required', 'numeric', 'min:0'],
+            'size_unit' => ['required', 'string', 'max:20'],
             'house_age' => ['nullable', 'integer', 'min:0', 'max:200'],
             'address' => ['nullable', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:120'],

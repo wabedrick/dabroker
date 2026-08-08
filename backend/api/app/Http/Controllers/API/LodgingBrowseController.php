@@ -16,9 +16,8 @@ class LodgingBrowseController extends Controller
             ->approved()
             ->where('is_available', true)
             ->with(['host.roles', 'host.permissions', 'media'])
-            ->withCount(['ratings as average_rating' => function ($query) {
-                $query->select(DB::raw('coalesce(avg(rating),0)'));
-            }]);
+            ->withAvg('ratings as average_rating', 'rating')
+            ->withCount('ratings');
 
         // Filter by type
         if ($request->has('type')) {
