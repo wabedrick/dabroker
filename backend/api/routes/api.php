@@ -48,40 +48,85 @@ Route::get('/v1/diag', function () {
     try {
         \Illuminate\Support\Facades\DB::connection()->getPdo();
         $results['db_connection'] = 'OK (' . env('DB_CONNECTION') . ')';
-        $results['db_host'] = env('DB_HOST');
-        $results['db_name'] = env('DB_DATABASE');
     } catch (\Throwable $e) {
         $results['db_connection'] = 'FAILED: ' . $e->getMessage();
     }
 
-    // 2. Test properties query
+    // 2. Test full lodgings paginate (exactly what LodgingBrowseController does)
     try {
-        $count = \App\Models\Property::query()->approved()->where('is_available', true)->count();
-        $results['properties_query'] = 'OK - count: ' . $count;
+        $lodgings = \App\Models\Lodging::query()
+            ->approved()
+            ->where('is_available', true)
+            ->with(['host.roles', 'host.permissions', 'media'])
+            ->withAvg('ratings as average_rating', 'rating')
+            ->withCount('ratings')
+            ->orderByDesc('average_rating')
+            ->latest()
+            ->paginate(5);
+        $results['lodgings_full_paginate'] = 'OK - total: ' . $lodgings->total();
     } catch (\Throwable $e) {
-        $results['properties_query'] = 'FAILED: ' . $e->getMessage();
+        $results['lodgings_full_paginate'] = 'FAILED: ' . $e->getMessage();
     }
 
-    // 3. Test lodgings query
+    // 3. Test LodgingResource serialization
     try {
-        $count = \App\Models\Lodging::query()->approved()->where('is_available', true)->count();
-        $results['lodgings_query'] = 'OK - count: ' . $count;
+        $lodging = \App\Models\Lodging::query()
+            ->approved()
+            ->where('is_available', true)
+            ->with(['host.roles', 'host.permissions', 'media'])
+            ->withAvg('ratings as average_rating', 'rating')
+            ->withCount('ratings')
+            ->first();
+        if ($lodging) {
+            $resource = new \App\Http\Resources\LodgingResource($lodging);
+            $arr = $resource->toArray(request());
+            $results['lodgings_resource'] = 'OK - keys: ' . implode(', ', array_keys($arr));
+        } else {
+            $results['lodgings_resource'] = 'NO_LODGINGS_FOUND';
+        }
     } catch (\Throwable $e) {
-        $results['lodgings_query'] = 'FAILED: ' . $e->getMessage();
+        $results['lodgings_resource'] = 'FAILED: ' . $e->getMessage();
     }
 
-    // 4. Test withAvg
+    // 4. Test full properties paginate (exactly what PropertyBrowseController does)
     try {
-        \App\Models\Lodging::query()->withAvg('ratings as average_rating', 'rating')->withCount('ratings')->first();
-        $results['lodgings_withAvg'] = 'OK';
+        $query = \App\Models\Property::query()->approved()->where('is_available', true);
+        $query->where('category', 'rent');
+        $query->orderByDesc('published_at')->orderByDesc('created_at');
+        $paginator = $query->with(['owner:id,name,preferred_role', 'media'])->paginate(15);
+        $paginator->getCollection()->loadMissing(['owner:id,name,preferred_role', 'media']);
+        $results['properties_full_paginate'] = 'OK - total: ' . $paginator->total();
     } catch (\Throwable $e) {
-        $results['lodgings_withAvg'] = 'FAILED: ' . $e->getMessage();
+        $results['properties_full_paginate'] = 'FAILED: ' . $e->getMessage();
     }
 
-    // 5. Check Scout driver
-    $results['scout_driver'] = env('SCOUT_DRIVER', 'not set');
-    $results['app_env'] = env('APP_ENV', 'not set');
-    $results['app_key_set'] = !empty(env('APP_KEY')) ? 'YES' : 'NO';
+    // 5. Test PropertyResource serialization
+    try {
+        $prop = \App\Models\Property::query()
+            ->approved()
+            ->where('is_available', true)
+            ->with(['owner:id,name,preferred_role', 'media'])
+            ->first();
+        if ($prop) {
+            $resource = new \App\Http\Resources\PropertyResource($prop);
+            $arr = $resource->toArray(request());
+            $results['property_resource'] = 'OK';
+        } else {
+            $results['property_resource'] = 'NO_PROPERTIES_FOUND';
+        }
+    } catch (\Throwable $e) {
+        $results['property_resource'] = 'FAILED: ' . $e->getMessage();
+    }
+
+    // 6. Check disks
+    try {
+        $disk = config('filesystems.default');
+        $mediaDisk = config('media-library.disk_name');
+        $results['filesystem_disk'] = $disk;
+        $results['media_disk'] = $mediaDisk;
+    } catch (\Throwable $e) {
+        $results['disk_config'] = 'FAILED: ' . $e->getMessage();
+    }
 
     return response()->json($results);
 });
