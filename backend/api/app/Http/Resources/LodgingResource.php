@@ -38,11 +38,16 @@ class LodgingResource extends JsonResource
             'rooms' => LodgingRoomResource::collection($this->whenLoaded('rooms')),
             'media' => $this->whenLoaded('media', function () {
                 return $this->getMedia('gallery')->map(function ($media) {
+                    try {
+                        $url = $media->getFullUrl();
+                    } catch (\Throwable $e) {
+                        $url = asset('images/placeholders/lodging.jpg');
+                    }
                     return [
                         'id' => $media->uuid,
-                        'url' => $media->getFullUrl(),
-                        'thumb_url' => $media->getFullUrl(),
-                        'preview_url' => $media->getFullUrl(),
+                        'url' => $url,
+                        'thumb_url' => $url,
+                        'preview_url' => $url,
                     ];
                 });
             }),

@@ -125,13 +125,22 @@ class PropertyResource extends JsonResource
                 'id' => $media->uuid,
                 'name' => $media->name,
                 'caption' => $media->getCustomProperty('caption'),
-                'url' => $media->getFullUrl(),
-                'thumbnail_url' => $media->getFullUrl(),
-                'preview_url' => $media->getFullUrl(),
+                'url' => $this->safeGetUrl($media),
+                'thumbnail_url' => $this->safeGetUrl($media),
+                'preview_url' => $this->safeGetUrl($media),
                 'responsive_images' => $media->responsive_images,
                 'created_at' => $media->created_at,
             ])
             ->values()
             ->toArray();
+    }
+
+    private function safeGetUrl(Media $media): string
+    {
+        try {
+            return $media->getFullUrl();
+        } catch (\Throwable $e) {
+            return asset('images/placeholders/property.jpg');
+        }
     }
 }
