@@ -41,6 +41,51 @@ Route::get('/debug-env', function () {
     ]);
 });
 
+Route::get('/v1/diag', function () {
+    $results = [];
+
+    // 1. Check DB connection
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $results['db_connection'] = 'OK (' . env('DB_CONNECTION') . ')';
+        $results['db_host'] = env('DB_HOST');
+        $results['db_name'] = env('DB_DATABASE');
+    } catch (\Throwable $e) {
+        $results['db_connection'] = 'FAILED: ' . $e->getMessage();
+    }
+
+    // 2. Test properties query
+    try {
+        $count = \App\Models\Property::query()->approved()->where('is_available', true)->count();
+        $results['properties_query'] = 'OK - count: ' . $count;
+    } catch (\Throwable $e) {
+        $results['properties_query'] = 'FAILED: ' . $e->getMessage();
+    }
+
+    // 3. Test lodgings query
+    try {
+        $count = \App\Models\Lodging::query()->approved()->where('is_available', true)->count();
+        $results['lodgings_query'] = 'OK - count: ' . $count;
+    } catch (\Throwable $e) {
+        $results['lodgings_query'] = 'FAILED: ' . $e->getMessage();
+    }
+
+    // 4. Test withAvg
+    try {
+        \App\Models\Lodging::query()->withAvg('ratings as average_rating', 'rating')->withCount('ratings')->first();
+        $results['lodgings_withAvg'] = 'OK';
+    } catch (\Throwable $e) {
+        $results['lodgings_withAvg'] = 'FAILED: ' . $e->getMessage();
+    }
+
+    // 5. Check Scout driver
+    $results['scout_driver'] = env('SCOUT_DRIVER', 'not set');
+    $results['app_env'] = env('APP_ENV', 'not set');
+    $results['app_key_set'] = !empty(env('APP_KEY')) ? 'YES' : 'NO';
+
+    return response()->json($results);
+});
+
 Route::get('/debug-upload', function () {
     try {
         $disk = Storage::disk('s3');
